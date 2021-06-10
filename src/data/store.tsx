@@ -1,8 +1,9 @@
+import { createContext, useReducer, useEffect } from 'react'
 import Reducer from './reducer'
 import firebase from './firebase'
 import { iState, iContext, iCategory, iPack, iPackPrice, iAdvert, iPasswordRequest, iOrder } from './interfaces'
 
-export const StoreContext = React.createContext({} as iContext)
+export const StoreContext = createContext({} as iContext)
 
 const Store = (props: any) => {
   const initState: iState = {
@@ -16,9 +17,9 @@ const Store = (props: any) => {
     passwordRequests: [],
     orderBasket: []
   }
-  const [state, dispatch] = React.useReducer(Reducer, initState)
+  const [state, dispatch] = useReducer(Reducer, initState)
 
-  React.useEffect(() => {
+  useEffect(() => {
     const unsubscribeCategories = firebase.firestore().collection('categories').where('isActive', '==', true).onSnapshot(docs => {
       let categories: iCategory[] = []
       docs.forEach(doc => {
@@ -160,4 +161,3 @@ const Store = (props: any) => {
 }
  
 export default Store
-
