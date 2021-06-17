@@ -101,6 +101,7 @@ const ConfirmOrder = () => {
         total,
         fraction
       }
+      console.log('order = ', order)
       confirmOrder(order)
       showMessage(labels.sendSuccess)
       f7.views.current.router.navigate('/home/', {reloadAll: true})

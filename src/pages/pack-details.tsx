@@ -62,7 +62,7 @@ const PackDetails = (props: iProps) => {
       if (state.basket.find(p => p.packId === packId)) {
         throw new Error('alreadyInBasket')
       }
-      let foundPack = pack
+      let foundPack = state.packs.find(p => p.id === props.id)
       let price = pack?.price ?? 0
       let maxQuantity
       if (packId !== pack?.id) {
@@ -88,6 +88,7 @@ const PackDetails = (props: iProps) => {
       if (activeOrdersTotal + purchasedPack.price > orderLimit) {
         throw new Error('limitOverFlow')
       }
+      console.log('pack = ', purchasedPack)
       dispatch({type: 'ADD_TO_BASKET', payload: purchasedPack})
       showMessage(labels.addToBasketSuccess)
       f7.views.current.router.back()  

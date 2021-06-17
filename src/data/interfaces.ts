@@ -43,7 +43,8 @@ export interface iPack {
   trademark: string,
   country: string,
   closeExpired: boolean,
-  ratingCount: number
+  ratingCount: number,
+  byWeight: boolean
 }
 export interface iPackPrice {
   storeId: string,

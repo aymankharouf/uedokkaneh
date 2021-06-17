@@ -58,7 +58,8 @@ const Store = (props: any) => {
           isDivided: doc.data().isDivided,
           trademark: doc.data().trademark,
           country: doc.data().country,
-          closeExpired: doc.data().closeExpired
+          closeExpired: doc.data().closeExpired,
+          byWeight: doc.data().byWeight
         })
         if (doc.data().prices) {
           doc.data().prices.forEach((p: iPackPrice) => {
@@ -88,7 +89,7 @@ const Store = (props: any) => {
       unsubscribeAdverts()
     })  
     const unsubscribeLocations = firebase.firestore().collection('lookups').doc('l').onSnapshot(doc => {
-      dispatch({type: 'SET_LOCATIONS', payload: doc.data()?.values})
+      if (doc.exists) dispatch({type: 'SET_LOCATIONS', payload: doc.data()?.values})
     }, err => {
       unsubscribeLocations()
     })  

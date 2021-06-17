@@ -9,7 +9,7 @@ export const getMessage = (path: string, error: iError) => {
   if (!labels[errorCode]) {
     firebase.firestore().collection('logs').add({
       userId: firebase.auth().currentUser?.uid || '',
-      error,
+      error: errorCode,
       page: path,
       time: firebase.firestore.FieldValue.serverTimestamp()
     })
@@ -315,8 +315,10 @@ export const getBasket = (stateBasket: iBasketPack[], packs: iPack[]) => {
         lastPrice = 0
       } else if (offerInfo.subPackId === p.packId) {
         lastPrice = Math.round(offerInfo.price / (offerInfo.subQuantity ?? 0) * (offerInfo.subPercent ?? 0) * (1 + setup.profit))
-      } else {
+      } else if (offerInfo.bonusPackId === p.packId) {
         lastPrice = Math.round(offerInfo.price / (offerInfo.bonusQuantity ?? 0) * (offerInfo.bonusPercent ?? 0) * (1 + setup.profit))
+      } else {
+        lastPrice = offerInfo?.price ?? 0
       }
     } else {
       lastPrice = packInfo?.price ?? 0
