@@ -9,7 +9,7 @@ type Props = {
 }
 const Help = (props: Props) => {
   const { state } = useContext(StateContext)
-  const [userLocation] = useState(() => state.locations.find(l => l.id === state.userInfo?.locationId))
+  const [userRegion] = useState(() => state.regions.find(r => r.id === state.userInfo?.regionId))
   const [helpNote] = useState(() => {
     switch (props.id) {
       case 'o':
@@ -21,7 +21,7 @@ const Help = (props: Props) => {
     }
   })
   const feesNote = 'رسوم الخدمة هي 1% من قيمة المشتريات، مضافا إليها رسوم التوصيل والتي تتحدد بناء على منطقتك'
-  const locationFeesNote = 'حيث أن رسوم التوصيل ل'
+  const regionFeesNote = 'حيث أن رسوم التوصيل ل'
   const ratingsNote = 'كذلك لا تنس تقييم المنتجات التي تشتريها حتى يستفيد الاخرون من تجربتك للمنتج، وذلك من خلال صفحة مشترياتي والتي يمكن الوصول اليها من القائمة الجانبية في الصفحة الرئيسية'
   const invitationsNote = ' وللحصول على المزيد من الخصومات لا تنس دعوة أصدقائك من خلال القائمة الجانبية في الصفحة الرئيسية حيث سوف تحصل على خصم لكل صديق يشترك معنا'
   return (
@@ -33,7 +33,7 @@ const Help = (props: Props) => {
         {props.id === 'o' &&
           <>
             <p className="help1">{feesNote}</p>
-            {userLocation && userLocation.fees > 0 && <p className="help1">{`${locationFeesNote}${userLocation.name}: ${(userLocation.fees / 100).toFixed(2)}`}</p>}
+            {userRegion && userRegion.fees > 0 && <p className="help1">{`${regionFeesNote}${userRegion.name}: ${(userRegion.fees / 100).toFixed(2)}`}</p>}
             <p className="help2">{invitationsNote}</p>
             <p className="help2">{ratingsNote}</p>
           </>

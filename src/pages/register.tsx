@@ -15,12 +15,12 @@ const StoreOwner = (props: Props) => {
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
   const [storeName, setStoreName] = useState('')
-  const [locationId, setLocationId] = useState('')
+  const [regionId, setRegionId] = useState('')
   const [nameErrorMessage, setNameErrorMessage] = useState('')
   const [passwordErrorMessage, setPasswordErrorMessage] = useState('')
   const [mobileErrorMessage, setMobileErrorMessage] = useState('')
   const [storeNameErrorMessage, setStoreNameErrorMessage] = useState('')
-  const [locations] = useState(() => [...state.locations].sort((l1, l2) => l1.ordering - l2.ordering))
+  const [regions] = useState(() => [...state.regions].sort((l1, l2) => l1.ordering - l2.ordering))
   useEffect(() => {
     const patterns = {
       name: /^.{4,50}$/,
@@ -91,7 +91,7 @@ const StoreOwner = (props: Props) => {
   const handleRegister = async () => {
     try{
       setInprocess(true)
-      await registerUser(mobile, name, storeName, locationId, password)
+      await registerUser(mobile, name, storeName, regionId, password)
       setInprocess(false)
       showMessage(labels.registerSuccess)
       f7.views.current.router.back()
@@ -157,7 +157,7 @@ const StoreOwner = (props: Props) => {
           />
         : ''}
         <ListItem
-          title={labels.location}
+          title={labels.region}
           smartSelect
           smartSelectParams={{
             openIn: "popup", 
@@ -167,15 +167,15 @@ const StoreOwner = (props: Props) => {
             popupCloseLinkText: labels.close
           }}
         >
-          <select name="locationId" value={locationId} onChange={e => setLocationId(e.target.value)}>
+          <select name="regionId" value={regionId} onChange={e => setRegionId(e.target.value)}>
             <option value=""></option>
-            {locations.map(l => 
-              <option key={l.id} value={l.id}>{l.name}</option>
+            {regions.map(r => 
+              <option key={r.id} value={r.id}>{r.name}</option>
             )}
           </select>
         </ListItem>
       </List>
-      {!name || !mobile || !password || !locationId || (props.type === 'o' && !storeName) || nameErrorMessage || mobileErrorMessage || passwordErrorMessage || storeNameErrorMessage ? '' :
+      {!name || !mobile || !password || !regionId || (props.type === 'o' && !storeName) || nameErrorMessage || mobileErrorMessage || passwordErrorMessage || storeNameErrorMessage ? '' :
         <Button text={labels.register} large onClick={() => handleRegister()} />
       }
     </Page>

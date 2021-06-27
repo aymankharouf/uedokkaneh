@@ -16,7 +16,7 @@ const StateProvider = ({children}: Props) => {
     packs: [],
     packPrices: [],
     adverts: [],
-    locations: [],
+    regions: [],
     passwordRequests: [],
     orderBasket: [],
     notifications: []
@@ -92,10 +92,10 @@ const StateProvider = ({children}: Props) => {
     }, err => {
       unsubscribeAdverts()
     })  
-    const unsubscribeLocations = firebase.firestore().collection('lookups').doc('l').onSnapshot(doc => {
-      if (doc.exists) dispatch({type: 'SET_LOCATIONS', payload: doc.data()?.values})
+    const unsubscribeRegions = firebase.firestore().collection('lookups').doc('r').onSnapshot(doc => {
+      if (doc.exists) dispatch({type: 'SET_REGIONS', payload: doc.data()?.values})
     }, err => {
-      unsubscribeLocations()
+      unsubscribeRegions()
     })  
     const unsubscribePasswordRequests = firebase.firestore().collection('password-requests').onSnapshot(docs => {
       let passwordRequests: PasswordRequest[] = []
@@ -119,7 +119,7 @@ const StateProvider = ({children}: Props) => {
           if (doc.exists){
             const userInfo: UserInfo = {
               mobile: doc.data()!.mobile,
-              locationId: doc.data()!.locationId
+              regionId: doc.data()!.regionId
             }
             const notifications: Notification[] = []
             if (doc.data()!.notifications) {

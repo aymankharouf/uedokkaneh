@@ -79,7 +79,7 @@ export type Alarm = {
 }
 export type UserInfo = {
   mobile: string,
-  locationId: string,
+  regionId: string,
   friends?: Friend[],
   ratings?: Rating[],
   favorites?: string[],
@@ -146,7 +146,7 @@ export type Advert = {
   isActive: boolean,
   imageUrl?: string
 }
-export type Location = {
+export type Region = {
   id: string,
   name: string,
   fees: number,
@@ -171,7 +171,7 @@ export type State = {
   packs: Pack[],
   packPrices: PackPrice[],
   adverts: Advert[],
-  locations: Location[],
+  regions: Region[],
   passwordRequests: PasswordRequest[],
   orderBasket: OrderPack[],
   notifications: Notification[]

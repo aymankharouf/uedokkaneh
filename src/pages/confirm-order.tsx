@@ -15,8 +15,8 @@ const ConfirmOrder = () => {
   const [fraction, setFraction] = useState(0)
   const [discount, setDiscount] = useState<Discount>()
   const [weightedPacks, setWeightedPacks] = useState<BasketPack[]>([])
-  const [locationFees] = useState(() => state.locations.find(l => l.id === state.userInfo?.locationId)?.fees ?? 0)
-  const [deliveryFees] = useState(state.customerInfo?.deliveryFees ?? locationFees)
+  const [regionFees] = useState(() => state.regions.find(r => r.id === state.userInfo?.regionId)?.fees ?? 0)
+  const [deliveryFees] = useState(state.customerInfo?.deliveryFees ?? regionFees)
   useEffect(() => {
     setBasket(getBasket(state.basket, state.packs))
   }, [state.basket, state.packs])
@@ -120,7 +120,7 @@ const ConfirmOrder = () => {
       <Navbar title={labels.sendOrder} backLink={labels.back} />
       <Block>
         <p className="note">{labels.orderHelp} <a href="/help/o">{labels.clickHere}</a></p>
-        {locationFees === 0 ? <p className="note">{labels.noDelivery}</p> : ''}
+        {regionFees === 0 ? <p className="note">{labels.noDelivery}</p> : ''}
         <List mediaList>
           {basket.map(p => 
             <ListItem

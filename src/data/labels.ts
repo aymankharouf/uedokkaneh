@@ -7,7 +7,7 @@ const labels: Label = {
   name: 'اﻻسم',
   mobile: 'الموبايل',
   password: 'كلمة السر',
-  location: 'المنطقة',
+  region: 'المنطقة',
   register: 'تسجيل',
   error: 'خطأ',
   noData: 'ﻻ يوجد بيانات',

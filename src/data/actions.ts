@@ -167,7 +167,7 @@ export const addOrderRequest = (order: Order, type: string, mergedOrder?: Order)
   batch.commit()
 }
 
-export const registerUser = async (mobile: string, name: string, storeName: string, locationId: string, password: string) => {
+export const registerUser = async (mobile: string, name: string, storeName: string, regionId: string, password: string) => {
   await firebase.auth().createUserWithEmailAndPassword(mobile + '@gmail.com', mobile.substring(9, 2) + password)
   let colors = []
   for (var i = 0; i < 4; i++){
@@ -177,7 +177,7 @@ export const registerUser = async (mobile: string, name: string, storeName: stri
     mobile,
     name,
     storeName,
-    locationId,
+    regionId,
     colors,
     time: firebase.firestore.FieldValue.serverTimestamp()
   })
