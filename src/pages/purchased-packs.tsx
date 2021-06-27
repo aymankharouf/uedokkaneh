@@ -1,15 +1,15 @@
 import { useContext, useEffect, useState, useRef } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Actions, ActionsButton, Icon, Link } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { quantityText, addQuantity } from '../data/actions'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { showMessage, showError, getMessage, rateProduct } from '../data/actions'
-import { iOrder } from '../data/interfaces'
+import { Order } from '../data/types'
 
-interface iPurchasedPack {
+type PurchasedPack = {
   packId: string,
   productId: string,
   productName: string,
@@ -24,11 +24,11 @@ interface iPurchasedPack {
 }
 
 const PurchasedPacks = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
-	const [purchasedPacks, setPurchasedPacks] = useState<iPurchasedPack[]>([])
-  const [deliveredOrders, setDeliveredOrders] = useState<iOrder[]>([])
-  const [currentPack, setCurrentPack] = useState<iPurchasedPack | undefined>(undefined)
+	const [purchasedPacks, setPurchasedPacks] = useState<PurchasedPack[]>([])
+  const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([])
+  const [currentPack, setCurrentPack] = useState<PurchasedPack | undefined>(undefined)
   const actionsList = useRef<Actions>(null)
   useEffect(() => {
     if (error) {
@@ -43,7 +43,7 @@ const PurchasedPacks = () => {
     })
   }, [state.orders])
 	useEffect(() => {
-		let packsArray: iPurchasedPack[] = []
+		let packsArray: PurchasedPack[] = []
 		deliveredOrders.forEach(o => {
 			o.basket.forEach(p => {
         const found = packsArray.findIndex(pa => pa.packId === p.packId)
@@ -88,7 +88,7 @@ const PurchasedPacks = () => {
       setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
-  const handleActions = (pack: iPurchasedPack)=> {
+  const handleActions = (pack: PurchasedPack)=> {
     setCurrentPack(pack)
     actionsList.current?.open()
   }

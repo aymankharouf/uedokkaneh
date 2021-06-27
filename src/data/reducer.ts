@@ -1,6 +1,6 @@
-import { iState, iAction } from './interfaces'
+import { State, Action } from './types'
 
-const Reducer = (state: iState, action: iAction) => {
+const Reducer = (state: State, action: Action) => {
   let pack, packIndex, packs, nextQuantity, i
   const increment = [0.125, 0.25, 0.5, 0.75, 1]
   switch (action.type){

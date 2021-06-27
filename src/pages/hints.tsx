@@ -1,19 +1,19 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { productOfText } from '../data/actions'
-import { iPack } from '../data/interfaces'
+import { Pack } from '../data/types'
 
-interface iProps {
+type Props = {
   id: string,
   type: string
 }
-const Hints = (props: iProps) => {
-  const { state } = useContext(StoreContext)
+const Hints = (props: Props) => {
+  const { state } = useContext(StateContext)
   const [pack] = useState(() => state.packs.find(p => p.id === props.id))
-  const [packs, setPacks] = useState<iPack[]>([])
+  const [packs, setPacks] = useState<Pack[]>([])
   useEffect(() => {
     setPacks(() => {
       let packs = state.packs.filter(p => 

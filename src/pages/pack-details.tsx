@@ -2,26 +2,26 @@ import { useContext, useEffect, useState, useRef } from 'react'
 import { f7, Page, Navbar, Card, CardContent, CardHeader, CardFooter, Fab, Toolbar, Icon, Actions, ActionsButton } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import RatingStars from './rating-stars'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { addAlarm, showMessage, showError, getMessage, updateFavorites, productOfText, notifyFriends } from '../data/actions'
 import labels from '../data/labels'
 import { setup, alarmTypes } from '../data/config'
-import { iPack } from '../data/interfaces'
+import { Pack } from '../data/types'
 
-interface iProps {
+type Props = {
   id: string,
   type: string
 }
-const PackDetails = (props: iProps) => {
-  const { state, dispatch } = useContext(StoreContext)
+const PackDetails = (props: Props) => {
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [pack] = useState(() => state.packs.find(p => p.id === props.id))
   const [isAvailable, setIsAvailable] = useState(-1)
   const [subPackInfo, setSubPackInfo] = useState('')
   const [bonusPackInfo, setBonusPackInfo] = useState('')
-  const [otherProducts, setOtherProducts] = useState<iPack[]>([])
-  const [otherOffers, setOtherOffers] = useState<iPack[]>([])
-  const [otherPacks, setOtherPacks] = useState<iPack[]>([])
+  const [otherProducts, setOtherProducts] = useState<Pack[]>([])
+  const [otherOffers, setOtherOffers] = useState<Pack[]>([])
+  const [otherPacks, setOtherPacks] = useState<Pack[]>([])
   const offerActions = useRef<Actions>(null)
   const packActions = useRef<Actions>(null)
   useEffect(() => {

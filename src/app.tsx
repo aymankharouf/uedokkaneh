@@ -1,6 +1,6 @@
 import { App, Panel, View } from 'framework7-react'
 import routes from './routes'
-import Store from './data/store'
+import Store from './data/state-provider'
 
 const app = () => {
   const f7params = {

@@ -1,20 +1,20 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
 import { storeSummary } from '../data/config'
 import { productOfText } from '../data/actions'
-import { iPackPrice } from '../data/interfaces'
+import { PackPrice } from '../data/types'
 
-interface iProps {
+type Props = {
   type: string
 }
-const StorePacks = (props: iProps) => {
-  const { state } = useContext(StoreContext)
-  const [storePacks, setStorePacks] = useState<iPackPrice[]>([])
+const StorePacks = (props: Props) => {
+  const { state } = useContext(StateContext)
+  const [storePacks, setStorePacks] = useState<PackPrice[]>([])
   useEffect(() => {
     setStorePacks(() => {
       const storePacks = state.packPrices.filter(p => p.storeId === state.customerInfo?.storeId)

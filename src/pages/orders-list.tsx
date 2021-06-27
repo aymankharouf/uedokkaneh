@@ -3,14 +3,14 @@ import { Block, Page, Navbar, List, ListItem, Toolbar} from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { orderStatus } from '../data/config'
-import { iOrder } from '../data/interfaces'
+import { Order } from '../data/types'
 
 const OrdersList = () => {
-  const { state } = useContext(StoreContext)
-  const [orders, setOrders] = useState<iOrder[]>([])
+  const { state } = useContext(StateContext)
+  const [orders, setOrders] = useState<Order[]>([])
   useEffect(() => {
     setOrders(() => {
       const orders = state.orders.filter(o => ['n', 'a', 'e', 'u', 'f', 'p', 'd'].includes(o.status))

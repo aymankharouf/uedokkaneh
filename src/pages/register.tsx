@@ -1,14 +1,14 @@
 import { useContext, useState, useEffect } from 'react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { f7, Page, Navbar, List, ListInput, Button, ListItem } from 'framework7-react'
 import { registerUser, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 
-interface iProps {
+type Props = {
   type: string
 }
-const StoreOwner = (props: iProps) => {
-  const { state } = useContext(StoreContext)
+const StoreOwner = (props: Props) => {
+  const { state } = useContext(StateContext)
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [inprocess, setInprocess] = useState(false)

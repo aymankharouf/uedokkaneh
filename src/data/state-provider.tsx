@@ -1,12 +1,15 @@
 import { createContext, useReducer, useEffect } from 'react'
 import Reducer from './reducer'
 import firebase from './firebase'
-import { iState, iContext, iCategory, iPack, iPackPrice, iAdvert, iPasswordRequest, iOrder, iUserInfo, iNotification } from './interfaces'
+import { State, Context, Category, Pack, PackPrice, Advert, PasswordRequest, Order, UserInfo, Notification } from './types'
 
-export const StoreContext = createContext({} as iContext)
+export const StateContext = createContext({} as Context)
 
-const Store = (props: any) => {
-  const initState: iState = {
+type Props = {
+  children: React.ReactElement
+}
+const StateProvider = ({children}: Props) => {
+  const initState: State = {
     categories: [], 
     basket: [], 
     orders: [],
@@ -22,7 +25,7 @@ const Store = (props: any) => {
 
   useEffect(() => {
     const unsubscribeCategories = firebase.firestore().collection('categories').where('isActive', '==', true).onSnapshot(docs => {
-      let categories: iCategory[] = []
+      let categories: Category[] = []
       docs.forEach(doc => {
         categories.push({
           id: doc.id,
@@ -37,8 +40,8 @@ const Store = (props: any) => {
       unsubscribeCategories()
     })  
     const unsubscribePacks = firebase.firestore().collection('packs').where('price', '>', 0).onSnapshot(docs => {
-      let packs: iPack[] = []
-      let packPrices: iPackPrice[] = []
+      let packs: Pack[] = []
+      let packPrices: PackPrice[] = []
       docs.forEach(doc => {
         packs.push({
           id: doc.id,
@@ -63,7 +66,7 @@ const Store = (props: any) => {
           byWeight: doc.data().byWeight
         })
         if (doc.data().prices) {
-          doc.data().prices.forEach((p: iPackPrice) => {
+          doc.data().prices.forEach((p: PackPrice) => {
             packPrices.push({...p, packId: doc.id})
           })
         }
@@ -74,7 +77,7 @@ const Store = (props: any) => {
       unsubscribePacks()
     })
     const unsubscribeAdverts = firebase.firestore().collection('adverts').where('isActive', '==', true).onSnapshot(docs => {
-      let adverts: iAdvert[] = []
+      let adverts: Advert[] = []
       docs.forEach(doc => {
         adverts.push({
           id: doc.id,
@@ -95,7 +98,7 @@ const Store = (props: any) => {
       unsubscribeLocations()
     })  
     const unsubscribePasswordRequests = firebase.firestore().collection('password-requests').onSnapshot(docs => {
-      let passwordRequests: iPasswordRequest[] = []
+      let passwordRequests: PasswordRequest[] = []
       docs.forEach(doc => {
         passwordRequests.push({
           id: doc.id,
@@ -114,11 +117,11 @@ const Store = (props: any) => {
         if (basket) dispatch({type: 'SET_BASKET', payload: basket}) 
         const unsubscribeUser = firebase.firestore().collection('users').doc(user.uid).onSnapshot(doc => {
           if (doc.exists){
-            const userInfo: iUserInfo = {
+            const userInfo: UserInfo = {
               mobile: doc.data()!.mobile,
               locationId: doc.data()!.locationId
             }
-            const notifications: iNotification[] = []
+            const notifications: Notification[] = []
             if (doc.data()!.notifications) {
               doc.data()!.notifications.forEach((n: any) => {
                 notifications.push({
@@ -146,7 +149,7 @@ const Store = (props: any) => {
           unsubscribeCustomer()
         })  
         const unsubscribeOrders = firebase.firestore().collection('orders').where('userId', '==', user.uid).onSnapshot(docs => {
-          let orders: iOrder[] = []
+          let orders: Order[] = []
           docs.forEach(doc => {
             orders.push({
               id: doc.id,
@@ -173,10 +176,10 @@ const Store = (props: any) => {
     })
   }, [])
   return (
-    <StoreContext.Provider value={{state, dispatch}}>
-      {props.children}
-    </StoreContext.Provider>
+    <StateContext.Provider value={{state, dispatch}}>
+      {children}
+    </StateContext.Provider>
   )
 }
  
-export default Store
+export default StateProvider

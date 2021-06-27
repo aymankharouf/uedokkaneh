@@ -1,17 +1,17 @@
 import { useContext, useEffect, useState } from 'react'
 import { f7, Page, Navbar, List, ListInput, Toolbar, Fab, Icon } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { deleteNotification, getMessage, showError, showMessage } from '../data/actions'
 import moment from 'moment'
 import 'moment/locale/ar'
 
-interface iProps {
+type Props = {
   id: string
 }
-const NotificationDetails = (props: iProps) => {
-  const { state } = useContext(StoreContext)
+const NotificationDetails = (props: Props) => {
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [notification] = useState(() => state.notifications.find(n => n.id === props.id)!)
   useEffect(() => {

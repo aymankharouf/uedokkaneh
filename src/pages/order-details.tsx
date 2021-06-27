@@ -1,25 +1,25 @@
 import { useState, useEffect, useContext, useRef } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Actions, ActionsButton, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { cancelOrder, mergeOrders, addOrderRequest, showMessage, showError, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import { orderPackStatus } from '../data/config'
-import { iOrder, iOrderPack } from '../data/interfaces'
+import { Order, OrderPack } from '../data/types'
 
-interface iProps {
+type Props = {
   id: string
 }
-interface iExtendedOrderPack extends iOrderPack {
+type ExtendedOrderPack = OrderPack & {
   priceNote: string,
   statusNote: string
 }
-const OrderDetails = (props: iProps) => {
-  const { state } = useContext(StoreContext)
+const OrderDetails = (props: Props) => {
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [order, setOrder] = useState(() => state.orders.find(o => o.id === props.id))
-  const [orderBasket, setOrderBasket] = useState<iExtendedOrderPack[]>([])
-  const [lastOrder, setLastOrder] = useState<iOrder | undefined>(undefined)
+  const [orderBasket, setOrderBasket] = useState<ExtendedOrderPack[]>([])
+  const [lastOrder, setLastOrder] = useState<Order | undefined>(undefined)
   const orderActions = useRef<Actions>(null)
   useEffect(() => {
     setOrder(() => state.orders.find(o => o.id === props.id))

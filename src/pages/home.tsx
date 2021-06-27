@@ -3,13 +3,13 @@ import { f7, Page, Navbar, NavLeft, NavTitle, Link, Toolbar, NavTitleLarge, Bloc
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import MainCategories from './main-categories'
-import { StoreContext } from '../data/store'
-import { iAdvert, iNotification } from '../data/interfaces'
+import { StateContext } from '../data/state-provider'
+import { Advert, Notification } from '../data/types'
 
 const Home = () => {
-  const { state } = useContext(StoreContext)
-  const [advert, setAdvert] = useState<iAdvert | undefined>(undefined)
-  const [notifications, setNotifications] = useState<iNotification[]>([])
+  const { state } = useContext(StateContext)
+  const [advert, setAdvert] = useState<Advert | undefined>(undefined)
+  const [notifications, setNotifications] = useState<Notification[]>([])
   useEffect(() => {
     setAdvert(() => state.adverts.find(a => a.isActive))
   }, [state.adverts])

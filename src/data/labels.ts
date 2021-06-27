@@ -1,6 +1,6 @@
-import { iLabel } from './interfaces'
+import { Label } from './types'
 
-const labels: iLabel = {
+const labels: Label = {
   news: 'آخر الاخبار',
   offers: 'العروض',
   popular: 'اﻻكثر مبيعا',

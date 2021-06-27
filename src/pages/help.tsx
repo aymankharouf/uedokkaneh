@@ -1,15 +1,14 @@
 import { useContext, useState } from 'react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { Page, Navbar, Block, Icon, Toolbar } from 'framework7-react'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
 
-interface iProps {
+type Props = {
   id: string
 }
-
-const Help = (props: iProps) => {
-  const { state } = useContext(StoreContext)
+const Help = (props: Props) => {
+  const { state } = useContext(StateContext)
   const [userLocation] = useState(() => state.locations.find(l => l.id === state.userInfo?.locationId))
   const [helpNote] = useState(() => {
     switch (props.id) {

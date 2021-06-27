@@ -1,20 +1,20 @@
 import firebase from './firebase'
 
-export interface iLabel {
+export type Label = {
     [key: string]: string
 }
-export interface iCategory {
+export type Category = {
   id: string,
   name: string,
   parentId: string,
   ordering: number,
   isLeaf: boolean
 }
-export interface iError {
+export type Error = {
   code: string,
   message: string
 }
-export interface iPack {
+export type Pack = {
   id: string,
   name: string,
   productId: string,
@@ -46,29 +46,29 @@ export interface iPack {
   ratingCount: number,
   byWeight: boolean
 }
-export interface iPackPrice {
+export type PackPrice = {
   storeId: string,
   packId: string,
   price: number,
-  packInfo?: iPack
+  packInfo?: Pack
   time: Date
 }
-export interface iNotification {
+export type Notification = {
   id: string,
   title: string,
   message: string,
   status: string,
   time: Date
 }
-export interface iFriend {
+export type Friend = {
   mobile: string,
   name: string,
   status: string
 }
-export interface iRating {
+export type Rating = {
   productId: string
 }
-export interface iAlarm {
+export type Alarm = {
   packId?: string,
   type: string,
   price?: number,
@@ -77,15 +77,15 @@ export interface iAlarm {
   offerDays?: number,
   status: string
 }
-export interface iUserInfo {
+export type UserInfo = {
   mobile: string,
   locationId: string,
-  friends?: iFriend[],
-  ratings?: iRating[],
+  friends?: Friend[],
+  ratings?: Rating[],
   favorites?: string[],
-  alarms?: iAlarm[]
+  alarms?: Alarm[]
 }
-export interface iCustomerInfo {
+export type CustomerInfo = {
   storeId: string,
   isBlocked: boolean,
   orderLimit: number,
@@ -93,7 +93,7 @@ export interface iCustomerInfo {
   discounts: number,
   specialDiscount: number
 }
-export interface iBasketPack {
+export type BasketPack = {
   packId: string,
   productId: string,
   productName: string,
@@ -109,36 +109,36 @@ export interface iBasketPack {
   purchased?: number,
   returned?: number
 }
-export interface iOrderPack extends iBasketPack {
+export type OrderPack = BasketPack & {
   gross: number,
   purchased: number,
   status: string,
   actual?: number,
   overPriced?: boolean,
-  packInfo?: iPack,
+  packInfo?: Pack,
   oldQuantity?: number
 }
-export interface iBigBasketPack extends iBasketPack {
-  packInfo?: iPack,
+export type BigBasketPack = BasketPack & {
+  packInfo?: Pack,
   totalPriceText: string,
   priceText: string,
   otherProducts: number,
   otherOffers: number,
   otherPacks: number
 }
-export interface iOrder {
+export type Order = {
   id?: string,
-  basket: iOrderPack[],
+  basket: OrderPack[],
   status: string,
   total: number,
   fixedFees: number,
   deliveryFees: number,
-  discount?: iDiscount,
+  discount?: Discount,
   fraction: number,
   requestType?: string,
   time?: Date
 }
-export interface iAdvert {
+export type Advert = {
   id: string,
   type: string,
   title: string,
@@ -146,43 +146,43 @@ export interface iAdvert {
   isActive: boolean,
   imageUrl?: string
 }
-export interface iLocation {
+export type Location = {
   id: string,
   name: string,
   fees: number,
   ordering: number
 
 }
-export interface iPasswordRequest {
+export type PasswordRequest = {
   id: string,
   mobile: string
 }
-export interface iDiscount {
+export type Discount = {
   value: number,
   type: string
 }
-export interface iState {
+export type State = {
   user?: firebase.User,
-  userInfo?: iUserInfo,
-  customerInfo?: iCustomerInfo,
-  categories: iCategory[],
-  basket: iBasketPack[],
-  orders: iOrder[],
-  packs: iPack[],
-  packPrices: iPackPrice[],
-  adverts: iAdvert[],
-  locations: iLocation[],
-  passwordRequests: iPasswordRequest[],
-  orderBasket: iOrderPack[],
-  notifications: iNotification[]
+  userInfo?: UserInfo,
+  customerInfo?: CustomerInfo,
+  categories: Category[],
+  basket: BasketPack[],
+  orders: Order[],
+  packs: Pack[],
+  packPrices: PackPrice[],
+  adverts: Advert[],
+  locations: Location[],
+  passwordRequests: PasswordRequest[],
+  orderBasket: OrderPack[],
+  notifications: Notification[]
 }
 
-export interface iAction {
+export type Action = {
   type: string
   payload?: any
 }
 
-export interface iContext {
-  state: iState;
-  dispatch: React.Dispatch<iAction>
+export type Context = {
+  state: State;
+  dispatch: React.Dispatch<Action>
 }

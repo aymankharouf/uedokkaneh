@@ -1,11 +1,11 @@
 import { useContext, useState, useEffect } from 'react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { f7, Page, Navbar, List, ListInput, Button } from 'framework7-react'
 import { addPasswordRequest, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 
 const PasswordRequest = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [mobile, setMobile] = useState('')
   const [mobileErrorMessage, setMobileErrorMessage] = useState('')
   const [error, setError] = useState('')

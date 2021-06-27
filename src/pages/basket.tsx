@@ -1,19 +1,19 @@
 import { useContext, useEffect, useState, useRef } from 'react'
 import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Link, Icon, Stepper, Actions, ActionsButton, Badge } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { showError, getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
 import { setup } from '../data/config'
-import { iBigBasketPack } from '../data/interfaces'
+import { BigBasketPack } from '../data/types'
 
 const Basket = () => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [submitVisible, setSubmitVisible] = useState(true)
-  const [currentPack, setCurrentPack] = useState<iBigBasketPack | undefined>(undefined)
-  const [basket, setBasket] = useState<iBigBasketPack[]>([])
+  const [currentPack, setCurrentPack] = useState<BigBasketPack | undefined>(undefined)
+  const [basket, setBasket] = useState<BigBasketPack[]>([])
   const [totalPrice, setTotalPrice] = useState(0)
-  const [weightedPacks, setWeightedPacks] = useState<iBigBasketPack[]>([])
+  const [weightedPacks, setWeightedPacks] = useState<BigBasketPack[]>([])
   const [customerOrdersTotals] = useState(() => {
     const activeOrders = state.orders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
     return activeOrders.reduce((sum, o) => sum + o.total, 0)
@@ -52,7 +52,7 @@ const Basket = () => {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
-  const handleIncrease = (pack: iBigBasketPack) => {
+  const handleIncrease = (pack: BigBasketPack) => {
     try{
       dispatch({type: 'INCREASE_QUANTITY', payload: pack})
       const orderLimit = state.customerInfo?.orderLimit ?? setup.orderLimit
@@ -63,7 +63,7 @@ const Basket = () => {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
-  const handleHints = (pack: iBigBasketPack) => {
+  const handleHints = (pack: BigBasketPack) => {
     setCurrentPack(pack)
     hintsList.current?.open()
   }

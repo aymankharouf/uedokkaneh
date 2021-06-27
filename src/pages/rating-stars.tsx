@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Icon } from 'framework7-react'
 
-interface iProps {
+type Props = {
   rating: number,
   count: number
 }
-const RatingStars = (props: iProps) => {
+const RatingStars = (props: Props) => {
   const [stars] = useState(() => {
     const rating_int = props.rating
     const rating_fraction = Number(props.rating) - rating_int

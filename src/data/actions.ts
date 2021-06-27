@@ -2,9 +2,9 @@ import firebase from './firebase'
 import labels from './labels'
 import { randomColors, setup } from './config'
 import { f7 } from 'framework7-react'
-import { iError, iOrderPack, iBasketPack, iCategory, iOrder, iUserInfo, iAlarm, iPack, iNotification } from './interfaces'
+import { Error, OrderPack, BasketPack, Category, Order, UserInfo, Alarm, Pack, Notification } from './types'
 
-export const getMessage = (path: string, error: iError) => {
+export const getMessage = (path: string, error: Error) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
   if (!labels[errorCode]) {
     firebase.firestore().collection('logs').add({
@@ -38,7 +38,7 @@ export const quantityText = (quantity: number, weight?: number): string => {
   return weight && weight !== quantity ? `${quantityText(quantity)}(${quantityText(weight)})` : quantity === Math.trunc(quantity) ? quantity.toString() : quantity.toFixed(3)
 }
 
-export const quantityDetails = (basketPack: iBasketPack) => {
+export const quantityDetails = (basketPack: BasketPack) => {
   let text = `${labels.requested}: ${quantityText(basketPack.quantity)}`
   if ((basketPack.purchased ?? 0) > 0) {
     text += `, ${labels.purchased}: ${quantityText(basketPack.purchased ?? 0, basketPack.weight)}`
@@ -57,7 +57,7 @@ export const productOfText = (trademark: string, country: string) => {
   return trademark ? `${labels.productFrom} ${trademark}-${country}` : `${labels.productOf} ${country}`
 }
 
-export const getChildren = (categoryId: string, categories: iCategory[]) => {
+export const getChildren = (categoryId: string, categories: Category[]) => {
   let childrenArray = [categoryId]
   let children = categories.filter(c => c.parentId === categoryId)
   children.forEach(c => {
@@ -93,7 +93,7 @@ export const addPasswordRequest = (mobile: string) => {
   })
 }
 
-export const confirmOrder = (order: iOrder) => {
+export const confirmOrder = (order: Order) => {
   const newOrder = {
     ...order,
     userId: firebase.auth().currentUser?.uid,
@@ -103,14 +103,14 @@ export const confirmOrder = (order: iOrder) => {
   firebase.firestore().collection('orders').add(newOrder)
 }
 
-export const cancelOrder = (order: iOrder) => {
+export const cancelOrder = (order: Order) => {
   firebase.firestore().collection('orders').doc(order.id).update({
     status: 'c',
     lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
   })
 }
 
-export const mergeOrders = (order1: iOrder, order2: iOrder) => {
+export const mergeOrders = (order1: Order, order2: Order) => {
   const batch = firebase.firestore().batch()
   let basket = order1.basket.slice()
   order2.basket.forEach(p => {
@@ -148,7 +148,7 @@ export const mergeOrders = (order1: iOrder, order2: iOrder) => {
   batch.commit()
 }
 
-export const addOrderRequest = (order: iOrder, type: string, mergedOrder?: iOrder) => {
+export const addOrderRequest = (order: Order, type: string, mergedOrder?: Order) => {
   const batch = firebase.firestore().batch()
   let orderRef = firebase.firestore().collection('orders').doc(order.id)
   const basket = type === 'm' ? mergedOrder?.basket : []
@@ -204,7 +204,7 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
   }
 }
 
-export const addAlarm = (alarm: iAlarm) => {
+export const addAlarm = (alarm: Alarm) => {
   firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
     alarms: firebase.firestore.FieldValue.arrayUnion({
       ...alarm,
@@ -224,18 +224,18 @@ export const inviteFriend = (mobile: string, name: string) => {
   })
 }
 
-export const readNotification = (notification: iNotification, notifications: iNotification[]) => {
+export const readNotification = (notification: Notification, notifications: Notification[]) => {
   const otherNotifications = notifications.filter(n => n.id === notification.id)
   otherNotifications.push({
     ...notification,
     status: 'r'
   })
   firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
-    notifications
+    notifications: otherNotifications
   })  
 }
 
-export const updateFavorites = (user: iUserInfo, productId: string) => {
+export const updateFavorites = (user: UserInfo, productId: string) => {
   const favorites = user.favorites?.slice() || []
   const found = favorites.indexOf(productId)
   if (found === -1) {
@@ -248,7 +248,7 @@ export const updateFavorites = (user: iUserInfo, productId: string) => {
   })
 }
 
-export const editOrder = (order: iOrder, newBasket: iOrderPack[]) => {
+export const editOrder = (order: Order, newBasket: OrderPack[]) => {
   let basket = newBasket.map(p => {
     const { oldQuantity, packInfo, ...others } = p
     return others
@@ -275,7 +275,7 @@ export const editOrder = (order: iOrder, newBasket: iOrderPack[]) => {
   } 
 }
 
-export const deleteNotification = (notificationId: string, notifications: iNotification[]) => {
+export const deleteNotification = (notificationId: string, notifications: Notification[]) => {
   const otherNotifications = notifications.filter(n => n.id !== notificationId)
   firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
     notifications: otherNotifications
@@ -288,7 +288,7 @@ export const notifyFriends = (offerId: string) => {
   })
 }
 
-export const deleteFriend = (user: iUserInfo, mobile: string) => {
+export const deleteFriend = (user: UserInfo, mobile: string) => {
   const friends = user.friends?.slice()
   if (friends) {
     const friendIndex = friends.findIndex(f => f.mobile === mobile)
@@ -299,7 +299,7 @@ export const deleteFriend = (user: iUserInfo, mobile: string) => {
   }
 }
 
-export const getBasket = (stateBasket: iBasketPack[], packs: iPack[]) => {
+export const getBasket = (stateBasket: BasketPack[], packs: Pack[]) => {
   const basket = stateBasket.map(p => {
     const packInfo = packs.find(pa => pa.id === p.packId)
     let lastPrice

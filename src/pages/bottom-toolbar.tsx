@@ -1,13 +1,12 @@
 import { useContext } from 'react'
 import { Icon, Link, Badge} from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 
-interface iProps {
+type Props = {
   isHome?: string
 }
-
-const BottomToolbar = (props: iProps) => {
-  const { state } = useContext(StoreContext)
+const BottomToolbar = (props: Props) => {
+  const { state } = useContext(StateContext)
   const searchHome = props.isHome === '1' ? 'search' : 'home'
   return (
     <>

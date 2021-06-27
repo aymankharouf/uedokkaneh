@@ -1,13 +1,13 @@
 import { useContext, useState, useEffect } from 'react'
 import { Button } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { randomColors } from '../data/config'
 import labels from '../data/labels'
-import { iCategory } from '../data/interfaces'
+import { Category } from '../data/types'
 
 const MainCategories = () => {
-  const { state } = useContext(StoreContext)
-  const [categories, setCategories] = useState<iCategory[]>([])
+  const { state } = useContext(StateContext)
+  const [categories, setCategories] = useState<Category[]>([])
   useEffect(() => {
     setCategories(() => {
       const categories = state.categories.filter(c => c.parentId === '0')

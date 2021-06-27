@@ -1,17 +1,17 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { readNotification, getMessage, showError } from '../data/actions'
-import { iNotification } from '../data/interfaces'
+import { Notification } from '../data/types'
 
 const Notifications = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
-  const [notifications, setNotifications] = useState<iNotification[]>([])
+  const [notifications, setNotifications] = useState<Notification[]>([])
   useEffect(() => {
       setNotifications(() => [...state.notifications].sort((n1, n2) => n2.time > n1.time ? -1 : 1))
   }, [state.notifications])
@@ -21,7 +21,7 @@ const Notifications = () => {
       setError('')
     }
   }, [error])
-  const handleOpen = (notification: iNotification) => {
+  const handleOpen = (notification: Notification) => {
     try{
       if (state.userInfo) {
         readNotification(notification, state.notifications)

@@ -1,18 +1,18 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Button, Block, Page, Navbar, Toolbar } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { randomColors } from '../data/config'
-import { iCategory } from '../data/interfaces'
+import { Category } from '../data/types'
 
-interface iProps {
+type Props = {
   id: string
 } 
 
-const Categories = (props: iProps) => {
-  const { state } = useContext(StoreContext)
-  const [categories, setCategories] = useState<iCategory[]>([])
+const Categories = (props: Props) => {
+  const { state } = useContext(StateContext)
+  const [categories, setCategories] = useState<Category[]>([])
   useEffect(() => {
     setCategories(() => {
       const categories = state.categories.filter(c => c.parentId === props.id)

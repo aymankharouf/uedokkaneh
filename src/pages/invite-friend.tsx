@@ -1,11 +1,11 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Button } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { inviteFriend, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 
 const InviteFriend = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
   const [nameErrorMessage, setNameErrorMessage] = useState('')

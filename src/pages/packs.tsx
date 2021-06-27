@@ -1,26 +1,26 @@
 import { useContext, useState, useEffect, useRef } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, Link, Badge, Actions, ActionsButton, ActionsLabel } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { sortByList } from '../data/config'
 import { getChildren, productOfText } from '../data/actions'
-import { iPack } from '../data/interfaces'
+import { Pack } from '../data/types'
 
-interface iProps {
+type Props = {
   id: string,
   type: string
 }
-const Packs = (props: iProps) => {
-  const { state } = useContext(StoreContext)
-  const [packs, setPacks] = useState<iPack[]>([])
+const Packs = (props: Props) => {
+  const { state } = useContext(StateContext)
+  const [packs, setPacks] = useState<Pack[]>([])
   const [category] = useState(() => state.categories.find(category => category.id === props.id))
   const [sortBy, setSortBy] = useState('v')
   const sortList = useRef<Actions>(null)
   useEffect(() => {
     setPacks(() => {
       const children = props.type === 'a' ? getChildren(props.id, state.categories) : [props.id]
-      let packs = state.packs.filter(p => !props.id || (props.type === 'f' && state.userInfo?.favorites?.includes(p.productId)) || children.includes(p.categoryId))
+      const packs = state.packs.filter(p => !props.id || (props.type === 'f' && state.userInfo?.favorites?.includes(p.productId)) || children.includes(p.categoryId))
       return packs.sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
     })
   }, [state.packs, state.userInfo, props.id, props.type, state.categories])

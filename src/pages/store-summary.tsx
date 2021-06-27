@@ -1,18 +1,18 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, Toolbar, Button } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { randomColors, storeSummary } from '../data/config'
 
-interface iExtendedSections {
+type ExtendedSections = {
   id: string,
   name: string,
   count: number
 }
 const StoreSummary = () => {
-  const { state } = useContext(StoreContext)
-  const [sections, setSections] = useState<iExtendedSections[]>([])
+  const { state } = useContext(StateContext)
+  const [sections, setSections] = useState<ExtendedSections[]>([])
   useEffect(() => {
     setSections(() => {
       const storePacks = state.packPrices.filter(p => p.storeId === state.customerInfo?.storeId)

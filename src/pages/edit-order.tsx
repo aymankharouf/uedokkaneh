@@ -1,20 +1,20 @@
 import { useContext, useEffect, useState } from 'react'
 import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Icon, Stepper } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import { editOrder, showMessage, showError, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
 import { setup } from '../data/config'
-import { iOrderPack } from '../data/interfaces'
+import { OrderPack } from '../data/types'
 
-interface iProps {
+type Props = {
   id: string
 }
-const EditOrder = (props: iProps) => {
-  const { state, dispatch } = useContext(StoreContext)
+const EditOrder = (props: Props) => {
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [order] = useState(() => state.orders.find(o => o.id === props.id))
-  const [orderBasket, setOrderBasket] = useState<iOrderPack[]>([])
+  const [orderBasket, setOrderBasket] = useState<OrderPack[]>([])
   const [total, setTotal] = useState(0)
   const [overLimit, setOverLimit] = useState(false)
   const [hasChanged, setHasChanged] = useState(false)
