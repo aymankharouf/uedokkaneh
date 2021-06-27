@@ -14,8 +14,8 @@ const Home = () => {
     setAdvert(() => state.adverts.find(a => a.isActive))
   }, [state.adverts])
   useEffect(() => {
-    setNotifications(() => state.userInfo?.notifications?.filter(n => n.status === 'n') || [])
-  }, [state.userInfo])
+    setNotifications(() => state.notifications.filter(n => n.status === 'n') || [])
+  }, [state.notifications])
   useEffect(() => {
     if (state.categories.length === 0) {
       f7.dialog.preloader('')

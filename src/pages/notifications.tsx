@@ -13,22 +13,19 @@ const Notifications = () => {
   const [error, setError] = useState('')
   const [notifications, setNotifications] = useState<iNotification[]>([])
   useEffect(() => {
-    const notifications = state.userInfo?.notifications?.slice()
-    if (notifications) {
-      setNotifications(() => notifications.sort((n1, n2) => n2.time > n1.time ? -1 : 1))
-    }
-  }, [state.userInfo])
+      setNotifications(() => [...state.notifications].sort((n1, n2) => n2.time > n1.time ? -1 : 1))
+  }, [state.notifications])
   useEffect(() => {
     if (error) {
       showError(error)
       setError('')
     }
   }, [error])
-  const handleOpen = (notificationId: string) => {
+  const handleOpen = (notification: iNotification) => {
     try{
       if (state.userInfo) {
-        readNotification(state.userInfo, notificationId)
-        f7.views.current.router.navigate(`/notification-details/${notificationId}`)  
+        readNotification(notification, state.notifications)
+        f7.views.current.router.navigate(`/notification-details/${notification.id}`)  
       }
     } catch(err) {
       setError(getMessage(f7.views.current.router.currentRoute.path, err))
@@ -48,7 +45,7 @@ const Notifications = () => {
                 subtitle={n.status === 'n' ? labels.notRead : labels.read}
                 footer={moment(n.time).fromNow()}
                 key={n.id}
-                onClick={() => handleOpen(n.id)}
+                onClick={() => handleOpen(n)}
               />
             )
           }

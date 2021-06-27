@@ -13,7 +13,7 @@ interface iProps {
 const NotificationDetails = (props: iProps) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [notification] = useState(() => state.userInfo?.notifications?.find(n => n.id === props.id))
+  const [notification] = useState(() => state.notifications.find(n => n.id === props.id)!)
   useEffect(() => {
     if (error) {
       showError(error)
@@ -23,7 +23,7 @@ const NotificationDetails = (props: iProps) => {
   const handleDelete = () => {
     try{
       if (state.userInfo && notification) {
-        deleteNotification(state.userInfo, notification.id)
+        deleteNotification(notification.id, state.notifications)
         showMessage(labels.deleteSuccess)
         f7.views.current.router.back()
       }
@@ -33,17 +33,17 @@ const NotificationDetails = (props: iProps) => {
   }
   return (
     <Page>
-      <Navbar title={notification?.title} backLink={labels.back} />
+      <Navbar title={notification.title} backLink={labels.back} />
       <List form>
         <ListInput 
           name="message" 
-          value={notification?.message}
+          value={notification.message}
           type="textarea" 
           readonly
         />
         <ListInput 
           name="time" 
-          value={moment(notification?.time).fromNow()}
+          value={moment(notification.time).fromNow()}
           type="text" 
           readonly
         />

@@ -29,9 +29,6 @@ const Basket = () => {
   }, [basket])
   useEffect(() => {
     const orderLimit = state.customerInfo?.orderLimit ?? setup.orderLimit
-    console.log('orderlimit = ', state.customerInfo?.orderLimit)
-    console.log('customerOrdersTotals = ', customerOrdersTotals)
-    console.log('totalPrice = ', totalPrice)
     if (customerOrdersTotals + totalPrice > orderLimit){
       setSubmitVisible(false)
     } else {

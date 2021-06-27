@@ -80,7 +80,6 @@ export interface iAlarm {
 export interface iUserInfo {
   mobile: string,
   locationId: string,
-  notifications?: iNotification[],
   friends?: iFriend[],
   ratings?: iRating[],
   favorites?: string[],
@@ -174,7 +173,8 @@ export interface iState {
   adverts: iAdvert[],
   locations: iLocation[],
   passwordRequests: iPasswordRequest[],
-  orderBasket: iOrderPack[]
+  orderBasket: iOrderPack[],
+  notifications: iNotification[]
 }
 
 export interface iAction {

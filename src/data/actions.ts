@@ -2,7 +2,7 @@ import firebase from './firebase'
 import labels from './labels'
 import { randomColors, setup } from './config'
 import { f7 } from 'framework7-react'
-import { iError, iOrderPack, iBasketPack, iCategory, iOrder, iUserInfo, iAlarm, iPack } from './interfaces'
+import { iError, iOrderPack, iBasketPack, iCategory, iOrder, iUserInfo, iAlarm, iPack, iNotification } from './interfaces'
 
 export const getMessage = (path: string, error: iError) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
@@ -88,6 +88,7 @@ export const logout = () => {
 export const addPasswordRequest = (mobile: string) => {
   firebase.firestore().collection('password-requests').add({
     mobile,
+    status: 'n',
     time: firebase.firestore.FieldValue.serverTimestamp()
   })
 }
@@ -223,18 +224,15 @@ export const inviteFriend = (mobile: string, name: string) => {
   })
 }
 
-export const readNotification = (user: iUserInfo, notificationId: string) => {
-  const notifications = user.notifications?.slice()
-  if (notifications) {
-    const notificationIndex = notifications.findIndex(n => n.id === notificationId)
-    notifications.splice(notificationIndex, 1, {
-      ...notifications[notificationIndex],
-      status: 'r'
-    })
-    firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
-      notifications
-    })  
-  }
+export const readNotification = (notification: iNotification, notifications: iNotification[]) => {
+  const otherNotifications = notifications.filter(n => n.id === notification.id)
+  otherNotifications.push({
+    ...notification,
+    status: 'r'
+  })
+  firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
+    notifications
+  })  
 }
 
 export const updateFavorites = (user: iUserInfo, productId: string) => {
@@ -277,15 +275,11 @@ export const editOrder = (order: iOrder, newBasket: iOrderPack[]) => {
   } 
 }
 
-export const deleteNotification = (user: iUserInfo, notificationId: string) => {
-  const notifications = user.notifications?.slice()
-  if (notifications) {
-    const notificationIndex = notifications.findIndex(n => n.id === notificationId)
-    notifications.splice(notificationIndex, 1)
-    firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
-      notifications
-    })  
-  }
+export const deleteNotification = (notificationId: string, notifications: iNotification[]) => {
+  const otherNotifications = notifications.filter(n => n.id !== notificationId)
+  firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
+    notifications: otherNotifications
+  })  
 }
 
 export const notifyFriends = (offerId: string) => {

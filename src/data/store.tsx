@@ -1,7 +1,7 @@
 import { createContext, useReducer, useEffect } from 'react'
 import Reducer from './reducer'
 import firebase from './firebase'
-import { iState, iContext, iCategory, iPack, iPackPrice, iAdvert, iPasswordRequest, iOrder } from './interfaces'
+import { iState, iContext, iCategory, iPack, iPackPrice, iAdvert, iPasswordRequest, iOrder, iUserInfo, iNotification } from './interfaces'
 
 export const StoreContext = createContext({} as iContext)
 
@@ -15,7 +15,8 @@ const Store = (props: any) => {
     adverts: [],
     locations: [],
     passwordRequests: [],
-    orderBasket: []
+    orderBasket: [],
+    notifications: []
   }
   const [state, dispatch] = useReducer(Reducer, initState)
 
@@ -113,7 +114,24 @@ const Store = (props: any) => {
         if (basket) dispatch({type: 'SET_BASKET', payload: basket}) 
         const unsubscribeUser = firebase.firestore().collection('users').doc(user.uid).onSnapshot(doc => {
           if (doc.exists){
-            dispatch({type: 'SET_USER_INFO', payload: doc.data()})
+            const userInfo: iUserInfo = {
+              mobile: doc.data()!.mobile,
+              locationId: doc.data()!.locationId
+            }
+            const notifications: iNotification[] = []
+            if (doc.data()!.notifications) {
+              doc.data()!.notifications.forEach((n: any) => {
+                notifications.push({
+                  id: n.id,
+                  title: n.title,
+                  message: n.message,
+                  status: n.status,
+                  time: n.time.toDate()
+                })
+              })
+            }
+            dispatch({type: 'SET_USER_INFO', payload: userInfo})
+            dispatch({type: 'SET_NOTIFICATIONS', payload: notifications})
           } else {
             firebase.auth().signOut()
           }

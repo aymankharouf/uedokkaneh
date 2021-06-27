@@ -9,8 +9,8 @@ const Panel = () => {
   const { state, dispatch } = useContext(StoreContext)
   const [notifications, setNotifications] = useState<iNotification[]>([])
   useEffect(() => {
-    setNotifications(() => state.userInfo?.notifications?.filter(n => n.status === 'n') || [])
-  }, [state.userInfo])
+    setNotifications(() => state.notifications.filter(n => n.status === 'n') || [])
+  }, [state.notifications])
   const handleLogout = () => {
     logout()
     dispatch({type: 'LOGOUT'})
