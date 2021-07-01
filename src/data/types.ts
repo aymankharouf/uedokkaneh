@@ -174,7 +174,8 @@ export type State = {
   regions: Region[],
   passwordRequests: PasswordRequest[],
   orderBasket: OrderPack[],
-  notifications: Notification[]
+  notifications: Notification[],
+  searchText: string
 }
 
 export type Action = {

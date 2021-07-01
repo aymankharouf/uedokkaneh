@@ -1,9 +1,12 @@
 import { useState, useContext, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toggle, ListItem } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import { addAlarm, showMessage, showError, getMessage } from '../data/actions'
+import { addAlarm, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { alarmTypes } from '../data/config'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonToggle, useIonToast } from '@ionic/react'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
+import { useHistory, useLocation } from 'react-router'
 
 type Props = {
   alarmType: string,
@@ -11,17 +14,19 @@ type Props = {
 }
 const AddAlarm = (props: Props) => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [pack] = useState(() => state.packs.find(p => p.id === props.packId))
   const [price, setPrice] = useState('')
   const [quantity, setQuantity] = useState('')
-  const [priceErrorMessage, setPriceErrorMessage] = useState('')
+  const [priceInvalid, setPriceInvalid] = useState(false)
   const [alternative, setAlternative] = useState('')
   const [alternativeErrorMessage, setAlternativeErrorMessage] = useState('')
   const [offerDays, setOfferDays] = useState('')
   const [isOffer, setIsOffer] = useState(false)
   const [buttonVisible, setButtonVisisble] = useState(false)
   const [currentPrice, setCurrentPrice] = useState<number|undefined>(undefined)
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
   useEffect(() => {
     setCurrentPrice(() => {
       if (props.alarmType === 'cp') {
@@ -34,9 +39,9 @@ const AddAlarm = (props: Props) => {
   useEffect(() => {
     const validatePrice = (value: string) => {
       if (Number(value) > 0 && Number(value) * 100 !== Number(currentPrice)) {
-        setPriceErrorMessage('')
+        setPriceInvalid(false)
       } else {
-        setPriceErrorMessage(labels.invalidPrice)
+        setPriceInvalid(true)
       }  
     }
     if (price) validatePrice(price)
@@ -56,23 +61,14 @@ const AddAlarm = (props: Props) => {
   }, [alternative])
 
   useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
-  useEffect(() => {
     if (!price
     || (isOffer && !offerDays)
     || (props.alarmType === 'aa' && !alternative)
     || (props.alarmType === 'go' && !quantity) 
-    || priceErrorMessage
+    || priceInvalid
     || alternativeErrorMessage) setButtonVisisble(false)
     else setButtonVisisble(true)
-  }, [props.alarmType, price, isOffer, offerDays, alternative, quantity, state.customerInfo, priceErrorMessage, alternativeErrorMessage])
-  const formatPrice = (value: string) => {
-    return Number(value).toFixed(2)
-  } 
+  }, [props.alarmType, price, isOffer, offerDays, alternative, quantity, state.customerInfo, priceInvalid, alternativeErrorMessage])
   const handleSubmit = () => {
     try{
       if (state.customerInfo?.isBlocked) {
@@ -94,106 +90,113 @@ const AddAlarm = (props: Props) => {
         status: 'n'
       }
       addAlarm(alarm)
-      showMessage(labels.sendSuccess)
-      f7.views.current.router.back()
+      message(labels.sendSuccess, 3000)
+      history.replace('/')
     } catch (err) {
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
     }
   }
 
-  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
   return (
-    <Page>
-      <Navbar title={alarmTypes.find(t => t.id === props.alarmType)?.name} backLink={labels.back} />
-      <List form>
-        <ListInput 
-          name="productName" 
-          label={labels.productName}
-          value={pack?.productName}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="packName" 
-          label={labels.packName}
-          value={pack?.name}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="currentPrice" 
-          label={labels.currentPrice}
-          value={((currentPrice || 0) / 100).toFixed(2)}
-          type="number" 
-          readonly
-        />
-        {props.alarmType === 'aa' ?
-          <ListInput 
-            name="alternative" 
-            label={labels.alternative}
-            placeholder={labels.namePlaceholder}
-            clearButton 
-            type="text" 
-            value={alternative} 
-            errorMessage={alternativeErrorMessage}
-            errorMessageForce  
-            onChange={e => setAlternative(e.target.value)}
-            onInputClear={() => setAlternative('')}
-          />
-        : ''}
-        <ListInput 
-          name="price" 
-          label={labels.price}
-          placeholder={labels.pricePlaceholder}
-          clearButton 
-          type="number" 
-          value={price} 
-          errorMessage={priceErrorMessage}
-          errorMessageForce  
-          onChange={e => setPrice(e.target.value)}
-          onInputClear={() => setPrice('')}
-          onBlur={e => setPrice(formatPrice(e.target.value))}
-        />
-        {['eo', 'go'].includes(props.alarmType) ? 
-          <ListInput 
-            name="quantity" 
-            label={labels.quantity}
-            placeholder={labels.quantityPlaceholder}
-            clearButton 
-            type="number" 
-            value={quantity} 
-            onChange={e => setQuantity(e.target.value)}
-            onInputClear={() => setQuantity('')}
-          />
-        : ''}
-        <ListItem>
-          <span>{labels.isOffer}</span>
-          <Toggle 
-            name="isOffer" 
-            color="green" 
-            checked={isOffer} 
-            onToggleChange={() => setIsOffer(!isOffer)}
-          />
-        </ListItem>
-        {isOffer ? 
-          <ListInput 
-            name="offerDays" 
-            label={labels.offerDays}
-            value={offerDays}
-            clearButton 
-            floatingLabel 
-            type="number" 
-            onChange={e => setOfferDays(e.target.value)}
-            onInputClear={() => setOfferDays('')}
-          />
-        : ''}
-      </List>
-      {buttonVisible ?
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
-      : ''}
-    </Page>
+    <IonPage>
+      <Header title={alarmTypes.find(t => t.id === props.alarmType)?.name} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.productName}
+            </IonLabel>
+            <IonInput 
+              value={pack?.productName} 
+              type="text" 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.packName}
+            </IonLabel>
+            <IonInput 
+              value={pack?.name} 
+              type="text" 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.currentPrice}
+            </IonLabel>
+            <IonInput 
+              value={((currentPrice || 0) / 100).toFixed(2)} 
+              type="number" 
+              readonly
+            />
+          </IonItem>
+          {props.alarmType === 'aa' &&
+            <IonItem>
+              <IonLabel position="floating" color="primary">
+                {labels.alternative}
+              </IonLabel>
+              <IonInput 
+                value={alternative} 
+                type="text" 
+                clearInput
+                onIonChange={e => setAlternative(e.detail.value!)} 
+              />
+            </IonItem>
+          }
+          <IonItem>
+            <IonLabel position="floating" color={priceInvalid ? 'danger' : 'primary'}>
+              {labels.price}
+            </IonLabel>
+            <IonInput 
+              value={price} 
+              type="number" 
+              clearInput
+              onIonChange={e => setPrice(e.detail.value!)} 
+              color={priceInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+          {['eo', 'go'].includes(props.alarmType) &&
+            <IonItem>
+              <IonLabel position="floating" color="primary">
+                {labels.quantity}
+              </IonLabel>
+              <IonInput 
+                value={quantity} 
+                type="number" 
+                clearInput
+                onIonChange={e => setQuantity(e.detail.value!)} 
+              />
+            </IonItem>
+          }
+          <IonItem>
+            <IonLabel color="primary">{labels.isOffer}</IonLabel>
+            <IonToggle checked={isOffer} onIonChange={() => setIsOffer(s => !s)}/>
+          </IonItem>
+          {isOffer &&
+            <IonItem>
+              <IonLabel position="floating" color="primary">
+                {labels.offerDays}
+              </IonLabel>
+              <IonInput 
+                value={offerDays} 
+                type="number" 
+                clearInput
+                onIonChange={e => setOfferDays(e.detail.value!)} 
+              />
+            </IonItem>
+          }
+        </IonList>
+      </IonContent>
+      {buttonVisible &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
+      }
+    </IonPage>
   )
 }
 export default AddAlarm

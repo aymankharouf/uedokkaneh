@@ -1,60 +1,63 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { readNotification, getMessage, showError } from '../data/actions'
+import { getMessage, deleteNotification } from '../data/actions'
 import { Notification } from '../data/types'
+import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import Header from './header'
+import { useLocation } from 'react-router'
+import { colors } from '../data/config'
+import { trashOutline } from 'ionicons/icons'
+import Footer from './footer'
 
 const Notifications = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const location = useLocation()
+  const [message] = useIonToast()
   useEffect(() => {
       setNotifications(() => [...state.notifications].sort((n1, n2) => n2.time > n1.time ? -1 : 1))
   }, [state.notifications])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
-  const handleOpen = (notification: Notification) => {
+  const handleDelete = (notification: Notification) => {
     try{
-      if (state.userInfo) {
-        readNotification(notification, state.notifications)
-        f7.views.current.router.navigate(`/notification-details/${notification.id}`)  
-      }
+      deleteNotification(notification.id, state.notifications)
+      message(labels.deleteSuccess, 3000)
     } catch(err) {
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
     }
   }
   return (
-    <Page>
-      <Navbar title={labels.notifications} backLink={labels.back} />
-      <Block>
-        <List mediaList>
-          {notifications.length === 0 ? 
-            <ListItem title={labels.noData} />
-          : notifications.map(n =>
-              <ListItem
-                link="#"
-                title={n.title}
-                subtitle={n.status === 'n' ? labels.notRead : labels.read}
-                footer={moment(n.time).fromNow()}
-                key={n.id}
-                onClick={() => handleOpen(n)}
-              />
+    <IonPage>
+      <Header title={labels.notifications} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          {notifications.length === 0 ?
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
+          : notifications.map(n => 
+              <IonItem key={n.id}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{n.title}</IonText>
+                  <IonText style={{color: colors[1].name}}><p>{n.message}</p></IonText>
+                  <IonText style={{color: colors[2].name}}>{moment(n.time).fromNow()}</IonText>
+                </IonLabel>
+                <IonIcon 
+                  ios={trashOutline} 
+                  slot="end" 
+                  color="danger"
+                  style={{fontSize: '20px', marginRight: '10px'}} 
+                  onClick={()=> handleDelete(n)}
+                />
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

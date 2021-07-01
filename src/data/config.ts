@@ -74,3 +74,22 @@ export const friendStatus = [
   {id: 'o', name: 'مدعو سابقا'},
   {id: 'r', name: 'مستخدم فعلي'}
 ]
+
+export const colors = [
+  {id: 0, name: 'darkblue'},
+  {id: 1, name: 'deeppink'},
+  {id: 2, name: 'darkgreen'},
+  {id: 3, name: 'red'},
+  {id: 4, name: 'purple'},
+  {id: 5, name: 'maroon'},
+  {id: 6, name: 'darkslategray'},
+  {id: 7, name: 'crimson'},
+  {id: 8, name: 'chocolate'},
+  {id: 9, name: 'darkolivegreen'},
+]
+
+export const patterns = {
+  password: /^.{4}$/,
+  name: /^.{3,50}$/,
+  mobile: /^07[7-9][0-9]{7}$/
+}

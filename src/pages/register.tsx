@@ -1,184 +1,134 @@
 import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
-import { f7, Page, Navbar, List, ListInput, Button, ListItem } from 'framework7-react'
-import { registerUser, showMessage, showError, getMessage } from '../data/actions'
+import { registerUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonLoading, useIonToast } from '@ionic/react'
+import Header from './header'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { patterns } from '../data/config'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   type: string
 }
-const StoreOwner = (props: Props) => {
+const Register = () => {
   const { state } = useContext(StateContext)
+  const params = useParams<Params>()
   const [name, setName] = useState('')
-  const [error, setError] = useState('')
-  const [inprocess, setInprocess] = useState(false)
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
   const [storeName, setStoreName] = useState('')
   const [regionId, setRegionId] = useState('')
-  const [nameErrorMessage, setNameErrorMessage] = useState('')
-  const [passwordErrorMessage, setPasswordErrorMessage] = useState('')
-  const [mobileErrorMessage, setMobileErrorMessage] = useState('')
-  const [storeNameErrorMessage, setStoreNameErrorMessage] = useState('')
+  const [nameInvalid, setNameInvalid] = useState(true)
+  const [passwordInvalid, setPasswordInvalid] = useState(true)
+  const [mobileInvalid, setMobileInvalid] = useState(true)
   const [regions] = useState(() => [...state.regions].sort((l1, l2) => l1.ordering - l2.ordering))
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+  const [loading, dismiss] = useIonLoading()
   useEffect(() => {
-    const patterns = {
-      name: /^.{4,50}$/,
-    }
-    const validateName = (value: string) => {
-      if (patterns.name.test(value)){
-        setNameErrorMessage('')
-      } else {
-        setNameErrorMessage(labels.invalidName)
-      }
-    }  
-    if (name) validateName(name)
-  }, [name])
-  useEffect(() => {
-    const patterns = {
-      password: /^.{4}$/,
-    }
-    const validatePassword = (value: string) => {
-      if (patterns.password.test(value)){
-        setPasswordErrorMessage('')
-      } else {
-        setPasswordErrorMessage(labels.invalidPassword)
-      }
-    }
-    if (password) validatePassword(password)
+    setPasswordInvalid(!password || !patterns.password.test(password))
   }, [password])
   useEffect(() => {
-    const patterns = {
-      mobile: /^07[7-9][0-9]{7}$/
-    }
-    const validateMobile = (value: string) => {
-      if (patterns.mobile.test(value)){
-        setMobileErrorMessage('')
-      } else {
-        setMobileErrorMessage(labels.invalidMobile)
-      }
-    }
-    if (mobile) validateMobile(mobile)
+    setNameInvalid(!name || !patterns.name.test(name))
+  }, [name])
+  useEffect(() => {
+    setMobileInvalid(!mobile || !patterns.mobile.test(mobile))
   }, [mobile])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
-    useEffect(() => {
-    if (inprocess) {
-      f7.dialog.preloader(labels.inprocess)
-    } else {
-      f7.dialog.close()
-    }
-  }, [inprocess])
-
-  useEffect(() => {
-    const patterns = {
-      name: /^.{4,50}$/,
-    }
-    const validateStoreName = (value: string) => {
-      if (patterns.name.test(value)){
-        setStoreNameErrorMessage('')
-      } else {
-        setStoreNameErrorMessage(labels.invalidName)
-      }
-    }  
-    if (storeName) validateStoreName(storeName)
-  }, [storeName])
 
   const handleRegister = async () => {
     try{
-      setInprocess(true)
+      loading()
       await registerUser(mobile, name, storeName, regionId, password)
-      setInprocess(false)
-      showMessage(labels.registerSuccess)
-      f7.views.current.router.back()
-      f7.panel.close('right') 
+      dismiss()
+      message(labels.registerSuccess, 3000)
+      history.replace('/')
     } catch (err){
-      setInprocess(false)
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      dismiss()
+      message(getMessage(location.pathname, err), 3000)
     }
   }
 
   return (
-    <Page>
-      <Navbar title={labels.newUser} backLink={labels.back} />
-      <List form>
-        <ListInput
-          label={labels.name}
-          type="text"
-          placeholder={labels.namePlaceholder}
-          name="name"
-          clearButton
-          value={name}
-          errorMessage={nameErrorMessage}
-          errorMessageForce
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-        <ListInput
-          label={labels.mobile}
-          type="number"
-          placeholder={labels.mobilePlaceholder}
-          name="mobile"
-          clearButton
-          value={mobile}
-          errorMessage={mobileErrorMessage}
-          errorMessageForce
-          onChange={e => setMobile(e.target.value)}
-          onInputClear={() => setMobile('')}
-        />
-        <ListInput
-          label={labels.password}
-          type="number"
-          placeholder={labels.passwordPlaceholder}
-          name="password"
-          clearButton
-          value={password}
-          errorMessage={passwordErrorMessage}
-          errorMessageForce
-          onChange={e => setPassword(e.target.value)}
-          onInputClear={() => setPassword('')}
-        />
-        {props.type === 'o' ? 
-          <ListInput
-            label={labels.storeName}
-            type="text"
-            placeholder={labels.namePlaceholder}
-            name="storeName"
-            clearButton
-            value={storeName}
-            errorMessage={storeNameErrorMessage}
-            errorMessageForce
-            onChange={e => setStoreName(e.target.value)}
-            onInputClear={() => setStoreName('')}
-          />
-        : ''}
-        <ListItem
-          title={labels.region}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="regionId" value={regionId} onChange={e => setRegionId(e.target.value)}>
-            <option value=""></option>
-            {regions.map(r => 
-              <option key={r.id} value={r.id}>{r.name}</option>
-            )}
-          </select>
-        </ListItem>
-      </List>
-      {!name || !mobile || !password || !regionId || (props.type === 'o' && !storeName) || nameErrorMessage || mobileErrorMessage || passwordErrorMessage || storeNameErrorMessage ? '' :
-        <Button text={labels.register} large onClick={() => handleRegister()} />
+    <IonPage>
+      <Header title={labels.newUser} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color={nameInvalid ? 'danger' : 'primary'}>
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              placeholder={labels.namePlaceholder}
+              autofocus
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
+              color={nameInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color={mobileInvalid ? 'danger' : 'primary'}>
+              {labels.mobile}
+            </IonLabel>
+            <IonInput 
+              value={mobile} 
+              type="number" 
+              placeholder={labels.mobilePlaceholder}
+              clearInput
+              onIonChange={e => setMobile(e.detail.value!)} 
+              color={mobileInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color={passwordInvalid ? 'danger' : 'primary'}>
+              {labels.password}
+            </IonLabel>
+            <IonInput 
+              value={password} 
+              type="number" 
+              placeholder={labels.passwordPlaceholder}
+              clearInput
+              onIonChange={e => setPassword(e.detail.value!)} 
+              color={passwordInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+          {params.type === 'o' &&
+            <IonItem>
+              <IonLabel position="floating" color="primary">
+                {labels.storeName}
+              </IonLabel>
+              <IonInput 
+                value={storeName} 
+                type="text" 
+                clearInput
+                onIonChange={e => setStoreName(e.detail.value!)} 
+              />
+            </IonItem>
+          }
+          <IonItem>
+            <IonLabel position="floating" color="primary">{labels.region}</IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={regionId}
+              onIonChange={e => setRegionId(e.detail.value)}
+            >
+              {regions.map(r => <IonSelectOption key={r.id} value={r.id}>{r.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {regionId && (params.type === 'n' || storeName) && !nameInvalid && !mobileInvalid && !passwordInvalid &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleRegister} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
       }
-    </Page>
+    </IonPage>
   )
 }
-export default StoreOwner
+export default Register

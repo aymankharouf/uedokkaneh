@@ -1,28 +1,28 @@
 import { useContext, useEffect, useState, useRef } from 'react'
-import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Link, Icon, Stepper, Actions, ActionsButton, Badge } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import { showError, getMessage, quantityText, getBasket } from '../data/actions'
+import { getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
-import { setup } from '../data/config'
+import { colors, setup } from '../data/config'
 import { BigBasketPack } from '../data/types'
+import { IonActionSheet, IonButton, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
+import Header from './header'
+import { useHistory, useLocation } from 'react-router'
 
 const Basket = () => {
   const { state, dispatch } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [submitVisible, setSubmitVisible] = useState(true)
   const [currentPack, setCurrentPack] = useState<BigBasketPack | undefined>(undefined)
   const [basket, setBasket] = useState<BigBasketPack[]>([])
   const [totalPrice, setTotalPrice] = useState(0)
   const [weightedPacks, setWeightedPacks] = useState<BigBasketPack[]>([])
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+  const [actionOpened, setActionOpened] = useState(false)
   const [customerOrdersTotals] = useState(() => {
     const activeOrders = state.orders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
     return activeOrders.reduce((sum, o) => sum + o.total, 0)
   })
-  const hintsList = useRef<Actions>(null)
-  useEffect(() => {
-    if (state.basket.length === 0) f7.views.current.router.navigate('/home/', {reloadAll: true})
-    else setBasket(getBasket(state.basket, state.packs))
-  }, [state.basket, state.packs])
   useEffect(() => {
     setTotalPrice(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0))
     setWeightedPacks(() => basket.filter(p => p.byWeight))
@@ -35,21 +35,15 @@ const Basket = () => {
       setSubmitVisible(true)
     }
   }, [state.customerInfo, customerOrdersTotals, totalPrice])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
 
   const handleConfirm = () => {
     try{
       if (state.customerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
-      f7.views.current.router.navigate('/confirm-order/')
+      history.push('/confirm-order')
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   const handleIncrease = (pack: BigBasketPack) => {
@@ -60,71 +54,112 @@ const Basket = () => {
         throw new Error('limitOverFlow')
       }  
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   const handleHints = (pack: BigBasketPack) => {
     setCurrentPack(pack)
-    hintsList.current?.open()
+    setActionOpened(true)
   }
+  let i = 0
   return(
-    <Page>
-    <Navbar title={labels.basket} backLink={labels.back} />
-    <Block>
-      <List mediaList>
-        {basket.map(p => 
-          <ListItem
-            title={p.productName}
-            subtitle={p.productAlias}
-            text={p.packName}
-            footer={`${labels.totalPrice}:${p.totalPriceText}`}
-            key={p.packId}
-            className={(currentPack && currentPack.packId === p.packId) ? 'selected' : ''}
-          >
-            <img src={p.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-            <div className="list-subtext1">{p.priceText}</div>
-            <div className="list-subtext2">{`${labels.quantity}: ${quantityText(p.quantity)}`}</div>
-            {p.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-            {p.price === 0 ? '' : 
-              <Stepper 
-                slot="after" 
-                fill
-                buttonsOnly
-                onStepperPlusClick={() => handleIncrease(p)}
-                onStepperMinusClick={() => dispatch({type: 'DECREASE_QUANTITY', payload: p})}
-              />
-            }
-            {p.otherProducts + p.otherOffers + p.otherPacks === 0 ? '' : <Link className="hints" slot="footer" iconMaterial="warning" iconColor="red" onClick={()=> handleHints(p)}/>}
-          </ListItem>
-        )}
-      </List>
-      <p className="note">{weightedPacks.length > 0 ? labels.weightedPricesNote : ''}</p>
-    </Block>
-    {submitVisible ? 
-      <Fab position="center-bottom" slot="fixed" text={`${labels.submit} ${(totalPrice / 100).toFixed(2)}`} color="green" onClick={() => handleConfirm()}>
-        <Icon material="done"></Icon>
-      </Fab>
-    : <Fab position="center-bottom" slot="fixed" text={labels.limitOverFlowNote} color="red" href="/help/ol">
-        <Icon material="report_problem"></Icon>
-      </Fab>
-    }
-    <Actions ref={hintsList}>
-      {currentPack?.otherProducts === 0 ? '' :
-        <ActionsButton onClick={() => f7.views.current.router.navigate(`/hints/${currentPack?.packId}/type/p`)}>{labels.otherProducts}</ActionsButton>
-      }
-      {currentPack?.otherOffers === 0 ? '' :
-        <ActionsButton onClick={() => f7.views.current.router.navigate(`/hints/${currentPack?.packId}/type/o`)}>{labels.otherOffers}</ActionsButton>
-      }
-      {currentPack?.otherPacks === 0 ? '' :
-        <ActionsButton onClick={() => f7.views.current.router.navigate(`/hints/${currentPack?.packId}/type/w`)}>{labels.otherPacks}</ActionsButton>
-      }
-    </Actions>
+    <IonPage>
+    <Header title={labels.basket} />
+    <IonContent fullscreen>
+      <IonList className="ion-padding">
+        {basket.length === 0 ?
+          <IonItem> 
+            <IonLabel>{labels.noData}</IonLabel>
+          </IonItem>
+        : basket.map(p => 
+          <IonItem key={p.packId}>
+          <IonThumbnail slot="start">
+            <IonImg src={p.imageUrl} alt={labels.noImage} />
+          </IonThumbnail>
+          <IonLabel>
+            <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
+            <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
+            <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+            <IonText style={{color: colors[3].name}}>{p.priceText}</IonText>
+            <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity)}`}</IonText>
+          </IonLabel>
+          <IonLabel slot="end" className="price">{p.price!.toFixed(2)}</IonLabel>
+        </IonItem>    
 
-    <Toolbar bottom>
-      <Link href="/home/" iconMaterial="home" />
-      <Link href="#" iconMaterial="delete" onClick={() => dispatch({type: 'CLEAR_BASKET'})} />
-    </Toolbar>
-  </Page>
+          // <ListItem
+          //   title={p.productName}
+          //   subtitle={p.productAlias}
+          //   text={p.packName}
+          //   footer={`${labels.totalPrice}:${p.totalPriceText}`}
+          //   key={p.packId}
+          //   className={(currentPack && currentPack.packId === p.packId) ? 'selected' : ''}
+          // >
+          //   <img src={p.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
+          //   <div className="list-subtext1">{p.priceText}</div>
+          //   <div className="list-subtext2">{`${labels.quantity}: ${quantityText(p.quantity)}`}</div>
+          //   {p.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
+          //   {p.price === 0 ? '' : 
+          //     <Stepper 
+          //       slot="after" 
+          //       fill
+          //       buttonsOnly
+          //       onStepperPlusClick={() => handleIncrease(p)}
+          //       onStepperMinusClick={() => dispatch({type: 'DECREASE_QUANTITY', payload: p})}
+          //     />
+          //   }
+          //   {p.otherProducts + p.otherOffers + p.otherPacks === 0 ? '' : <Link className="hints" slot="footer" iconMaterial="warning" iconColor="red" onClick={()=> handleHints(p)}/>}
+          // </ListItem>
+        )}
+      </IonList>
+      <p className="note">{weightedPacks.length > 0 ? labels.weightedPricesNote : ''}</p>
+    </IonContent>
+    {submitVisible ? 
+      <div className="ion-text-center">
+        <IonButton 
+          fill="solid" 
+          shape="round"
+          color="secondary"
+          style={{width: '10rem'}}
+          onClick={handleConfirm}
+        >
+          {`${labels.submit} ${(totalPrice / 100).toFixed(2)}`}
+        </IonButton>
+      </div>
+    : 
+      <div className="ion-text-center">
+        <IonButton 
+          fill="solid" 
+          shape="round"
+          color="danger"
+          style={{width: '10rem'}}
+          onClick={() => history.push('/help/ol')}
+        >
+          {labels.limitOverFlowNote}
+        </IonButton>
+      </div>
+    }
+    <IonActionSheet
+      isOpen={actionOpened}
+      onDidDismiss={() => setActionOpened(false)}
+      buttons={[
+        {
+          text: labels.otherProducts,
+          cssClass: currentPack && currentPack.otherProducts > 0 ? colors[i++ % 10].name : 'ion-hide',
+          handler: () => history.push(`/hints/${currentPack?.packId}/type/p`)
+        },
+        {
+          text: labels.otherOffers,
+          cssClass: currentPack && currentPack.otherOffers > 0 ? colors[i++ % 10].name : 'ion-hide',
+          handler: () => history.push(`/hints/${currentPack?.packId}/type/o`)
+        },
+        {
+          text: labels.otherPacks,
+          cssClass: currentPack && currentPack.otherPacks > 0 ? colors[i++ % 10].name : 'ion-hide',
+          handler: () => history.push(`/hints/${currentPack?.packId}/type/w`)
+        },
+      ]}
+    />
+  </IonPage>
   )
 }
 export default Basket

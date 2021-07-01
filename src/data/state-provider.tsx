@@ -19,7 +19,8 @@ const StateProvider = ({children}: Props) => {
     regions: [],
     passwordRequests: [],
     orderBasket: [],
-    notifications: []
+    notifications: [],
+    searchText: ''
   }
   const [state, dispatch] = useReducer(Reducer, initState)
 

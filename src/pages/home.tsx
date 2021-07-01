@@ -1,52 +1,87 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Page, Navbar, NavLeft, NavTitle, Link, Toolbar, NavTitleLarge, Block, Button } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
-import MainCategories from './main-categories'
 import { StateContext } from '../data/state-provider'
-import { Advert, Notification } from '../data/types'
+import { Advert } from '../data/types'
+import { Category } from '../data/types'
+import { IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonLoading, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react'
+import {colors} from '../data/config'
+import Footer from './footer'
 
 const Home = () => {
   const { state } = useContext(StateContext)
   const [advert, setAdvert] = useState<Advert | undefined>(undefined)
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [notifications, setNotifications] = useState(0)
+  const [categories, setCategories] = useState<Category[]>([])
   useEffect(() => {
     setAdvert(() => state.adverts.find(a => a.isActive))
   }, [state.adverts])
   useEffect(() => {
-    setNotifications(() => state.notifications.filter(n => n.status === 'n') || [])
+    setNotifications(() => state.notifications.filter(n => n.status === 'n').length)
   }, [state.notifications])
   useEffect(() => {
-    if (state.categories.length === 0) {
-      f7.dialog.preloader('')
-    } else {
-      f7.dialog.close()
-    }
+    setCategories(() => {
+      const categories = state.categories.filter(c => c.parentId === '0')
+      return categories.sort((c1, c2) => c1.ordering - c2.ordering)  
+    })
   }, [state.categories])
-
+  let i = 0
   return (
-    <Page>
-      <Navbar large>
-        <NavLeft>
-          <Link iconMaterial="menu" panelOpen="right" iconBadge={notifications.length} badgeColor="red" />
-        </NavLeft>
-        <NavTitle sliding>
-          <img src="/dokaneh_logo.png" alt="logo" className="logo" />
-          <span className='banner'>{labels.banner}</span>
-        </NavTitle>
-        <NavTitleLarge>
-          <img src="/dokaneh_logo.png" alt="logo" className="logo" />
-          <span className='banner'>{labels.banner}</span>
-        </NavTitleLarge>
-      </Navbar>
-      <Block>
-      {advert ? <Button href="/advert/" large outline text={advert.title} className="sections" /> : ''}
-      <MainCategories/>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar isHome="1"/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <IonLoading isOpen={state.categories.length === 0} />
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonMenuButton />
+            {notifications > 0 && 
+              <IonBadge className="badge" style={{left: '20px'}}>
+                {notifications}
+              </IonBadge>
+            }
+          </IonButtons>
+          <IonTitle><img src="/dokaneh_logo.png" alt="logo" style={{width: '120px', marginBottom: '-5px'}} /></IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent fullscreen>
+        <IonHeader collapse="condense">
+          <IonToolbar>
+            <IonTitle size="large"><img src="/dokaneh_logo.png" alt="logo" style={{width: '120px', marginBottom: '-15px'}} /></IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        {advert && 
+          <IonButton 
+            routerLink="/advert" 
+            expand="block" 
+            shape="round" 
+            fill="outline"
+            className="advert"
+          >
+            {advert.title}
+          </IonButton>
+        }
+        <IonButton 
+          routerLink="/packs/a/0"
+          expand="block"
+          shape="round"
+          className={colors[i++ % 10].name}
+          style={{margin: '0.9rem'}}
+        >
+          {labels.allProducts}
+        </IonButton>
+        {categories.map(c => 
+          <IonButton
+            routerLink={c.isLeaf ? `/packs/n/${c.id}` : `/categories/${c.id}`} 
+            expand="block"
+            shape="round"
+            className={colors[i++ % 10].name}
+            style={{margin: '0.9rem'}}
+            key={c.id}
+          >
+            {c.name}
+          </IonButton>
+        )}
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

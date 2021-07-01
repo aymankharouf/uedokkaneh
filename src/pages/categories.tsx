@@ -1,63 +1,58 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Button, Block, Page, Navbar, Toolbar } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
-import { randomColors } from '../data/config'
+import { colors } from '../data/config'
 import { Category } from '../data/types'
+import {IonButton, IonContent, IonLoading, IonPage} from '@ionic/react'
+import { useParams } from 'react-router'
+import Header from './header'
+import Footer from './footer'
 
-type Props = {
+type Params = {
   id: string
 } 
-
-const Categories = (props: Props) => {
+const Categories = () => {
   const { state } = useContext(StateContext)
+  const params = useParams<Params>()
   const [categories, setCategories] = useState<Category[]>([])
+  const [currentCategory] = useState(() => state.categories.find(c => c.id === params.id))
   useEffect(() => {
     setCategories(() => {
-      const categories = state.categories.filter(c => c.parentId === props.id)
+      const categories = state.categories.filter(c => c.parentId === params.id)
       return categories.sort((c1, c2) => c1.ordering - c2.ordering)
     })
-  }, [state.categories, state.packs, props.id])
-  useEffect(() => {
-    if (state.packs.length === 0) {
-      f7.dialog.preloader('')
-    } else {
-      f7.dialog.close()
-    }
-  }, [state.packs])
+  }, [state.categories, params.id])
 
   let i = 0
   return(
-    <Page>
-      <Navbar title={state.categories.find(c => c.id === props.id)?.name} backLink={labels.back} />
-      <Block>
-        <Button 
-            text={labels.allProducts}
-            large 
-            fill 
-            className="sections" 
-            color={randomColors[i++ % 10].name} 
-            href={`/packs/${props.id}/type/a`} 
-          />
-        {categories.map(c => {
-          return (
-            <Button 
-              text={c.name}
-              large 
-              fill 
-              className="sections" 
-              color={randomColors[i++ % 10].name} 
-              href={c.isLeaf ? `/packs/${c.id}/type/n` : `/categories/${c.id}`} 
-              key={c.id}
-            />
-          )
-        })}
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar isHome="1"/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <IonLoading isOpen={state.categories.length === 0} />
+      <Header title={currentCategory?.name} />
+      <IonContent fullscreen>
+        <IonButton 
+          routerLink={`/packs/a/${params.id}/0`} 
+          expand="block"
+          shape="round"
+          className={colors[i++ % 10].name}
+          style={{margin: '0.9rem'}}
+        >
+          {labels.allProducts}
+        </IonButton>
+        {categories.map(c => 
+          <IonButton
+            routerLink={c.isLeaf ? `/packs/c/${c.id}/0` : `/categories/${c.id}`} 
+            expand="block"
+            shape="round"
+            className={colors[i++ % 10].name}
+            style={{margin: '0.9rem'}} 
+            key={c.id}
+          >
+            {c.name}
+          </IonButton>
+        )}
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 
