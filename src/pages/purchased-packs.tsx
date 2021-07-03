@@ -1,13 +1,17 @@
-import { useContext, useEffect, useState, useRef } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Actions, ActionsButton, Icon, Link } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
+import { useContext, useEffect, useState } from 'react'
 import { StateContext } from '../data/state-provider'
 import { quantityText, addQuantity } from '../data/actions'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { showMessage, showError, getMessage, rateProduct } from '../data/actions'
+import { getMessage, rateProduct } from '../data/actions'
 import { Order } from '../data/types'
+import { IonActionSheet, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useLocation } from 'react-router'
+import { colors } from '../data/config'
+import { heartDislikeOutline, heartHalfOutline, heartOutline } from 'ionicons/icons'
 
 type PurchasedPack = {
   packId: string,
@@ -25,17 +29,13 @@ type PurchasedPack = {
 
 const PurchasedPacks = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
 	const [purchasedPacks, setPurchasedPacks] = useState<PurchasedPack[]>([])
   const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([])
   const [currentPack, setCurrentPack] = useState<PurchasedPack | undefined>(undefined)
-  const actionsList = useRef<Actions>(null)
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  const [ratingOpened, setRatingOpened] = useState(false)
+  const location = useLocation()
+  const [message] = useIonToast()
+
   useEffect(() => {
     setDeliveredOrders(() => {
       const deliveredOrders = state.orders.filter(o => o.status === 'd')
@@ -82,61 +82,81 @@ const PurchasedPacks = () => {
       }
       if (currentPack) {
         rateProduct(currentPack.productId, value)
-        showMessage(labels.ratingSuccess)  
+        message(labels.ratingSuccess, 3000)  
       }
     } catch(err) {
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
     }
   }
   const handleActions = (pack: PurchasedPack)=> {
     setCurrentPack(pack)
-    actionsList.current?.open()
+    setRatingOpened(true)
   }
   let i = 0
   return(
-    <Page>
-      <Navbar title={labels.purchasedPacks} backLink={labels.back} />
-      <Block>
-				<List mediaList>
+    <IonPage>
+      <Header title={labels.purchasedPacks} />
+      <IonContent fullscreen>
+				<IonList className="ion-padding">
 					{purchasedPacks.length === 0 ? 
-						<ListItem title={labels.noData} /> 
+						<IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
 					: purchasedPacks.map(p => 
-							<ListItem
-								title={`${p.productName}${p.productAlias ? '-' + p.productAlias : ''}`}
-								subtitle={p.packName}
-                text={`${labels.bestPrice}: ${(p.bestPrice / 100).toFixed(2)}`}
-                footer={`${labels.lastTime}: ${moment(p.lastTime).fromNow()}`}
-								key={i++}
-                className={currentPack?.packId === p.packId ? 'selected' : ''}
-              >
-                <img src={p.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-                <div className="list-subtext1">{`${labels.lastPrice}: ${(p.lastPrice / 100).toFixed(2)}`}</div>
-                <div className="list-subtext2">{`${labels.quantity}: ${quantityText(p.quantity)}`}</div>
-                <div className="list-subtext3">{`${labels.lastQuantity}: ${quantityText(p.lastQuantity)}`}</div>
-                {state.userInfo?.ratings?.find(r => r.productId === p.productId) ? '' : <Link slot="after" iconMaterial="favorite_border" onClick={()=> handleActions(p)}/> }
-							</ListItem>
+              <IonItem key={i++} className={currentPack?.packId === p.packId ? 'selected' : ''}>
+                <IonThumbnail slot="start">
+                  <IonImg src={p.imageUrl} alt={labels.noImage} />
+                </IonThumbnail>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                  <IonText style={{color: colors[3].name}}>{`${labels.bestPrice}: ${(p.bestPrice / 100).toFixed(2)}`}</IonText>
+                  <IonText style={{color: colors[4].name}}>{`${labels.lastPrice}: ${(p.lastPrice / 100).toFixed(2)}`}</IonText>
+                  <IonText style={{color: colors[5].name}}>{`${labels.quantity}: ${quantityText(p.quantity)}`}</IonText>
+                  <IonText style={{color: colors[6].name}}>{`${labels.lastQuantity}: ${quantityText(p.lastQuantity)}`}</IonText>
+                  <IonText style={{color: colors[7].name}}>{`${labels.lastTime}: ${moment(p.lastTime).fromNow()}`}</IonText>
+                </IonLabel>
+                {!state.userInfo?.ratings?.find(r => r.productId === p.productId) &&
+                  <IonButtons slot="end" onClick={() => handleActions(p)}>
+                    <IonIcon 
+                      ios={heartOutline} 
+                      color="primary" 
+                      style={{fontSize: '25px', marginRight: '5px'}} 
+                    />
+                  </IonButtons>
+                }
+              </IonItem>
 						)
 					}
-				</List>
-      </Block>
-      <Actions ref={actionsList}>
-        <ActionsButton onClick={() => handleRate(5)}>
-          {labels.rateGood}
-          <Icon material="thumb_up" color="green"></Icon>
-        </ActionsButton>
-        <ActionsButton onClick={() => handleRate(3)}>
-          {labels.rateMiddle}
-          <Icon material="thumbs_up_down" color="blue"></Icon>
-        </ActionsButton>
-        <ActionsButton onClick={() => handleRate(1)}>
-          {labels.rateBad}
-          <Icon material="thumb_down" color="red"></Icon>
-        </ActionsButton>
-      </Actions>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+				</IonList>
+      </IonContent>
+      <IonActionSheet
+        isOpen={ratingOpened}
+        onDidDismiss={() => setRatingOpened(false)}
+        buttons={[
+          {
+            text: labels.rateGood,
+            icon: heartOutline,
+            cssClass: 'good',
+            handler: () => handleRate(5)
+          },
+          {
+            text: labels.rateMiddle,
+            icon: heartHalfOutline,
+            cssClass: 'medium',
+            handler: () => handleRate(3)
+          },
+          {
+            text: labels.rateBad,
+            icon: heartDislikeOutline,
+            cssClass: 'bad',
+            handler: () => handleRate(1)
+          },
+        ]}
+      />
+      <Footer />
+    </IonPage>
   )
 }
 

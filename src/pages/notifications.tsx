@@ -18,7 +18,7 @@ const Notifications = () => {
   const location = useLocation()
   const [message] = useIonToast()
   useEffect(() => {
-      setNotifications(() => [...state.notifications].sort((n1, n2) => n2.time > n1.time ? -1 : 1))
+      setNotifications(() => [...state.notifications].sort((n1, n2) => n1.time > n2.time ? -1 : 1))
   }, [state.notifications])
   const handleDelete = (notification: Notification) => {
     try{

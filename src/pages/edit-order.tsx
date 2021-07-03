@@ -1,23 +1,29 @@
 import { useContext, useEffect, useState } from 'react'
-import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Icon, Stepper } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import { editOrder, showMessage, showError, getMessage, quantityDetails } from '../data/actions'
+import { editOrder, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
-import BottomToolbar from './bottom-toolbar'
-import { setup } from '../data/config'
+import { setup, colors } from '../data/config'
 import { OrderPack } from '../data/types'
+import { IonBadge, IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { addOutline, removeOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const EditOrder = (props: Props) => {
+const EditOrder = () => {
   const { state, dispatch } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [order] = useState(() => state.orders.find(o => o.id === props.id))
+  const params = useParams<Params>()
+  const [order] = useState(() => state.orders.find(o => o.id === params.id))
   const [orderBasket, setOrderBasket] = useState<OrderPack[]>([])
   const [total, setTotal] = useState(0)
   const [overLimit, setOverLimit] = useState(false)
   const [hasChanged, setHasChanged] = useState(false)
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
   const [customerOrdersTotals] = useState(() => {
     const activeOrders = state.orders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
     return activeOrders.reduce((sum, o) => sum + o.total, 0)
@@ -60,12 +66,6 @@ const EditOrder = (props: Props) => {
     }
   }, [state.customerInfo, customerOrdersTotals, total])
 
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleSubmit = () => {
     try{
       if (state.customerInfo?.isBlocked) {
@@ -73,57 +73,81 @@ const EditOrder = (props: Props) => {
       }
       if (order) {
         editOrder(order, state.orderBasket)
-        showMessage(order.status === 'n' ? labels.editSuccess : labels.sendSuccess)
+        message(order.status === 'n' ? labels.editSuccess : labels.sendSuccess, 3000)
         dispatch({type: 'CLEAR_ORDER_BASKET'})
-        f7.views.current.router.back()  
+        history.goBack()  
       }
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={labels.editOrder} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.editOrder} />
+      <IonContent fullscreen>
+        <IonList className="ion-padding">
           {orderBasket.map(p =>
-            <ListItem
-              title={p.productName}
-              subtitle={p.productAlias}
-              text={p.packName}
-              footer={`${labels.price}: ${(p.gross / 100).toFixed(2)}`}
-              after={p.packInfo ? '' : labels.unAvailableNote}
-              key={p.packId}
-            >
-              <div className="list-subtext1">{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</div>
-              <div className="list-subtext2">{quantityDetails(p)}</div>
-              {p.packInfo ? 
-                <Stepper
-                  slot="after"
-                  fill
-                  buttonsOnly
-                  onStepperPlusClick={() => dispatch({type: 'INCREASE_ORDER_QUANTITY', payload: p})}
-                  onStepperMinusClick={() => dispatch({type: 'DECREASE_ORDER_QUANTITY', payload: p})}
-                />
-              : ''}
-            </ListItem>
+            <IonItem key={p.packId}>
+              <IonThumbnail slot="start">
+                <IonImg src={p.imageUrl} alt={labels.noImage} />
+              </IonThumbnail>
+              <IonLabel>
+                <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>
+                <IonText style={{color: colors[4].name}}>{quantityDetails(p)}</IonText>
+                <IonText style={{color: colors[5].name}}>{`${labels.price}: ${(p.gross / 100).toFixed(2)}`}</IonText>
+                {!p.packInfo && <IonBadge color="danger">{labels.unAvailableNote}</IonBadge>}
+              </IonLabel>
+              {p.packInfo && <>
+                <IonButtons slot="end" onClick={() => dispatch({type: 'DECREASE_ORDER_QUANTITY', payload: p})}>
+                  <IonIcon 
+                    ios={removeOutline} 
+                    color="primary" 
+                    style={{fontSize: '25px', marginRight: '5px'}} 
+                  />
+                </IonButtons>
+                <IonButtons slot="end" onClick={() => dispatch({type: 'INCREASE_ORDER_QUANTITY', payload: p})}>
+                  <IonIcon 
+                    ios={addOutline} 
+                    color="primary" 
+                    style={{fontSize: '25px', marginRight: '5px'}} 
+                  />
+                </IonButtons>
+              </>}
+            </IonItem>    
           )}
-        </List>
-      </Block>
+        </IonList>
+      </IonContent>
       {(!overLimit && hasChanged) &&
-        <Fab position="center-bottom" slot="fixed" text={`${labels.submit} ${(total / 100).toFixed(2)}`} color="green" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+        <div className="ion-text-center">
+          <IonButton 
+            fill="solid" 
+            shape="round"
+            color="secondary"
+            style={{width: '10rem'}}
+            onClick={handleSubmit}
+          >
+            {`${labels.submit} ${(total / 100).toFixed(2)}`}
+          </IonButton>
+        </div>
       }
       {overLimit && 
-        <Fab position="center-bottom" slot="fixed" text={labels.limitOverFlowNote} color="red" href="/help/ol">
-          <Icon material="report_problem"></Icon>
-        </Fab>
+        <div className="ion-text-center">
+          <IonButton 
+            fill="solid" 
+            shape="round"
+            color="danger"
+            style={{width: '10rem'}}
+            onClick={() => history.push('/help/ol')}
+          >
+            {labels.limitOverFlowNote}
+          </IonButton>
+        </div>
       }
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      <Footer />
+    </IonPage>
   )
 }
 export default EditOrder

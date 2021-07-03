@@ -1,29 +1,32 @@
-import { useContext, useState, useEffect, useRef } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, Link, Badge, Actions, ActionsButton, ActionsLabel } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
+import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { sortByList } from '../data/config'
+import { sortByList, colors } from '../data/config'
 import { getChildren, productOfText } from '../data/actions'
 import { Pack } from '../data/types'
+import { IonActionSheet, IonBadge, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonText, IonThumbnail } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useParams } from 'react-router'
 
-type Props = {
+type Params = {
   id: string,
   type: string
 }
-const Packs = (props: Props) => {
+const Packs = () => {
   const { state } = useContext(StateContext)
+  const params = useParams<Params>()
   const [packs, setPacks] = useState<Pack[]>([])
-  const [category] = useState(() => state.categories.find(category => category.id === props.id))
+  const [category] = useState(() => state.categories.find(category => category.id === params.id))
   const [sortBy, setSortBy] = useState('v')
-  const sortList = useRef<Actions>(null)
+  const [actionOpened, setActionOpened] = useState(false)
   useEffect(() => {
     setPacks(() => {
-      const children = props.type === 'a' ? getChildren(props.id, state.categories) : [props.id]
-      const packs = state.packs.filter(p => !props.id || (props.type === 'f' && state.userInfo?.favorites?.includes(p.productId)) || children.includes(p.categoryId))
+      const children = params.type === 'a' ? getChildren(params.id, state.categories) : [params.id]
+      const packs = state.packs.filter(p => !params.id || (params.type === 'f' && state.userInfo?.favorites?.includes(p.productId)) || children.includes(p.categoryId))
       return packs.sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
     })
-  }, [state.packs, state.userInfo, props.id, props.type, state.categories])
+  }, [state.packs, state.userInfo, params.id, params.type, state.categories])
   const handleSorting = (sortByValue: string) => {
     setSortBy(sortByValue)
     switch(sortByValue){
@@ -45,70 +48,66 @@ const Packs = (props: Props) => {
       default:
     }
   }
+  let i = 0
   return(
-    <Page>
-      <Navbar title={category?.name || (props.type === 'f' ? labels.favorites : labels.allProducts)} backLink={labels.back}>
-        <NavRight>
-          <Link searchbarEnable=".searchbar" iconMaterial="search"></Link>
-        </NavRight>
-        <Searchbar
-          className="searchbar"
-          searchContainer=".search-list"
-          searchIn=".item-inner"
-          clearButton
-          expandable
-          placeholder={labels.search}
-        />
-      </Navbar>
-
-      <Block>
-        <List className="searchbar-not-found">
-          <ListItem title={labels.noData} />
-        </List>
-        <List mediaList className="search-list searchbar-found">
+    <IonPage>
+      <Header title={category?.name || (params.type === 'f' ? labels.favorites : labels.allProducts)} />
+      <IonContent fullscreen>
+        <IonList className="ion-padding">
           {packs.length > 1 &&
-            <ListItem 
-              title={labels.sortBy} 
-              after={sortByList.find(o => o.id === sortBy)?.name}
-              onClick={() => sortList.current?.open()}
-            />
+            <IonItem>
+              <IonLabel position="floating" color="primary">{labels.sortBy}</IonLabel>
+              <IonSelect 
+                ok-text={labels.ok} 
+                cancel-text={labels.cancel} 
+                value={sortBy}
+                onIonChange={e => setSortBy(e.detail.value)}
+              >
+                {sortByList.map(s => <IonSelectOption key={s.id} value={s.id}>{s.name}</IonSelectOption>)}
+              </IonSelect>
+            </IonItem>
           }
           {packs.length === 0 ?
-            <ListItem title={labels.noData} />
-          : packs.map(p => {
-              const categoryInfo = state.categories.find(c => c.id === p.categoryId)
-              return (
-                <ListItem
-                  link={`/pack-details/${p.id}/type/c`}
-                  title={p.productName}
-                  subtitle={p.productAlias}
-                  text={p.name}
-                  footer={`${labels.category}: ${categoryInfo?.name}`}
-                  after={p.isOffer || p.offerEnd ? '' : (p.price / 100).toFixed(2)}
-                  key={p.id}
-                >
-                  <img src={p.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-                  <div className="list-subtext1">{p.productDescription}</div>
-                  <div className="list-subtext2">{productOfText(p.trademark, p.country)}</div>
-                  {(p.isOffer || p.offerEnd) && <Badge slot="after" color="green">{(p.price / 100).toFixed(2)}</Badge>}
-                  {p.closeExpired && <Badge slot="text" color="red">{labels.closeExpired}</Badge>}
-                </ListItem>
-              )
-            })
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
+          : packs.map(p => 
+              <IonItem key={p.id} routerLink={`/pack-details/${p.id}/c`}>
+                <IonThumbnail slot="start">
+                  <IonImg src={p.imageUrl} alt={labels.noImage} />
+                </IonThumbnail>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.name}</IonText>
+                  <IonText style={{color: colors[3].name}}>{p.productDescription}</IonText>
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.country)}</IonText>
+                  <IonText style={{color: colors[5].name}}>{`${labels.category}: ${state.categories.find(c => c.id === p.categoryId)?.name}`}</IonText>
+                  {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+                </IonLabel>
+                <IonLabel slot="end" className="price">{p.isOffer || p.offerEnd ? '' : (p.price / 100).toFixed(2)}</IonLabel>
+                {(p.isOffer || p.offerEnd) && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
+              </IonItem>
+            )
           }
-        </List>
-      </Block>
-      <Actions ref={sortList}>
-        <ActionsLabel>{labels.sortBy}</ActionsLabel>
-        {sortByList.map(o => 
-          o.id === sortBy ? ''
-          : <ActionsButton key={o.id} onClick={() => handleSorting(o.id)}>{o.name}</ActionsButton>
-        )}
-      </Actions>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <IonActionSheet
+        isOpen={actionOpened}
+        onDidDismiss={() => setActionOpened(false)}
+        buttons={
+          sortByList.map(o => 
+            o.id === sortBy ? ''
+            : {
+              text: o.name,
+              cssClass: colors[i++ % 10].name,
+              handler: () => handleSorting(o.id)
+            }
+          )
+        }
+      />
+      <Footer />
+    </IonPage>
   )
 }
 

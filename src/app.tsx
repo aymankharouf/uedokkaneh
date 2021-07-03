@@ -66,7 +66,7 @@ const app = () => {
               <Route path="/login" exact={true} component={Login} />
               <Route path="/password-request" exact={true} component={PasswordRequest} />
               <Route path="/change-password" exact={true} component={ChangePassword} />
-              <Route path="/register" exact={true} component={Register} />
+              <Route path="/register/:type" exact={true} component={Register} />
               <Route path="/invite-friend" exact={true} component={InviteFriend} />
               <Route path="/categories/:id" exact={true} component={Categories} />
               <Route path="/packs/:type/:id" exact={true} component={Packs} />

@@ -1,68 +1,76 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, Badge } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
-import { storeSummary } from '../data/config'
+import { colors, storeSummary } from '../data/config'
 import { productOfText } from '../data/actions'
-import { PackPrice } from '../data/types'
+import { Pack, PackPrice } from '../data/types'
+import { useParams } from 'react-router'
+import { IonBadge, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
 
-type Props = {
+type Params = {
   type: string
 }
-const StorePacks = (props: Props) => {
+type ExtendedPackPrice = PackPrice & {
+  packInfo: Pack
+}
+const StorePacks = () => {
   const { state } = useContext(StateContext)
-  const [storePacks, setStorePacks] = useState<PackPrice[]>([])
+  const params = useParams<Params>()
+  const [storePacks, setStorePacks] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {
     setStorePacks(() => {
       const storePacks = state.packPrices.filter(p => p.storeId === state.customerInfo?.storeId)
       const extendedStorePacks = storePacks.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)
+        const packInfo = state.packs.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo
         }
       })
-      return extendedStorePacks.filter(p => (props.type === 'a')
-                            || (props.type === 'o' && p.price > (p.packInfo?.price ?? 0)) 
-                            || (props.type === 'n' && p.price === (p.packInfo?.price ?? 0) && p.storeId !== p.packInfo?.minStoreId)
-                            || (props.type === 'l' && p.price === (p.packInfo?.price ?? 0) && p.storeId === p.packInfo?.minStoreId))
+      return extendedStorePacks.filter(p => (params.type === 'a')
+                            || (params.type === 'o' && p.price > (p.packInfo.price ?? 0)) 
+                            || (params.type === 'n' && p.price === (p.packInfo.price ?? 0) && p.storeId !== p.packInfo?.minStoreId)
+                            || (params.type === 'l' && p.price === (p.packInfo.price ?? 0) && p.storeId === p.packInfo?.minStoreId))
     })
-  }, [state.packPrices, state.packs, state.customerInfo, props.type])
+  }, [state.packPrices, state.packs, state.customerInfo, params.type])
+
   let i = 0
   return(
-    <Page>
-      <Navbar title={storeSummary.find(s => s.id === props.type)?.name} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={storeSummary.find(s => s.id === params.type)?.name} />
+      <IonContent fullscreen>
+        <IonList className="ion-padding">
           {storePacks.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
           : storePacks.map(p => 
-              <ListItem
-                link={`/pack-details/${p.packId}/type/o`}
-                title={p.packInfo?.productName}
-                subtitle={p.packInfo?.productAlias}
-                text={p.packInfo?.productDescription}
-                footer={moment(p.time).fromNow()}
-                after={((p.packInfo?.price ?? 0) / 100).toFixed(2)}
-                key={i++}
-              >
-                <img src={p.packInfo?.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-                <div className="list-subtext1">{p.packInfo?.name}</div>
-                <div className="list-subtext2">{productOfText(p.packInfo?.trademark ?? '', p.packInfo?.country ?? '')}</div>
-                {p.price > (p.packInfo?.price ?? 0) && <div className="list-subtext3">{`${labels.myPrice}: ${(p.price / 100).toFixed(2)}`}</div>}
-                {p.packInfo?.isOffer && <Badge slot="title" color='green'>{labels.offer}</Badge>}
-              </ListItem>
+              <IonItem key={i++} routerLink={`/pack-details/${p.packId}/o`}>
+                <IonThumbnail slot="start">
+                  <IonImg src={p.packInfo.imageUrl} alt={labels.noImage} />
+                </IonThumbnail>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.packInfo.productDescription}</IonText>
+                  <IonText style={{color: colors[3].name}}>{p.packInfo.name}</IonText>
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.packInfo.trademark ?? '', p.packInfo.country ?? '')}</IonText>
+                  {p.price > (p.packInfo.price ?? 0) && <IonText style={{color: colors[5].name}}>{`${labels.myPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>}
+                  <IonText style={{color: colors[6].name}}>{moment(p.time).fromNow()}</IonText>
+                  {p.packInfo.isOffer && <IonBadge color="success">{labels.offer}</IonBadge>}
+                </IonLabel>
+                <IonLabel slot="end" className="price">{((p.packInfo.price ?? 0) / 100).toFixed(2)}</IonLabel>
+              </IonItem>
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

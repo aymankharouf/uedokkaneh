@@ -6,15 +6,16 @@ import { alarmTypes } from '../data/config'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { useHistory, useLocation } from 'react-router'
+import { useHistory, useLocation, useParams } from 'react-router'
 
-type Props = {
+type Params = {
   alarmType: string,
   packId: string
 }
-const AddAlarm = (props: Props) => {
+const AddAlarm = () => {
   const { state } = useContext(StateContext)
-  const [pack] = useState(() => state.packs.find(p => p.id === props.packId))
+  const params = useParams<Params>()
+  const [pack] = useState(() => state.packs.find(p => p.id === params.packId))
   const [price, setPrice] = useState('')
   const [quantity, setQuantity] = useState('')
   const [priceInvalid, setPriceInvalid] = useState(false)
@@ -29,13 +30,13 @@ const AddAlarm = (props: Props) => {
   const [message] = useIonToast()
   useEffect(() => {
     setCurrentPrice(() => {
-      if (props.alarmType === 'cp') {
+      if (params.alarmType === 'cp') {
         return state.packPrices.find(p => p.storeId === state.customerInfo?.storeId && p.packId === pack?.id)?.price
       } else {
         return pack?.price
       }
     })
-  }, [state.packPrices, props.alarmType, state.customerInfo, pack])
+  }, [state.packPrices, params.alarmType, state.customerInfo, pack])
   useEffect(() => {
     const validatePrice = (value: string) => {
       if (Number(value) > 0 && Number(value) * 100 !== Number(currentPrice)) {
@@ -45,7 +46,7 @@ const AddAlarm = (props: Props) => {
       }  
     }
     if (price) validatePrice(price)
-  }, [price, pack, props.alarmType, currentPrice])
+  }, [price, pack, params.alarmType, currentPrice])
   useEffect(() => {
     const patterns = {
       name: /^.{4,50}$/,
@@ -63,12 +64,12 @@ const AddAlarm = (props: Props) => {
   useEffect(() => {
     if (!price
     || (isOffer && !offerDays)
-    || (props.alarmType === 'aa' && !alternative)
-    || (props.alarmType === 'go' && !quantity) 
+    || (params.alarmType === 'aa' && !alternative)
+    || (params.alarmType === 'go' && !quantity) 
     || priceInvalid
     || alternativeErrorMessage) setButtonVisisble(false)
     else setButtonVisisble(true)
-  }, [props.alarmType, price, isOffer, offerDays, alternative, quantity, state.customerInfo, priceInvalid, alternativeErrorMessage])
+  }, [params.alarmType, price, isOffer, offerDays, alternative, quantity, state.customerInfo, priceInvalid, alternativeErrorMessage])
   const handleSubmit = () => {
     try{
       if (state.customerInfo?.isBlocked) {
@@ -77,12 +78,12 @@ const AddAlarm = (props: Props) => {
       if (offerDays && Number(offerDays) <= 0) {
         throw new Error('invalidPeriod')
       }
-      if ((props.alarmType === 'go' && Number(quantity) < 2) || (quantity && props.alarmType === 'eo' && Number(quantity) < 1)){
+      if ((params.alarmType === 'go' && Number(quantity) < 2) || (quantity && params.alarmType === 'eo' && Number(quantity) < 1)){
         throw new Error('invalidQuantity')
       }
       const alarm = {
         packId: pack?.id,
-        type: props.alarmType,
+        type: params.alarmType,
         price: Number(price) * 100,
         quantity: Number(quantity),
         alternative,
@@ -99,7 +100,7 @@ const AddAlarm = (props: Props) => {
 
   return (
     <IonPage>
-      <Header title={alarmTypes.find(t => t.id === props.alarmType)?.name} />
+      <Header title={alarmTypes.find(t => t.id === params.alarmType)?.name} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
@@ -132,7 +133,7 @@ const AddAlarm = (props: Props) => {
               readonly
             />
           </IonItem>
-          {props.alarmType === 'aa' &&
+          {params.alarmType === 'aa' &&
             <IonItem>
               <IonLabel position="floating" color="primary">
                 {labels.alternative}
@@ -157,7 +158,7 @@ const AddAlarm = (props: Props) => {
               color={priceInvalid ? 'danger' : ''}
             />
           </IonItem>
-          {['eo', 'go'].includes(props.alarmType) &&
+          {['eo', 'go'].includes(params.alarmType) &&
             <IonItem>
               <IonLabel position="floating" color="primary">
                 {labels.quantity}

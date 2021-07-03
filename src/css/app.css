@@ -152,7 +152,6 @@ ion-toast {
 .advert {
   --background: lime;
   color: darkblue;
-  font-size: 1.2rem;
   margin: 0.9rem;
   --border-width: 2px;
   --border-color: darkblue;
@@ -163,4 +162,32 @@ ion-toast {
   position: relative;
   bottom: 10px;
   background-color: red;
+}
+
+.note {
+  text-align: center;
+  color: red;
+  margin: 1rem;
+}
+
+.help1 {
+  text-align: center;
+  color: blue;
+  margin: 1rem;
+}
+
+.help2 {
+  text-align: center;
+  color: green;
+  margin: 1rem;
+}
+
+.help3 {
+  text-align: center;
+  color: purple;
+  margin: 1rem;
+}
+
+.selected {
+  --background: lightskyblue;
 }

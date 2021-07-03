@@ -6,19 +6,6 @@ export const setup = {
   profit: 0.05
 }
 
-export const randomColors = [
-  {id: 0, name: 'red'},
-  {id: 1, name: 'green'},
-  {id: 2, name: 'blue'},
-  {id: 3, name: 'pink'},
-  {id: 4, name: 'yellow'},
-  {id: 5, name: 'orange'},
-  {id: 6, name: 'purple'},
-  {id: 7, name: 'deeppurple'},
-  {id: 8, name: 'lightblue'},
-  {id: 9, name: 'teal'},
-]
-
 export const sortByList = [
   {id: 'p', name: 'اﻷقل سعرا'},
   {id: 's', name: 'اﻷكثر مبيعا'},
@@ -53,12 +40,12 @@ export const orderPackStatus = [
 ]
 
 export const alarmTypes = [
-  {id: 'cp', name: 'الابلاغ عن تغيير السعر', isAvailable: 1},
-  {id: 'av', name: 'الابلاغ عن توفر هذا المنتج/العرض', isAvailable: -1},
-  {id: 'ua', name: 'الابلاغ عن عدم توفر هذا المنتج/العرض', isAvailable: 1},
-  {id: 'aa', name: 'الابلاغ عن توفر بديل', isAvailable: 0},
-  {id: 'eo', name: 'الابلاغ عن عرض لقرب انتهاء الصلاحية', isAvailable: 0},
-  {id: 'go', name: 'الابلاغ عن عرض لمجموعة', isAvailable: 0},
+  {id: 'cp', name: 'الابلاغ عن تغيير السعر', name_e: 'changePrice', isAvailable: 1},
+  {id: 'av', name: 'الابلاغ عن توفر هذا المنتج/العرض', name_e: 'packAvailable', isAvailable: -1},
+  {id: 'ua', name: 'الابلاغ عن عدم توفر هذا المنتج/العرض', name_e: 'packUnAvailable', isAvailable: 1},
+  {id: 'aa', name: 'الابلاغ عن توفر بديل', name_e: 'AlternativeAvailable', isAvailable: 0},
+  {id: 'eo', name: 'الابلاغ عن عرض لقرب انتهاء الصلاحية', name_e: 'closedExpireOffer', isAvailable: 0},
+  {id: 'go', name: 'الابلاغ عن عرض لمجموعة', name_e: 'groupOffer', isAvailable: 0},
 ]
 
 export const storeSummary = [

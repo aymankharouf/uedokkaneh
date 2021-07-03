@@ -67,8 +67,13 @@ const StateProvider = ({children}: Props) => {
           byWeight: doc.data().byWeight
         })
         if (doc.data().prices) {
-          doc.data().prices.forEach((p: PackPrice) => {
-            packPrices.push({...p, packId: doc.id})
+          doc.data().prices.forEach((p: any) => {
+            packPrices.push({
+              packId: doc.id,
+              storeId: p.storeId,
+              price: p.price,
+              time: p.time.toDate()
+            })
           })
         }
       })
@@ -120,7 +125,8 @@ const StateProvider = ({children}: Props) => {
           if (doc.exists){
             const userInfo: UserInfo = {
               mobile: doc.data()!.mobile,
-              regionId: doc.data()!.regionId
+              regionId: doc.data()!.regionId,
+              ratings: doc.data()!.ratings
             }
             const notifications: Notification[] = []
             if (doc.data()!.notifications) {
@@ -162,7 +168,7 @@ const StateProvider = ({children}: Props) => {
               discount: doc.data().discount,
               fraction: doc.data().fraction,
               requestType: doc.data().requestType,
-              time: doc.data().time
+              time: doc.data().time.toDate()
             })
           })
           dispatch({type: 'SET_ORDERS', payload: orders})

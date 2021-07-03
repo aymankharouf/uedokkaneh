@@ -37,7 +37,7 @@ const Panel = () => {
                   <IonLabel>{labels.notifications}</IonLabel>
                   {notifications > 0 && <IonBadge color="danger">{notifications}</IonBadge>}
                 </IonItem>
-                <IonItem routerLink="/packs/0/type/f" style={{marginBottom: '0px', marginTop: '0px'}}>
+                <IonItem routerLink="/packs/0/f" style={{marginBottom: '0px', marginTop: '0px'}}>
                   <IonLabel>{labels.favorites}</IonLabel>
                 </IonItem>
                 <IonItem routerLink="/orders-list" style={{marginBottom: '0px', marginTop: '0px'}}>

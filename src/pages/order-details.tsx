@@ -1,29 +1,36 @@
-import { useState, useEffect, useContext, useRef } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Actions, ActionsButton, Badge } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
+import { useState, useEffect, useContext } from 'react'
 import { StateContext } from '../data/state-provider'
-import { cancelOrder, mergeOrders, addOrderRequest, showMessage, showError, getMessage, quantityDetails } from '../data/actions'
+import { cancelOrder, mergeOrders, addOrderRequest, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
-import { orderPackStatus } from '../data/config'
+import { colors, orderPackStatus } from '../data/config'
 import { Order, OrderPack } from '../data/types'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { menuOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
 type ExtendedOrderPack = OrderPack & {
   priceNote: string,
   statusNote: string
 }
-const OrderDetails = (props: Props) => {
+const OrderDetails = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [order, setOrder] = useState(() => state.orders.find(o => o.id === props.id))
+  const params = useParams<Params>()
+  const [order, setOrder] = useState(() => state.orders.find(o => o.id === params.id))
   const [orderBasket, setOrderBasket] = useState<ExtendedOrderPack[]>([])
   const [lastOrder, setLastOrder] = useState<Order | undefined>(undefined)
-  const orderActions = useRef<Actions>(null)
+  const [actionOpened, setActionOpened] = useState(false)
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+  const [alert] = useIonAlert()
   useEffect(() => {
-    setOrder(() => state.orders.find(o => o.id === props.id))
-  }, [state.orders, props.id])
+    setOrder(() => state.orders.find(o => o.id === params.id))
+  }, [state.orders, params.id])
   useEffect(() => {
     setOrderBasket(() => order ? order.basket.map(p => {
       const priceNote = p.actual && p.actual !== p.price ? `${labels.orderPrice}: ${(p.price / 100).toFixed(2)}, ${labels.currentPrice}: ${(p.actual / 100).toFixed(2)}` : `${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`
@@ -41,12 +48,6 @@ const OrderDetails = (props: Props) => {
     })
   }, [order, state.orders])
  
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleEdit = () => {
     try{
       if (state.customerInfo?.isBlocked) {
@@ -55,35 +56,43 @@ const OrderDetails = (props: Props) => {
       if (order?.status !== 'n' && order?.requestType) {
         throw new Error('duplicateOrderRequest')
       }
-      f7.views.current.router.navigate(`/edit-order/${order?.id}`)
+      history.push(`/edit-order/${order?.id}`)
     } catch(err) {
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
+    }
+  }
+  const confirmDelete = () => {
+    try{
+      if (state.customerInfo?.isBlocked) {
+        throw new Error('blockedUser')
+      }
+      if (order) {
+        if (order.status === 'n') {
+          cancelOrder(order)
+          message(labels.deleteSuccess, 3000)
+          history.goBack()
+        } else {
+          if (order.requestType) {
+            throw new Error('duplicateOrderRequest')
+          }
+          addOrderRequest(order, 'c')
+          message(labels.sendSuccess, 3000)
+          history.goBack()
+        }  
+      }
+    } catch(err) {
+      message(getMessage(location.pathname, err), 3000)
     }
   }
   const handleDelete = () => {
-    f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
-      try{
-        if (state.customerInfo?.isBlocked) {
-          throw new Error('blockedUser')
-        }
-        if (order) {
-          if (order.status === 'n') {
-            cancelOrder(order)
-            showMessage(labels.deleteSuccess)
-            f7.views.current.router.back()
-          } else {
-            if (order.requestType) {
-              throw new Error('duplicateOrderRequest')
-            }
-            addOrderRequest(order, 'c')
-            showMessage(labels.sendSuccess)
-            f7.views.current.router.back()
-          }  
-        }
-      } catch(err) {
-        setError(getMessage(f7.views.current.router.currentRoute.path, err))
-      }
-    })    
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.yes, handler: () => confirmDelete()},
+      ],
+    })
   }
   const handleMerge = () => {
     try{
@@ -106,74 +115,93 @@ const OrderDetails = (props: Props) => {
         }  
         if (lastOrder.status === 'n') {
           mergeOrders(lastOrder, order)
-          showMessage(labels.mergeSuccess)
+          message(labels.mergeSuccess, 3000)
         } else {
           addOrderRequest(lastOrder, 'm', order)
-          showMessage(labels.sendSuccess)  
+          message(labels.sendSuccess, 3000)  
         }
-        f7.views.current.router.back()
+        history.goBack()
       }
     } catch(err) {
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
     }
   }
+  let i = 0
   return(
-    <Page>
-      <Navbar title={labels.orderDetails} backLink={labels.back} />
-      {order && ['n', 'a', 'e'].includes(order.status) && 
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => orderActions.current?.open()}>
-          <Icon material="menu"></Icon>
-        </Fab>
-      }
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.orderDetails} />
+      <IonContent fullscreen>
+        <IonList className="ion-padding">
           {orderBasket.map(p => 
-            <ListItem 
-              title={p.productName}
-              subtitle={p.productAlias}
-              text={p.packName}
-              footer={`${labels.status}: ${p.statusNote}`}
-              after={(p.gross / 100).toFixed(2)}
-              key={p.packId} 
-            >
-              <div className="list-subtext1">{p.priceNote}</div>
-              <div className="list-subtext2">{quantityDetails(p)}</div>
-              {p.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-            </ListItem>
+            <IonItem key={p.packId}>
+              <IonLabel>
+                <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                <IonText style={{color: colors[3].name}}>{p.priceNote}</IonText>
+                <IonText style={{color: colors[4].name}}>{quantityDetails(p)}</IonText>
+                <IonText style={{color: colors[5].name}}>{`${labels.status}: ${p.statusNote}`}</IonText>
+                {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+              </IonLabel>
+              <IonLabel slot="end" className="price">{(p.gross / 100).toFixed(2)}</IonLabel>
+            </IonItem>
           )}
-          <ListItem 
-            title={labels.total} 
-            className="total"
-            after={((order?.total ?? 0) / 100).toFixed(2)} 
-          />
-          <ListItem 
-            title={labels.fixedFees} 
-            className="fees" 
-            after={(((order?.fixedFees ?? 0) + (order?.deliveryFees ?? 0)) / 100).toFixed(2)} 
-          />
-          <ListItem 
-            title={labels.discount} 
-            className="discount" 
-            after={(((order?.discount?.value ?? 0) + (order?.fraction ?? 0)) / 100).toFixed(2)} 
-          /> 
-          <ListItem 
-            title={labels.net} 
-            className="net" 
-            after={(((order?.total ?? 0) + (order?.fixedFees ?? 0) + (order?.deliveryFees ?? 0) - (order?.discount?.value ?? 0) - (order?.fraction ?? 0)) / 100).toFixed(2)} 
-          />
-        </List>
-      </Block>
-      <Actions ref={orderActions}>
-        <ActionsButton onClick={() => handleEdit()}>{order?.status === 'n' ? labels.editBasket : labels.editBasketRequest}</ActionsButton>
-        <ActionsButton onClick={() => handleDelete()}>{order?.status === 'n' ? labels.cancel : labels.cancelRequest}</ActionsButton>
-        {order?.status === 'n' && lastOrder ? 
-          <ActionsButton onClick={() => handleMerge()}>{lastOrder.status === 'n' ? labels.merge : labels.mergeRequest}</ActionsButton>
-        : ''}
-      </Actions>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+          <IonItem>
+            <IonLabel>
+              <IonText style={{color: colors[0].name}}>{labels.total}</IonText>
+            </IonLabel>
+            <IonLabel slot="end" className="price">{((order?.total ?? 0) / 100).toFixed(2)}</IonLabel>
+          </IonItem>    
+          <IonItem>
+            <IonLabel>
+              <IonText style={{color: colors[0].name}}>{labels.fixedFees}</IonText>
+            </IonLabel>
+            <IonLabel slot="end" className="price">{(((order?.fixedFees ?? 0) + (order?.deliveryFees ?? 0)) / 100).toFixed(2)}</IonLabel>
+          </IonItem>    
+          <IonItem>
+            <IonLabel>
+              <IonText style={{color: colors[0].name}}>{labels.discount}</IonText>
+            </IonLabel>
+            <IonLabel slot="end" className="price">{(((order?.discount?.value ?? 0) + (order?.fraction ?? 0)) / 100).toFixed(2)}</IonLabel>
+          </IonItem>    
+          <IonItem>
+            <IonLabel>
+              <IonText style={{color: colors[0].name}}>{labels.net}</IonText>
+            </IonLabel>
+            <IonLabel slot="end" className="price">{(((order?.total ?? 0) + (order?.fixedFees ?? 0) + (order?.deliveryFees ?? 0) - (order?.discount?.value ?? 0) - (order?.fraction ?? 0)) / 100).toFixed(2)}</IonLabel>
+          </IonItem>    
+        </IonList>
+      </IonContent>
+      {order && ['n', 'a', 'e'].includes(order.status) && 
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={() => setActionOpened(true)} color="success">
+            <IonIcon ios={menuOutline} /> 
+          </IonFabButton>
+        </IonFab>
+      }
+      <IonActionSheet
+        isOpen={actionOpened}
+        onDidDismiss={() => setActionOpened(false)}
+        buttons={[
+          {
+            text: order?.status === 'n' ? labels.editBasket : labels.editBasketRequest,
+            cssClass: colors[i++ % 10].name,
+            handler: () => handleEdit()
+          },
+          {
+            text: order?.status === 'n' ? labels.cancel : labels.cancelRequest,
+            cssClass: colors[i++ % 10].name,
+            handler: () => handleDelete()
+          },
+          {
+            text: lastOrder?.status === 'n' ? labels.merge : labels.mergeRequest,
+            cssClass: order?.status === 'n' && lastOrder ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleMerge()
+          }
+        ]}
+      />
+      <Footer />
+    </IonPage>
   )
 }
 export default OrderDetails

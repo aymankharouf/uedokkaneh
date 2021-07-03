@@ -1,12 +1,13 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar} from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { orderStatus } from '../data/config'
+import { colors, orderStatus } from '../data/config'
 import { Order } from '../data/types'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
 
 const OrdersList = () => {
   const { state } = useContext(StateContext)
@@ -18,28 +19,28 @@ const OrdersList = () => {
     })
   }, [state.orders])
   return(
-    <Page>
-      <Navbar title={labels.myOrders} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.myOrders} />
+      <IonContent fullscreen>
+        <IonList>
           {orders.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : orders.map(o =>
-              <ListItem
-                link={`/order-details/${o.id}`}
-                title={orderStatus.find(s => s.id === o.status)?.name}
-                subtitle={moment(o.time).fromNow()}
-                after={(o.total / 100).toFixed(2)}
-                key={o.id}
-              />
+              <IonItem key={o.id} routerLink={`/order-details/${o.id}`}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{orderStatus.find(s => s.id === o.status)?.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{moment(o.time).fromNow()}</IonText>
+                  <IonText style={{color: colors[2].name}}>{(o.total / 100).toFixed(2)}</IonText>
+                </IonLabel>
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

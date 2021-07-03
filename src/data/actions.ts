@@ -1,7 +1,6 @@
 import firebase from './firebase'
 import labels from './labels'
-import { randomColors, setup } from './config'
-import { f7 } from 'framework7-react'
+import { colors, setup } from './config'
 import { Error, OrderPack, BasketPack, Category, Order, UserInfo, Alarm, Pack, Notification } from './types'
 
 export const getMessage = (path: string, error: Error) => {
@@ -16,23 +15,6 @@ export const getMessage = (path: string, error: Error) => {
   }
   return labels[errorCode] || labels['unknownError']
 }
-
-export const showMessage = (messageText: string) => {
-  const message = f7.toast.create({
-    text: `<span class="success">${messageText}<span>`,
-    closeTimeout: 3000,
-  })
-  message.open()
-}
-
-export const showError = (messageText: string) => {
-  const message = f7.toast.create({
-    text: `<span class="error">${messageText}<span>`,
-    closeTimeout: 3000,
-  })
-  message.open()
-}
-
 
 export const quantityText = (quantity: number, weight?: number): string => {
   return weight && weight !== quantity ? `${quantityText(quantity)}(${quantityText(weight)})` : quantity === Math.trunc(quantity) ? quantity.toString() : quantity.toFixed(3)
@@ -169,16 +151,16 @@ export const addOrderRequest = (order: Order, type: string, mergedOrder?: Order)
 
 export const registerUser = async (mobile: string, name: string, storeName: string, regionId: string, password: string) => {
   await firebase.auth().createUserWithEmailAndPassword(mobile + '@gmail.com', mobile.substring(9, 2) + password)
-  let colors = []
+  let userColors = []
   for (var i = 0; i < 4; i++){
-    colors.push(randomColors[Number(password.charAt(i))].name)
+    userColors.push(colors[Number(password.charAt(i))].name)
   }
   firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).set({
     mobile,
     name,
     storeName,
     regionId,
-    colors,
+    colors: userColors,
     time: firebase.firestore.FieldValue.serverTimestamp()
   })
 }
@@ -192,12 +174,12 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
       user = firebase.auth().currentUser
       if (user) {
         await user.updatePassword(mobile.substring(9, 2) + newPassword)
-        let colors = []
+        let userColors = []
         for (var i = 0; i < 4; i++){
-          colors.push(randomColors[Number(newPassword.charAt(i))].name)
+          userColors.push(colors[Number(newPassword.charAt(i))].name)
         }
         return firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
-          colors
+          colors: userColors
         }) 
       }
     }
@@ -318,19 +300,13 @@ export const getBasket = (stateBasket: BasketPack[], packs: Pack[]) => {
       lastPrice = packInfo?.price ?? 0
     }
     const totalPriceText = `${(Math.round(lastPrice * p.quantity) / 100).toFixed(2)}${p.byWeight ? '*' : ''}`
-    const priceText = lastPrice === 0 ? labels.itemNotAvailable : (lastPrice === p.price ? `${labels.price}: ${(p.price / 100).toFixed(2)}` : `${labels.priceHasChanged}, ${labels.oldPrice}: ${(p.price / 100).toFixed(2)}, ${labels.newPrice}: ${(lastPrice / 100).toFixed(2)}`)
-    const otherProducts = packs.filter(pa => pa.categoryId === packInfo?.categoryId && (pa.sales > packInfo.sales || pa.rating > packInfo.rating))
-    const otherOffers = packs.filter(pa => pa.productId === packInfo?.productId && pa.id !== packInfo.id && (pa.isOffer || pa.offerEnd))
-    const otherPacks = packs.filter(pa => pa.productId === packInfo?.productId && pa.weightedPrice < packInfo.weightedPrice)
+    const priceText = lastPrice === 0 ? labels.itemNotAvailable : (lastPrice === p.price ? `${labels.price}: ${(p.price / 100).toFixed(2)}` : `${labels.price}: ${(lastPrice / 100).toFixed(2)} (${(p.price / 100).toFixed(2)} ${labels.oldPrice})`)
     return {
       ...p,
       price: lastPrice,
       packInfo,
       totalPriceText,
       priceText,
-      otherProducts: otherProducts.length,
-      otherOffers: otherOffers.length,
-      otherPacks: otherPacks.length
     }
   })
   return basket

@@ -40,7 +40,7 @@ const Categories = () => {
         </IonButton>
         {categories.map(c => 
           <IonButton
-            routerLink={c.isLeaf ? `/packs/c/${c.id}/0` : `/categories/${c.id}`} 
+            routerLink={c.isLeaf ? `/packs/c/${c.id}` : `/categories/${c.id}`} 
             expand="block"
             shape="round"
             className={colors[i++ % 10].name}

@@ -50,7 +50,6 @@ export type PackPrice = {
   storeId: string,
   packId: string,
   price: number,
-  packInfo?: Pack
   time: Date
 }
 export type Notification = {
@@ -122,9 +121,6 @@ export type BigBasketPack = BasketPack & {
   packInfo?: Pack,
   totalPriceText: string,
   priceText: string,
-  otherProducts: number,
-  otherOffers: number,
-  otherPacks: number
 }
 export type Order = {
   id?: string,

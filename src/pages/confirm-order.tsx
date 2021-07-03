@@ -1,14 +1,16 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Link, Badge } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import { confirmOrder, showMessage, showError, getMessage, quantityText, getBasket } from '../data/actions'
+import { confirmOrder, getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
-import { setup } from '../data/config'
+import { setup, colors } from '../data/config'
 import { BasketPack, Discount, BigBasketPack } from '../data/types'
+import { useHistory, useLocation } from 'react-router'
+import { IonBadge, IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import Header from './header'
+import { Link } from 'react-router-dom'
 
 const ConfirmOrder = () => {
   const { state, dispatch } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [basket, setBasket] = useState<BigBasketPack[]>([])
   const [total, setTotal] = useState(0)
   const [fixedFees, setFixedFees] = useState(0)
@@ -17,6 +19,10 @@ const ConfirmOrder = () => {
   const [weightedPacks, setWeightedPacks] = useState<BasketPack[]>([])
   const [regionFees] = useState(() => state.regions.find(r => r.id === state.userInfo?.regionId)?.fees ?? 0)
   const [deliveryFees] = useState(state.customerInfo?.deliveryFees ?? regionFees)
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+
   useEffect(() => {
     setBasket(getBasket(state.basket, state.packs))
   }, [state.basket, state.packs])
@@ -52,16 +58,10 @@ const ConfirmOrder = () => {
     }) 
   }, [state.orders, state.customerInfo])
 
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleConfirm = () => {
     try{
       if (state.adverts[0]?.type === 'n') {
-        showMessage(state.adverts[0].text)
+        message(state.adverts[0].text, 2000)
         return
       }
       if (state.customerInfo?.isBlocked) {
@@ -101,71 +101,74 @@ const ConfirmOrder = () => {
         total,
         fraction
       }
-      console.log('order = ', order)
       confirmOrder(order)
-      showMessage(labels.sendSuccess)
-      f7.views.current.router.navigate('/home/', {reloadAll: true})
+      message(labels.sendSuccess, 3000)
+      history.push('/')
       dispatch({ type: 'CLEAR_BASKET'})
     } catch (err){
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
     }
   }
-  const handleDelete = () => {
-    f7.views.current.router.navigate('/home/', {reloadAll: true})
-    dispatch({type: 'CLEAR_BASKET'})  
-  }
-  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <IonPage><h3 className="center"><a href="/login">{labels.relogin}</a></h3></IonPage>
   return (
-    <Page>
-      <Navbar title={labels.sendOrder} backLink={labels.back} />
-      <Block>
-        <p className="note">{labels.orderHelp} <a href="/help/o">{labels.clickHere}</a></p>
+    <IonPage>
+      <Header title={labels.sendOrder} />
+      <IonContent fullscreen>
+        <p className="note">{labels.orderHelp} <Link to="/help/o">{labels.clickHere}</Link></p>
         {regionFees === 0 ? <p className="note">{labels.noDelivery}</p> : ''}
-        <List mediaList>
+        <IonList className="ion-padding">
           {basket.map(p => 
-            <ListItem
-              key={p.packId}
-              title={p.productName}
-              subtitle={p.productAlias}
-              text={p.packName}
-              footer={`${labels.quantity}: ${quantityText(p.quantity)}`}
-              after={p.totalPriceText}
-            >
-              <div className="list-subtext1">{p.priceText}</div>
-              {p.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-            </ListItem>
+            <IonItem key={p.packId}>
+              <IonLabel>
+                <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                <IonText style={{color: colors[3].name}}>{p.priceText}</IonText>
+                <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity)}`}</IonText>
+                {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+              </IonLabel>
+              <IonLabel slot="end" className="price">{p.totalPriceText}</IonLabel>
+            </IonItem>    
           )}
-          <ListItem 
-            title={labels.total} 
-            className="total" 
-            after={(total / 100).toFixed(2)} 
-          />
-          <ListItem 
-            title={labels.fixedFees} 
-            className="fees" 
-            after={((fixedFees + deliveryFees) / 100).toFixed(2)} 
-          />
-          <ListItem 
-            title={labels.discount}
-            className="discount" 
-            after={(((discount?.value ?? 0) + fraction) / 100).toFixed(2)} 
-          /> 
-          <ListItem 
-            title={labels.net} 
-            className="net" 
-            after={((total + fixedFees + deliveryFees - (discount?.value ?? 0) - fraction) / 100).toFixed(2)} 
-          />
-          </List>
+          <IonItem>
+            <IonLabel>
+              <IonText style={{color: colors[0].name}}>{labels.total}</IonText>
+            </IonLabel>
+            <IonLabel slot="end" className="price">{(total / 100).toFixed(2)}</IonLabel>
+          </IonItem>    
+          <IonItem>
+            <IonLabel>
+              <IonText style={{color: colors[1].name}}>{labels.fixedFees}</IonText>
+            </IonLabel>
+            <IonLabel slot="end" className="price">{((fixedFees + deliveryFees) / 100).toFixed(2)}</IonLabel>
+          </IonItem>    
+          <IonItem>
+            <IonLabel>
+              <IonText style={{color: colors[2].name}}>{labels.discount}</IonText>
+            </IonLabel>
+            <IonLabel slot="end" className="price">{(((discount?.value ?? 0) + fraction) / 100).toFixed(2)}</IonLabel>
+          </IonItem>    
+          <IonItem>
+            <IonLabel>
+              <IonText style={{color: colors[3].name}}>{labels.net}</IonText>
+            </IonLabel>
+            <IonLabel slot="end" className="price">{((total + fixedFees + deliveryFees - (discount?.value ?? 0) - fraction) / 100).toFixed(2)}</IonLabel>
+          </IonItem>    
+        </IonList>
         <p className="note">{weightedPacks.length > 0 ? labels.weightedPricesNote : ''}</p>
-      </Block>
-      <Fab position="center-bottom" slot="fixed" text={labels.send} color="green" onClick={() => handleConfirm()}>
-        <Icon material="done"></Icon>
-      </Fab>
-      <Toolbar bottom>
-        <Link href='/home/' iconMaterial="home" />
-        <Link href='#' iconMaterial="delete" onClick={() => handleDelete()} />
-      </Toolbar>
-    </Page>
+      </IonContent>
+      <div className="ion-text-center">
+        <IonButton 
+          fill="solid" 
+          shape="round"
+          color="secondary"
+          style={{width: '10rem'}}
+          onClick={handleConfirm}
+        >
+          {labels.send}
+        </IonButton>
+      </div>
+    </IonPage>
   )
 }
 export default ConfirmOrder

@@ -1,9 +1,10 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, Toolbar, Button } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { randomColors, storeSummary } from '../data/config'
+import { colors, storeSummary } from '../data/config'
+import {IonButton, IonContent, IonPage} from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
 
 type ExtendedSections = {
   id: string,
@@ -38,25 +39,24 @@ const StoreSummary = () => {
   }, [state.packPrices, state.packs, state.customerInfo])
   let i = 0
   return(
-    <Page>
-      <Navbar title={labels.myPacks} backLink={labels.back} />
-      <Block>
+    <IonPage>
+      <Header title={labels.myPacks} />
+      <IonContent fullscreen>
         {sections.map(s => 
-          <Button 
-            text={`${s.name} (${s.count})`} 
-            large 
-            fill 
-            className="sections" 
-            color={randomColors[i++ % 10].name} 
-            href={`/store-packs/${s.id}`} 
+          <IonButton
+            routerLink={`/store-packs/${s.id}`} 
+            expand="block"
+            shape="round"
+            className={colors[i++ % 10].name}
+            style={{margin: '0.9rem'}} 
             key={s.id}
-          /> 
+          >
+            {`${s.name} (${s.count})`}
+          </IonButton>
         )}
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

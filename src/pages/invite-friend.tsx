@@ -1,48 +1,28 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Button } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import { inviteFriend, showMessage, showError, getMessage } from '../data/actions'
+import { inviteFriend, getMessage } from '../data/actions'
 import labels from '../data/labels'
+import { IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast, IonButton } from '@ionic/react'
+import Header from './header'
+import { useHistory, useLocation } from 'react-router'
+import { patterns } from '../data/config'
 
 const InviteFriend = () => {
   const { state } = useContext(StateContext)
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
-  const [nameErrorMessage, setNameErrorMessage] = useState('')
-  const [mobileErrorMessage, setMobileErrorMessage] = useState('')
-  const [error, setError] = useState('')
+  const [nameInvalid, setNameInvalid] = useState(true)
+  const [mobileInvalid, setMobileInvalid] = useState(true)
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+
   useEffect(() => {
-    const patterns = {
-      name: /^.{4,50}$/,
-    }
-    const validateName = (value: string) => {
-      if (patterns.name.test(value)){
-        setNameErrorMessage('')
-      } else {
-        setNameErrorMessage(labels.invalidName)
-      }
-    }  
-    if (name) validateName(name)
+    setNameInvalid(!name || !patterns.name.test(name))
   }, [name])
   useEffect(() => {
-    const patterns = {
-      mobile: /^07[7-9][0-9]{7}$/
-    }
-    const validateMobile = (value: string) => {
-      if (patterns.mobile.test(value)){
-        setMobileErrorMessage('')
-      } else {
-        setMobileErrorMessage(labels.invalidMobile)
-      }
-    }
-    if (mobile) validateMobile(mobile)
+    setMobileInvalid(!mobile || !patterns.mobile.test(mobile))
   }, [mobile])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleSend = () => {
     try{
       if (state.customerInfo?.isBlocked) {
@@ -55,48 +35,60 @@ const InviteFriend = () => {
         throw new Error('invalidMobile')
       }
       inviteFriend(mobile, name)
-      showMessage(labels.sendSuccess)
-      f7.views.current.router.back()
+      message(labels.sendSuccess, 3000)
+      history.goBack()
     } catch (err){
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
     }
   }
 
   return (
-    <Page>
-      <Navbar title={labels.inviteFriend} backLink={labels.back} />
-      <List form>
-        <ListInput
-          label={labels.name}
-          type="text"
-          placeholder={labels.namePlaceholder}
-          name="name"
-          clearButton
-          value={name}
-          errorMessage={nameErrorMessage}
-          errorMessageForce
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-        <ListInput
-          label={labels.mobile}
-          type="number"
-          placeholder={labels.mobilePlaceholder}
-          name="mobile"
-          clearButton
-          value={mobile}
-          errorMessage={mobileErrorMessage}
-          errorMessageForce
-          onChange={e => setMobile(e.target.value)}
-          onInputClear={() => setMobile('')}
-        />
-      </List>
-      <List>
-      {!name || !mobile || nameErrorMessage || mobileErrorMessage ? '' : 
-        <Button text={labels.send} onClick={() => handleSend()} />
+    <IonPage>
+      <Header title={labels.inviteFriend} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color={nameInvalid ? 'danger' : 'primary'}>
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              placeholder={labels.namePlaceholder}
+              autofocus
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
+              color={nameInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color={mobileInvalid ? 'danger' : 'primary'}>
+              {labels.mobile}
+            </IonLabel>
+            <IonInput 
+              value={mobile} 
+              type="number" 
+              placeholder={labels.mobilePlaceholder}
+              clearInput
+              onIonChange={e => setMobile(e.detail.value!)} 
+              color={mobileInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {!mobileInvalid && !nameInvalid &&
+        <div className="ion-padding" style={{textAlign: 'center'}}>
+          <IonButton 
+            fill="solid" 
+            shape="round"
+            style={{width: '10rem'}}
+            onClick={handleSend}
+          >
+            {labels.send}
+          </IonButton>
+        </div>
       }
-      </List>
-    </Page>
+    </IonPage>
   )
 }
 export default InviteFriend

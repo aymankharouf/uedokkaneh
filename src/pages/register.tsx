@@ -124,7 +124,7 @@ const Register = () => {
       {regionId && (params.type === 'n' || storeName) && !nameInvalid && !mobileInvalid && !passwordInvalid &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleRegister} color="success">
-            <IonIcon ios={checkmarkOutline} />
+            <IonIcon ios={checkmarkOutline} /> 
           </IonFabButton>
         </IonFab>
       }

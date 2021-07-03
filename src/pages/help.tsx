@@ -1,17 +1,20 @@
 import { useContext, useState } from 'react'
 import { StateContext } from '../data/state-provider'
-import { Page, Navbar, Block, Icon, Toolbar } from 'framework7-react'
 import labels from '../data/labels'
-import BottomToolbar from './bottom-toolbar'
+import { IonContent, IonPage } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useParams } from 'react-router'
 
-type Props = {
+type Params = {
   id: string
 }
-const Help = (props: Props) => {
+const Help = () => {
   const { state } = useContext(StateContext)
+  const params = useParams<Params>()
   const [userRegion] = useState(() => state.regions.find(r => r.id === state.userInfo?.regionId))
   const [helpNote] = useState(() => {
-    switch (props.id) {
+    switch (params.id) {
       case 'o':
         return 'يمكنك تتبع مراحل تنفيذ طلبك من خلال خيار طلباتي من القائمة الجانبية في الصفحة الرئيسية، حيث تستطيع التعديل على الطلب أو إلغاؤه قبل بدء تنفيذه، كما يمكنك دمج الطلب مع الطلب الذي قبله ليتم تسلمهما معا'
       case 'ol':
@@ -25,12 +28,11 @@ const Help = (props: Props) => {
   const ratingsNote = 'كذلك لا تنس تقييم المنتجات التي تشتريها حتى يستفيد الاخرون من تجربتك للمنتج، وذلك من خلال صفحة مشترياتي والتي يمكن الوصول اليها من القائمة الجانبية في الصفحة الرئيسية'
   const invitationsNote = ' وللحصول على المزيد من الخصومات لا تنس دعوة أصدقائك من خلال القائمة الجانبية في الصفحة الرئيسية حيث سوف تحصل على خصم لكل صديق يشترك معنا'
   return (
-    <Page>
-      <Navbar title={labels.helpPageTitle} backLink={labels.back} />
-      <Block strong inset className="center">
-        <Icon color="red" material="warning"></Icon>
+    <IonPage>
+      <Header title={labels.helpPageTitle} />
+      <IonContent fullscreen>
         <p className="note">{helpNote}</p>
-        {props.id === 'o' &&
+        {params.id === 'o' &&
           <>
             <p className="help1">{feesNote}</p>
             {userRegion && userRegion.fees > 0 && <p className="help1">{`${regionFeesNote}${userRegion.name}: ${(userRegion.fees / 100).toFixed(2)}`}</p>}
@@ -38,11 +40,9 @@ const Help = (props: Props) => {
             <p className="help2">{ratingsNote}</p>
           </>
         }
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 
