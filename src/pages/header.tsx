@@ -10,7 +10,7 @@ type Props = {
   withSearch?: boolean
 }
 const Header = (props: Props) => {
-  const {state, dispatch} = useContext(StateContext)
+  const { state, dispatch } = useContext(StateContext)
   const [visible, setVisible] = useState(false)
   const history = useHistory()
   const handleVisible = () => {

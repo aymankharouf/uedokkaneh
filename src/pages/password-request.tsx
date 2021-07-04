@@ -1,5 +1,5 @@
-import {useState, useEffect, useContext} from 'react'
-import {getMessage, addPasswordRequest} from '../data/actions'
+import { useState, useEffect, useContext } from 'react'
+import { getMessage, addPasswordRequest } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -8,7 +8,7 @@ import { StateContext } from '../data/state-provider'
 import { patterns } from '../data/config'
 
 const PasswordRequest = () => {
-  const {state} = useContext(StateContext)
+  const { state } = useContext(StateContext)
   const [mobile, setMobile] = useState('')
   const [mobileInvalid, setMobileInvalid] = useState(false)
   const history = useHistory()

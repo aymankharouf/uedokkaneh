@@ -1,4 +1,4 @@
-import {IonIcon} from '@ionic/react'
+import { IonIcon } from '@ionic/react'
 import { star, starHalfOutline, starOutline } from 'ionicons/icons'
 
 type Props = {
