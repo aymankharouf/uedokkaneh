@@ -55,7 +55,7 @@ export type PackPrice = {
 export type Notification = {
   id: string,
   title: string,
-  message: string,
+  text: string,
   status: string,
   time: Date
 }

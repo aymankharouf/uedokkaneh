@@ -41,7 +41,7 @@ const Notifications = () => {
               <IonItem key={n.id}>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{n.title}</IonText>
-                  <IonText style={{color: colors[1].name}}><p>{n.message}</p></IonText>
+                  <IonText style={{color: colors[1].name}}><p>{n.text}</p></IonText>
                   <IonText style={{color: colors[2].name}}>{moment(n.time).fromNow()}</IonText>
                 </IonLabel>
                 <IonIcon 

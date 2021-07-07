@@ -134,7 +134,7 @@ const StateProvider = ({children}: Props) => {
                 notifications.push({
                   id: n.id,
                   title: n.title,
-                  message: n.message,
+                  text: n.text,
                   status: n.status,
                   time: n.time.toDate()
                 })
