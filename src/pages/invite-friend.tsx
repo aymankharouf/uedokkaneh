@@ -1,14 +1,16 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { inviteFriend, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast, IonButton } from '@ionic/react'
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { patterns } from '../data/config'
+import { useSelector } from 'react-redux'
+import { CustomerInfo, Err, State, UserInfo } from '../data/types'
 
 const InviteFriend = () => {
-  const { state } = useContext(StateContext)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
   const [nameInvalid, setNameInvalid] = useState(true)
@@ -25,19 +27,20 @@ const InviteFriend = () => {
   }, [mobile])
   const handleSend = () => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
-      if (state.userInfo?.friends?.find(f => f.mobile === mobile)) {
+      if (stateUserInfo?.friends?.find(f => f.mobile === mobile)) {
         throw new Error('duplicateInvitation')
       }
-      if (mobile === state.userInfo?.mobile) {
+      if (mobile === stateUserInfo?.mobile) {
         throw new Error('invalidMobile')
       }
       inviteFriend(mobile, name)
       message(labels.sendSuccess, 3000)
       history.goBack()
-    } catch (err){
+    } catch (error){
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

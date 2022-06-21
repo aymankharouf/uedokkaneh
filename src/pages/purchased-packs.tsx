@@ -1,17 +1,17 @@
-import { useContext, useEffect, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useEffect, useState } from 'react'
 import { quantityText, addQuantity } from '../data/actions'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { getMessage, rateProduct } from '../data/actions'
-import { Order } from '../data/types'
+import { CustomerInfo, Err, Order, State, UserInfo } from '../data/types'
 import { IonActionSheet, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation } from 'react-router'
 import { colors } from '../data/config'
 import { heartDislikeOutline, heartHalfOutline, heartOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
 
 type PurchasedPack = {
   packId: string,
@@ -28,7 +28,9 @@ type PurchasedPack = {
 }
 
 const PurchasedPacks = () => {
-  const { state } = useContext(StateContext)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
 	const [purchasedPacks, setPurchasedPacks] = useState<PurchasedPack[]>([])
   const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([])
   const [currentPack, setCurrentPack] = useState<PurchasedPack | undefined>(undefined)
@@ -38,10 +40,10 @@ const PurchasedPacks = () => {
 
   useEffect(() => {
     setDeliveredOrders(() => {
-      const deliveredOrders = state.orders.filter(o => o.status === 'd')
+      const deliveredOrders = stateOrders.filter(o => o.status === 'd')
       return deliveredOrders.sort((o1, o2) => o1.time! > o2.time! ? -1 : 1)
     })
-  }, [state.orders])
+  }, [stateOrders])
 	useEffect(() => {
 		let packsArray: PurchasedPack[] = []
 		deliveredOrders.forEach(o => {
@@ -77,14 +79,15 @@ const PurchasedPacks = () => {
   }, [deliveredOrders])
   const handleRate = (value: number) => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
       if (currentPack) {
         rateProduct(currentPack.productId, value)
         message(labels.ratingSuccess, 3000)  
       }
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
@@ -117,7 +120,7 @@ const PurchasedPacks = () => {
                   <IonText style={{color: colors[6].name}}>{`${labels.lastQuantity}: ${quantityText(p.lastQuantity)}`}</IonText>
                   <IonText style={{color: colors[7].name}}>{`${labels.lastTime}: ${moment(p.lastTime).fromNow()}`}</IonText>
                 </IonLabel>
-                {!state.userInfo?.ratings?.find(r => r.productId === p.productId) &&
+                {!stateUserInfo?.ratings?.find(r => r.productId === p.productId) &&
                   <IonButtons slot="end" onClick={() => handleActions(p)}>
                     <IonIcon 
                       ios={heartOutline} 

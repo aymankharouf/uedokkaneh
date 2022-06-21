@@ -1,18 +1,21 @@
-import { useContext, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState } from 'react'
 import labels from '../data/labels'
 import { IonContent, IonPage } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
+import { useSelector } from 'react-redux'
+import { Region, State, UserInfo } from '../data/types'
 
 type Params = {
   id: string
 }
 const Help = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [userRegion] = useState(() => state.regions.find(r => r.id === state.userInfo?.regionId))
+  const stateRegions = useSelector<State, Region[]>(state => state.regions)
+  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
+
+  const [userRegion] = useState(() => stateRegions.find(r => r.id === stateUserInfo?.regionId))
   const [helpNote] = useState(() => {
     switch (params.id) {
       case 'o':

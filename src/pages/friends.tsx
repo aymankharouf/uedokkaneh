@@ -1,27 +1,27 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { deleteFriend, getMessage } from '../data/actions'
 import { friendStatus, colors } from '../data/config'
-import { Friend } from '../data/types'
+import { Err, Friend, State, UserInfo } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation } from 'react-router'
 import { addOutline, trashOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
 
 const Friends = () => {
-  const { state } = useContext(StateContext)
+  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
   const [friends, setFriends] = useState<Friend[]>([])
   const location = useLocation()
   const [message] = useIonToast()
   const [alert] = useIonAlert()
   useEffect(() => {
     setFriends(() => {
-      const friends = state.userInfo?.friends?.slice() || []
+      const friends = stateUserInfo?.friends?.slice() || []
       return friends.sort((f1, f2) => f1.name > f2.name ? 1 : -1)
     })
-  }, [state.userInfo])
+  }, [stateUserInfo])
   const handleDelete = (mobile: string) => {
     alert({
       header: labels.confirmationTitle,
@@ -30,11 +30,12 @@ const Friends = () => {
         {text: labels.cancel},
         {text: labels.yes, handler: () => {
           try{
-            if (state.userInfo) {
-              deleteFriend(state.userInfo, mobile)
+            if (stateUserInfo) {
+              deleteFriend(stateUserInfo, mobile)
               message(labels.deleteSuccess, 3000)  
             }
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }    
         }},

@@ -1,32 +1,34 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { sortByList, colors } from '../data/config'
 import { getChildren, productOfText } from '../data/actions'
-import { Pack } from '../data/types'
+import { Category, Pack, State, UserInfo } from '../data/types'
 import { IonActionSheet, IonBadge, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string,
   type: string
 }
 const Packs = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
   const [packs, setPacks] = useState<Pack[]>([])
-  const [category] = useState(() => state.categories.find(category => category.id === params.id))
+  const [category] = useState(() => stateCategories.find(category => category.id === params.id))
   const [sortBy, setSortBy] = useState('v')
   const [actionOpened, setActionOpened] = useState(false)
   useEffect(() => {
     setPacks(() => {
-      const children = params.type === 'a' ? getChildren(params.id, state.categories) : [params.id]
-      const packs = state.packs.filter(p => !params.id || (params.type === 'f' && state.userInfo?.favorites?.includes(p.productId)) || children.includes(p.categoryId))
+      const children = params.type === 'a' ? getChildren(params.id, stateCategories) : [params.id]
+      const packs = statePacks.filter(p => !params.id || (params.type === 'f' && stateUserInfo?.favorites?.includes(p.productId)) || children.includes(p.categoryId))
       return packs.sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
     })
-  }, [state.packs, state.userInfo, params.id, params.type, state.categories])
+  }, [statePacks, stateUserInfo, params.id, params.type, stateCategories])
   const handleSorting = (sortByValue: string) => {
     setSortBy(sortByValue)
     switch(sortByValue){
@@ -82,7 +84,7 @@ const Packs = () => {
                   <IonText style={{color: colors[2].name}}>{p.name}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.productDescription}</IonText>
                   <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.country)}</IonText>
-                  <IonText style={{color: colors[5].name}}>{`${labels.category}: ${state.categories.find(c => c.id === p.categoryId)?.name}`}</IonText>
+                  <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.categoryId)?.name}`}</IonText>
                   {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
                 </IonLabel>
                 <IonLabel slot="end" className="price">{p.isOffer || p.offerEnd ? '' : (p.price / 100).toFixed(2)}</IonLabel>

@@ -1,6 +1,20 @@
 import { State, Action } from './types'
 
-const Reducer = (state: State, action: Action) => {
+const initState: State = {
+  categories: [], 
+  basket: [], 
+  orders: [],
+  packs: [],
+  packPrices: [],
+  adverts: [],
+  regions: [],
+  passwordRequests: [],
+  orderBasket: [],
+  notifications: [],
+  searchText: ''
+}
+
+const reducer = (state: State = initState, action: Action) => {
   let pack, packIndex, packs, nextQuantity, i
   const increment = [0.125, 0.25, 0.5, 0.75, 1]
   switch (action.type){
@@ -170,4 +184,4 @@ const Reducer = (state: State, action: Action) => {
   }
 }
 
-export default Reducer
+export default reducer

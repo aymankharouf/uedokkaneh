@@ -10,7 +10,7 @@ export type Category = {
   ordering: number,
   isLeaf: boolean
 }
-export type Error = {
+export type Err = {
   code: string,
   message: string
 }

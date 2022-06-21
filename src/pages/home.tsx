@@ -1,33 +1,35 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
-import { StateContext } from '../data/state-provider'
-import { Advert } from '../data/types'
+import { Advert, Notification, State } from '../data/types'
 import { Category } from '../data/types'
 import { IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonLoading, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react'
 import {colors} from '../data/config'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
 
 const Home = () => {
-  const { state } = useContext(StateContext)
+  const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
+  const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const [advert, setAdvert] = useState<Advert | undefined>(undefined)
   const [notifications, setNotifications] = useState(0)
   const [categories, setCategories] = useState<Category[]>([])
   useEffect(() => {
-    setAdvert(() => state.adverts.find(a => a.isActive))
-  }, [state.adverts])
+    setAdvert(() => stateAdverts.find(a => a.isActive))
+  }, [stateAdverts])
   useEffect(() => {
-    setNotifications(() => state.notifications.filter(n => n.status === 'n').length)
-  }, [state.notifications])
+    setNotifications(() => stateNotifications.filter(n => n.status === 'n').length)
+  }, [stateNotifications])
   useEffect(() => {
     setCategories(() => {
-      const categories = state.categories.filter(c => c.parentId === '0')
+      const categories = stateCategories.filter(c => c.parentId === '0')
       return categories.sort((c1, c2) => c1.ordering - c2.ordering)  
     })
-  }, [state.categories])
+  }, [stateCategories])
   let i = 0
   return (
     <IonPage>
-      <IonLoading isOpen={state.categories.length === 0} />
+      <IonLoading isOpen={stateCategories.length === 0} />
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">

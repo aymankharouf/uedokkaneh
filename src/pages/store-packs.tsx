@@ -1,15 +1,15 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
 import { colors, storeSummary } from '../data/config'
 import { productOfText } from '../data/actions'
-import { Pack, PackPrice } from '../data/types'
+import { CustomerInfo, Pack, PackPrice, State } from '../data/types'
 import { useParams } from 'react-router'
 import { IonBadge, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
 
 type Params = {
   type: string
@@ -18,14 +18,16 @@ type ExtendedPackPrice = PackPrice & {
   packInfo: Pack
 }
 const StorePacks = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
   const [storePacks, setStorePacks] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {
     setStorePacks(() => {
-      const storePacks = state.packPrices.filter(p => p.storeId === state.customerInfo?.storeId)
+      const storePacks = statePackPrices.filter(p => p.storeId === stateCustomerInfo?.storeId)
       const extendedStorePacks = storePacks.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)!
+        const packInfo = statePacks.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo
@@ -36,7 +38,7 @@ const StorePacks = () => {
                             || (params.type === 'n' && p.price === (p.packInfo.price ?? 0) && p.storeId !== p.packInfo?.minStoreId)
                             || (params.type === 'l' && p.price === (p.packInfo.price ?? 0) && p.storeId === p.packInfo?.minStoreId))
     })
-  }, [state.packPrices, state.packs, state.customerInfo, params.type])
+  }, [statePackPrices, statePacks, stateCustomerInfo, params.type])
 
   let i = 0
   return(

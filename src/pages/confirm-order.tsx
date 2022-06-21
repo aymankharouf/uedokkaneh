@@ -1,31 +1,40 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { confirmOrder, getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
-import { BasketPack, Discount, BigBasketPack } from '../data/types'
+import { BasketPack, Discount, BigBasketPack, State, Region, CustomerInfo, UserInfo, Pack, Advert, Order, Err } from '../data/types'
 import { useHistory, useLocation } from 'react-router'
 import { IonBadge, IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import { Link } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import firebase from '../data/firebase'
 
 const ConfirmOrder = () => {
-  const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateRegions = useSelector<State, Region[]>(state => state.regions)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
+  const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
   const [basket, setBasket] = useState<BigBasketPack[]>([])
   const [total, setTotal] = useState(0)
   const [fixedFees, setFixedFees] = useState(0)
   const [fraction, setFraction] = useState(0)
   const [discount, setDiscount] = useState<Discount>()
   const [weightedPacks, setWeightedPacks] = useState<BasketPack[]>([])
-  const [regionFees] = useState(() => state.regions.find(r => r.id === state.userInfo?.regionId)?.fees ?? 0)
-  const [deliveryFees] = useState(state.customerInfo?.deliveryFees ?? regionFees)
+  const [regionFees] = useState(() => stateRegions.find(r => r.id === stateUserInfo?.regionId)?.fees ?? 0)
+  const [deliveryFees] = useState(stateCustomerInfo?.deliveryFees ?? regionFees)
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
 
   useEffect(() => {
-    setBasket(getBasket(state.basket, state.packs))
-  }, [state.basket, state.packs])
+    setBasket(getBasket(stateBasket, statePacks))
+  }, [stateBasket, statePacks])
 
   useEffect(() => {
     setTotal(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0))
@@ -39,7 +48,7 @@ const ConfirmOrder = () => {
   }, [total, fixedFees])
   useEffect(() => {
     setDiscount(() => {
-      const orders = state.orders.filter(o => o.status !== 'c')
+      const orders = stateOrders.filter(o => o.status !== 'c')
       let discount = {
         value: 0,
         type: 'n'
@@ -47,28 +56,28 @@ const ConfirmOrder = () => {
       if (orders.length === 0) {
         discount.value = setup.firstOrderDiscount
         discount.type = 'f'
-      } else if ((state.customerInfo?.discounts || 0) > 0) {
-        discount.value = Math.min(state.customerInfo?.discounts || 0, setup.maxDiscount)
+      } else if ((stateCustomerInfo?.discounts || 0) > 0) {
+        discount.value = Math.min(stateCustomerInfo?.discounts || 0, setup.maxDiscount)
         discount.type = 'o'
-      } else if ((state.customerInfo?.specialDiscount || 0) > 0) {
-        discount.value = state.customerInfo?.specialDiscount || 0
+      } else if ((stateCustomerInfo?.specialDiscount || 0) > 0) {
+        discount.value = stateCustomerInfo?.specialDiscount || 0
         discount.type = 's'
       }
       return discount
     }) 
-  }, [state.orders, state.customerInfo])
+  }, [stateOrders, stateCustomerInfo])
 
   const handleConfirm = () => {
     try{
-      if (state.adverts[0]?.type === 'n') {
-        message(state.adverts[0].text, 2000)
+      if (stateAdverts[0]?.type === 'n') {
+        message(stateAdverts[0].text, 2000)
         return
       }
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
-      const orderLimit = state.customerInfo?.orderLimit || setup.orderLimit
-      const activeOrders = state.orders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
+      const orderLimit = stateCustomerInfo?.orderLimit || setup.orderLimit
+      const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
       const totalOrders = activeOrders.reduce((sum, o) => sum + o.total, 0)
       if (totalOrders + total > orderLimit) {
         throw new Error('limitOverFlow')
@@ -105,11 +114,12 @@ const ConfirmOrder = () => {
       message(labels.sendSuccess, 3000)
       history.push('/')
       dispatch({ type: 'CLEAR_BASKET'})
-    } catch (err){
+    } catch (error){
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
-  if (!state.user) return <IonPage><h3 className="center"><a href="/login">{labels.relogin}</a></h3></IonPage>
+  if (!stateUser) return <IonPage><h3 className="center"><a href="/login">{labels.relogin}</a></h3></IonPage>
   return (
     <IonPage>
       <Header title={labels.sendOrder} />

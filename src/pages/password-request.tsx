@@ -1,14 +1,15 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect } from 'react'
 import { getMessage, addPasswordRequest } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
-import { StateContext } from '../data/state-provider'
 import { patterns } from '../data/config'
+import { useSelector } from 'react-redux'
+import { Err, PasswordRequest as PasswordRequestType, State } from '../data/types'
 
 const PasswordRequest = () => {
-  const { state } = useContext(StateContext)
+  const statePasswordRequests = useSelector<State, PasswordRequestType[]>(state => state.passwordRequests)
   const [mobile, setMobile] = useState('')
   const [mobileInvalid, setMobileInvalid] = useState(false)
   const history = useHistory()
@@ -19,13 +20,14 @@ const PasswordRequest = () => {
   }, [mobile])
   const handlePasswordRequest = () => {
     try{
-      if (state.passwordRequests.find(r => r.mobile === mobile)) {
+      if (statePasswordRequests.find(r => r.mobile === mobile)) {
         throw new Error('duplicatePasswordRequest')
       }
       addPasswordRequest(mobile)
       message(labels.sendSuccess, 3000)
       history.goBack()
-    } catch (err){
+    } catch (error){
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

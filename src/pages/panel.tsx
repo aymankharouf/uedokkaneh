@@ -1,18 +1,22 @@
-import { useContext, useState, useEffect, useRef } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect, useRef } from 'react'
 import { logout } from '../data/actions'
 import labels from '../data/labels'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonMenu, IonMenuToggle } from '@ionic/react'
 import { useHistory } from 'react-router'
+import { useSelector, useDispatch } from 'react-redux'
+import firebase from '../data/firebase'
+import { Notification, State } from '../data/types'
 
 const Panel = () => {
-  const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
   const [notifications, setNotifications] = useState(0)
   const menuEl = useRef<HTMLIonMenuElement | null>(null)
   const history = useHistory()
   useEffect(() => {
-    setNotifications(() => state.notifications.filter(n => n.status === 'n').length)
-  }, [state.notifications])
+    setNotifications(() => stateNotifications.filter(n => n.status === 'n').length)
+  }, [stateNotifications])
   const handleLogout = () => {
     logout()
     dispatch({type: 'LOGOUT'})
@@ -25,7 +29,7 @@ const Panel = () => {
       <IonContent>
         <IonList>
           <IonMenuToggle autoHide={false}>
-            {state.user ?
+            {stateUser ?
               <>
                 <IonItem href="#" onClick={handleLogout}>
                   <IonLabel style={{marginBottom: '5px'}}>{labels.logout}</IonLabel>
@@ -59,7 +63,7 @@ const Panel = () => {
                 </IonItem>
               </>
             }
-            {state.user && state.user.displayName && 
+            {stateUser && stateUser.displayName && 
               <IonItem routerLink='/store-summary'>
                 <IonLabel>{labels.myPacks}</IonLabel>
               </IonItem>

@@ -1,23 +1,23 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { colors, orderStatus } from '../data/config'
-import { Order } from '../data/types'
+import { Order, State } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
 
 const OrdersList = () => {
-  const { state } = useContext(StateContext)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const [orders, setOrders] = useState<Order[]>([])
   useEffect(() => {
     setOrders(() => {
-      const orders = state.orders.filter(o => ['n', 'a', 'e', 'u', 'f', 'p', 'd'].includes(o.status))
+      const orders = stateOrders.filter(o => ['n', 'a', 'e', 'u', 'f', 'p', 'd'].includes(o.status))
       return orders.sort((o1, o2) => o2.time! > o1.time! ? -1 : 1)
     })
-  }, [state.orders])
+  }, [stateOrders])
   return(
     <IonPage>
       <Header title={labels.myOrders} />

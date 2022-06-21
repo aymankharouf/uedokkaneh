@@ -1,5 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { addAlarm, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { alarmTypes } from '../data/config'
@@ -7,15 +6,19 @@ import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel,
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import { useHistory, useLocation, useParams } from 'react-router'
+import { useSelector } from 'react-redux'
+import { CustomerInfo, Err, Pack, PackPrice, State } from '../data/types'
 
 type Params = {
   alarmType: string,
   packId: string
 }
 const AddAlarm = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [pack] = useState(() => state.packs.find(p => p.id === params.packId))
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const [pack] = useState(() => statePacks.find(p => p.id === params.packId))
   const [price, setPrice] = useState('')
   const [quantity, setQuantity] = useState('')
   const [priceInvalid, setPriceInvalid] = useState(false)
@@ -31,12 +34,12 @@ const AddAlarm = () => {
   useEffect(() => {
     setCurrentPrice(() => {
       if (params.alarmType === 'cp') {
-        return state.packPrices.find(p => p.storeId === state.customerInfo?.storeId && p.packId === pack?.id)?.price
+        return statePackPrices.find(p => p.storeId === stateCustomerInfo?.storeId && p.packId === pack?.id)?.price
       } else {
         return pack?.price
       }
     })
-  }, [state.packPrices, params.alarmType, state.customerInfo, pack])
+  }, [statePackPrices, params.alarmType, stateCustomerInfo, pack])
   useEffect(() => {
     const validatePrice = (value: string) => {
       if (Number(value) > 0 && Number(value) * 100 !== Number(currentPrice)) {
@@ -69,10 +72,10 @@ const AddAlarm = () => {
     || priceInvalid
     || alternativeErrorMessage) setButtonVisisble(false)
     else setButtonVisisble(true)
-  }, [params.alarmType, price, isOffer, offerDays, alternative, quantity, state.customerInfo, priceInvalid, alternativeErrorMessage])
+  }, [params.alarmType, price, isOffer, offerDays, alternative, quantity, stateCustomerInfo, priceInvalid, alternativeErrorMessage])
   const handleSubmit = () => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
       if (offerDays && Number(offerDays) <= 0) {
@@ -93,7 +96,8 @@ const AddAlarm = () => {
       addAlarm(alarm)
       message(labels.sendSuccess, 3000)
       history.replace('/')
-    } catch (err) {
+    } catch (error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

@@ -1,22 +1,26 @@
-import { useContext, useEffect, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useEffect, useState } from 'react'
 import { editOrder, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
-import { OrderPack } from '../data/types'
+import { CustomerInfo, Err, Order, OrderPack, Pack, State } from '../data/types'
 import { IonBadge, IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { addOutline, removeOutline } from 'ionicons/icons'
+import { useSelector, useDispatch } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditOrder = () => {
-  const { state, dispatch } = useContext(StateContext)
   const params = useParams<Params>()
-  const [order] = useState(() => state.orders.find(o => o.id === params.id))
+  const dispatch = useDispatch()
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateOrderBasket = useSelector<State, OrderPack[]>(state => state.orderBasket)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const [order] = useState(() => stateOrders.find(o => o.id === params.id))
   const [orderBasket, setOrderBasket] = useState<OrderPack[]>([])
   const [total, setTotal] = useState(0)
   const [overLimit, setOverLimit] = useState(false)
@@ -25,7 +29,7 @@ const EditOrder = () => {
   const location = useLocation()
   const [message] = useIonToast()
   const [customerOrdersTotals] = useState(() => {
-    const activeOrders = state.orders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
+    const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
     return activeOrders.reduce((sum, o) => sum + o.total, 0)
   })
   useEffect(() => {
@@ -41,43 +45,44 @@ const EditOrder = () => {
   }, [dispatch, order])
   useEffect(() => {
     setOrderBasket(() => {
-      const basket = state.orderBasket?.filter(p => p.quantity > 0) || []
+      const basket = stateOrderBasket?.filter(p => p.quantity > 0) || []
       return basket.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)
+        const packInfo = statePacks.find(pa => pa.id === p.packId)
         return {
           ...p,
           packInfo
         }
       })
     })
-  }, [state.orderBasket, state.packs])
+  }, [stateOrderBasket, statePacks])
   useEffect(() => {
-    setHasChanged(() => state.orderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false)
-  }, [state.orderBasket])
+    setHasChanged(() => stateOrderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false)
+  }, [stateOrderBasket])
   useEffect(() => {
     setTotal(() => orderBasket.reduce((sum, p) => sum + p.gross, 0))
   }, [orderBasket])
   useEffect(() => {
-    const orderLimit = state.customerInfo?.orderLimit ?? setup.orderLimit
+    const orderLimit = stateCustomerInfo?.orderLimit ?? setup.orderLimit
     if (customerOrdersTotals + total > orderLimit){
       setOverLimit(true)
     } else {
       setOverLimit(false)
     }
-  }, [state.customerInfo, customerOrdersTotals, total])
+  }, [stateCustomerInfo, customerOrdersTotals, total])
 
   const handleSubmit = () => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
       if (order) {
-        editOrder(order, state.orderBasket)
+        editOrder(order, stateOrderBasket)
         message(order.status === 'n' ? labels.editSuccess : labels.sendSuccess, 3000)
         dispatch({type: 'CLEAR_ORDER_BASKET'})
         history.goBack()  
       }
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

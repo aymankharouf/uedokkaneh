@@ -1,10 +1,11 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { colors, storeSummary } from '../data/config'
 import {IonButton, IonContent, IonPage} from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
+import { CustomerInfo, Pack, PackPrice, State } from '../data/types'
 
 type ExtendedSections = {
   id: string,
@@ -12,13 +13,15 @@ type ExtendedSections = {
   count: number
 }
 const StoreSummary = () => {
-  const { state } = useContext(StateContext)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
   const [sections, setSections] = useState<ExtendedSections[]>([])
   useEffect(() => {
     setSections(() => {
-      const storePacks = state.packPrices.filter(p => p.storeId === state.customerInfo?.storeId)
+      const storePacks = statePackPrices.filter(p => p.storeId === stateCustomerInfo?.storeId)
       const extendedStorePacks = storePacks.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)
+        const packInfo = statePacks.find(pa => pa.id === p.packId)
         return {
           ...p,
           packInfo
@@ -36,7 +39,7 @@ const StoreSummary = () => {
       })
       return sections
     })
-  }, [state.packPrices, state.packs, state.customerInfo])
+  }, [statePackPrices, statePacks, stateCustomerInfo])
   let i = 0
   return(
     <IonPage>

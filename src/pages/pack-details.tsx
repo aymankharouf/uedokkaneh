@@ -1,24 +1,32 @@
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import RatingStars from './rating-stars'
-import { StateContext } from '../data/state-provider'
 import { addAlarm, getMessage, updateFavorites, productOfText, notifyFriends } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
-import { Pack } from '../data/types'
+import { BasketPack, CustomerInfo, Err, Order, Pack, PackPrice, State, UserInfo } from '../data/types'
 import { IonActionSheet, IonButton, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonImg, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { menuOutline } from 'ionicons/icons'
+import { useSelector, useDispatch } from 'react-redux'
+import firebase from '../data/firebase'
 
 type Params = {
   id: string,
   type: string
 }
 const PackDetails = () => {
-  const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
   const params = useParams<Params>()
-  const [pack] = useState(() => state.packs.find(p => p.id === params.id))
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
+  const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const [pack] = useState(() => statePacks.find(p => p.id === params.id))
   const [isAvailable, setIsAvailable] = useState(-1)
   const [subPackInfo, setSubPackInfo] = useState('')
   const [bonusPackInfo, setBonusPackInfo] = useState('')
@@ -32,8 +40,8 @@ const PackDetails = () => {
   const [message] = useIonToast()
   const [alert] = useIonAlert()
   useEffect(() => {
-    setIsAvailable(() => state.packPrices.find(p => p.storeId === state.customerInfo?.storeId && p.packId === pack?.id) ? 1 : -1)
-  }, [state.packPrices, state.customerInfo, pack])
+    setIsAvailable(() => statePackPrices.find(p => p.storeId === stateCustomerInfo?.storeId && p.packId === pack?.id) ? 1 : -1)
+  }, [statePackPrices, stateCustomerInfo, pack])
   useEffect(() => {
     setSubPackInfo(() => {
       if (pack?.subPackId) {
@@ -51,23 +59,23 @@ const PackDetails = () => {
         return ''
       }  
     })
-    setOtherProducts(() => state.packs.filter(pa => pa.categoryId === pack?.categoryId && (pa.sales > pack.sales || pa.rating > pack.rating)))
-    setOtherOffers(() => state.packs.filter(pa => pa.productId === pack?.productId && pa.id !== pack.id && (pa.isOffer || pa.offerEnd)))
-    setOtherPacks(() => state.packs.filter(pa => pa.productId === pack?.productId && pa.weightedPrice < pack.weightedPrice))
-  }, [pack, state.packs])
+    setOtherProducts(() => statePacks.filter(pa => pa.categoryId === pack?.categoryId && (pa.sales > pack.sales || pa.rating > pack.rating)))
+    setOtherOffers(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.id !== pack.id && (pa.isOffer || pa.offerEnd)))
+    setOtherPacks(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.weightedPrice < pack.weightedPrice))
+  }, [pack, statePacks])
   const addToBasket = (packId?: string) => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
-      if (state.basket.find(p => p.packId === packId)) {
+      if (stateBasket.find(p => p.packId === packId)) {
         throw new Error('alreadyInBasket')
       }
-      let foundPack = state.packs.find(p => p.id === params.id)
+      let foundPack = statePacks.find(p => p.id === params.id)
       let price = pack?.price ?? 0
       let maxQuantity
       if (packId !== pack?.id) {
-        foundPack = state.packs.find(p => p.id === packId)
+        foundPack = statePacks.find(p => p.id === packId)
         if (packId === pack?.subPackId) {
           price = Math.round((pack?.price ?? 0) / (pack?.subQuantity ?? 0) * (pack?.subPercent ?? 0) * (1 + setup.profit))
           maxQuantity = (pack?.subQuantity ?? 0) - 1
@@ -83,8 +91,8 @@ const PackDetails = () => {
         maxQuantity,
         offerId: pack?.id
       }
-      const orderLimit = state.customerInfo?.orderLimit || setup.orderLimit
-      const activeOrders = state.orders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
+      const orderLimit = stateCustomerInfo?.orderLimit || setup.orderLimit
+      const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
       const activeOrdersTotal = activeOrders.reduce((sum, o) => sum + o.total, 0)
       if (activeOrdersTotal + purchasedPack.price > orderLimit) {
         throw new Error('limitOverFlow')
@@ -92,16 +100,17 @@ const PackDetails = () => {
       dispatch({type: 'ADD_TO_BASKET', payload: purchasedPack})
       message(labels.addToBasketSuccess, 3000)
       history.goBack()
-		} catch (err){
+		} catch (error){
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
   const confirmAddAlarm = (alarmTypeId: string) => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
-      if (state.userInfo?.alarms?.find(a => a.packId === params.id && a.status === 'n')){
+      if (stateUserInfo?.alarms?.find(a => a.packId === params.id && a.status === 'n')){
         throw new Error('duplicateAlarms')
       }
       const alarm = {
@@ -112,7 +121,8 @@ const PackDetails = () => {
       addAlarm(alarm)
       message(labels.sendSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
@@ -128,38 +138,41 @@ const PackDetails = () => {
           ],
         })
       } else {
-        if (state.customerInfo?.isBlocked) {
+        if (stateCustomerInfo?.isBlocked) {
           throw new Error('blockedUser')
         }
-        if (state.userInfo?.alarms?.find(a => a.packId === params.id && a.status === 'n')){
+        if (stateUserInfo?.alarms?.find(a => a.packId === params.id && a.status === 'n')){
           throw new Error('duplicateAlarms')
         }
         history.push(`/add-alarm/${params.id}/${alarmTypeId}`)
       }  
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
   const handleFavorite = () => {
     try{
-      if (state.userInfo && pack) {
-        updateFavorites(state.userInfo, pack.productId)
-        message(state.userInfo?.favorites?.includes(pack?.productId) ? labels.removeFavoriteSuccess : labels.addFavoriteSuccess, 3000)
+      if (stateUserInfo && pack) {
+        updateFavorites(stateUserInfo, pack.productId)
+        message(stateUserInfo?.favorites?.includes(pack?.productId) ? labels.removeFavoriteSuccess : labels.addFavoriteSuccess, 3000)
       }
-		} catch (err){
+		} catch (error){
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
   const handleNotifyFriends = () => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
       if (pack) {
         notifyFriends(pack.id)
         message(labels.sendSuccess, 3000)
       }
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
@@ -208,7 +221,7 @@ const PackDetails = () => {
           </IonButton>
         </div>
       }
-      {state.user &&
+      {stateUser &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setPackActionOpened(true)} color="success">
             <IonIcon ios={menuOutline} />
@@ -221,13 +234,13 @@ const PackDetails = () => {
         onDidDismiss={() => setPackActionOpened(false)}
         buttons={[
           {
-            text: pack?.productId && state.userInfo?.favorites?.includes(pack.productId) ? labels.removeFromFavorites : labels.addToFavorites,
+            text: pack?.productId && stateUserInfo?.favorites?.includes(pack.productId) ? labels.removeFromFavorites : labels.addToFavorites,
             cssClass: params.type === 'c' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleFavorite()
           },
           {
             text: labels.notifyFriends,
-            cssClass: params.type === 'c' && pack?.isOffer && state.userInfo?.friends?.find(f => f.status === 'r') ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: params.type === 'c' && pack?.isOffer && stateUserInfo?.friends?.find(f => f.status === 'r') ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleNotifyFriends()
           },
           {

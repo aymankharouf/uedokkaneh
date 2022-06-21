@@ -1,32 +1,32 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { colors } from '../data/config'
-import { Category } from '../data/types'
+import { Category, State } from '../data/types'
 import {IonButton, IonContent, IonLoading, IonPage} from '@ionic/react'
 import { useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 } 
 const Categories = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const [categories, setCategories] = useState<Category[]>([])
-  const [currentCategory] = useState(() => state.categories.find(c => c.id === params.id))
+  const [currentCategory] = useState(() => stateCategories.find(c => c.id === params.id))
   useEffect(() => {
     setCategories(() => {
-      const categories = state.categories.filter(c => c.parentId === params.id)
+      const categories = stateCategories.filter(c => c.parentId === params.id)
       return categories.sort((c1, c2) => c1.ordering - c2.ordering)
     })
-  }, [state.categories, params.id])
+  }, [stateCategories, params.id])
 
   let i = 0
   return(
     <IonPage>
-      <IonLoading isOpen={state.categories.length === 0} />
+      <IonLoading isOpen={stateCategories.length === 0} />
       <Header title={currentCategory?.name} />
       <IonContent fullscreen>
         <IonButton 

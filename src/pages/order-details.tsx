@@ -1,14 +1,14 @@
-import { useState, useEffect, useContext } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { cancelOrder, mergeOrders, addOrderRequest, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import { colors, orderPackStatus } from '../data/config'
-import { Order, OrderPack } from '../data/types'
+import { CustomerInfo, Err, Order, OrderPack, Pack, State } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { menuOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
@@ -18,9 +18,11 @@ type ExtendedOrderPack = OrderPack & {
   statusNote: string
 }
 const OrderDetails = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [order, setOrder] = useState(() => state.orders.find(o => o.id === params.id))
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const [order, setOrder] = useState(() => stateOrders.find(o => o.id === params.id))
   const [orderBasket, setOrderBasket] = useState<ExtendedOrderPack[]>([])
   const [lastOrder, setLastOrder] = useState<Order | undefined>(undefined)
   const [actionOpened, setActionOpened] = useState(false)
@@ -29,8 +31,8 @@ const OrderDetails = () => {
   const [message] = useIonToast()
   const [alert] = useIonAlert()
   useEffect(() => {
-    setOrder(() => state.orders.find(o => o.id === params.id))
-  }, [state.orders, params.id])
+    setOrder(() => stateOrders.find(o => o.id === params.id))
+  }, [stateOrders, params.id])
   useEffect(() => {
     setOrderBasket(() => order ? order.basket.map(p => {
       const priceNote = p.actual && p.actual !== p.price ? `${labels.orderPrice}: ${(p.price / 100).toFixed(2)}, ${labels.currentPrice}: ${(p.actual / 100).toFixed(2)}` : `${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`
@@ -42,28 +44,29 @@ const OrderDetails = () => {
       }
     }) : [])
     setLastOrder(() => {
-      const orders = state.orders.filter(o => o.id !== order?.id && !['c', 'm', 'r'].includes(o.status))
+      const orders = stateOrders.filter(o => o.id !== order?.id && !['c', 'm', 'r'].includes(o.status))
       orders.sort((o1, o2) => o2.time! > o1.time! ? -1 : 1)
       return ['n', 'a', 'e'].includes(orders[0]?.status) ? orders[0] : undefined
     })
-  }, [order, state.orders])
+  }, [order, stateOrders])
  
   const handleEdit = () => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
       if (order?.status !== 'n' && order?.requestType) {
         throw new Error('duplicateOrderRequest')
       }
       history.push(`/edit-order/${order?.id}`)
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
   const confirmDelete = () => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
       if (order) {
@@ -80,7 +83,8 @@ const OrderDetails = () => {
           history.goBack()
         }  
       }
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
@@ -96,7 +100,7 @@ const OrderDetails = () => {
   }
   const handleMerge = () => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
       if (lastOrder?.status !== 'n' && lastOrder?.requestType) {
@@ -109,7 +113,7 @@ const OrderDetails = () => {
           if (found && found.price !== p.price) {
             throw new Error('samePackWithDiffPrice')
           }
-          if (found?.weight && found.weight > 0 && state.packs.find(pa => pa.id === p.packId)?.isDivided) {
+          if (found?.weight && found.weight > 0 && statePacks.find(pa => pa.id === p.packId)?.isDivided) {
             throw new Error('samePackPurchasedByWeight')
           }
         }  
@@ -122,7 +126,8 @@ const OrderDetails = () => {
         }
         history.goBack()
       }
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

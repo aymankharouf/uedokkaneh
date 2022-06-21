@@ -1,16 +1,20 @@
-import { useContext, useEffect, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useEffect, useState } from 'react'
 import { getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
 import { colors, setup } from '../data/config'
-import { BigBasketPack } from '../data/types'
+import { BasketPack, BigBasketPack, CustomerInfo, Err, Order, Pack, State } from '../data/types'
 import { IonBadge, IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { addOutline, removeOutline } from 'ionicons/icons'
+import { useSelector, useDispatch } from 'react-redux'
 
 const Basket = () => {
-  const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
+  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
   const [submitVisible, setSubmitVisible] = useState(true)
   const [basket, setBasket] = useState<BigBasketPack[]>([])
   const [totalPrice, setTotalPrice] = useState(0)
@@ -19,44 +23,46 @@ const Basket = () => {
   const location = useLocation()
   const [message] = useIonToast()
   const [customerOrdersTotals] = useState(() => {
-    const activeOrders = state.orders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
+    const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
     return activeOrders.reduce((sum, o) => sum + o.total, 0)
   })
   useEffect(() => {
-    if (state.basket.length === 0) history.push('/home')
-    else setBasket(getBasket(state.basket, state.packs))
-  }, [state.basket, state.packs, history])
+    if (stateBasket.length === 0) history.push('/home')
+    else setBasket(getBasket(stateBasket, statePacks))
+  }, [stateBasket, statePacks, history])
   useEffect(() => {
     setTotalPrice(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0))
     setWeightedPacks(() => basket.filter(p => p.byWeight))
   }, [basket])
   useEffect(() => {
-    const orderLimit = state.customerInfo?.orderLimit ?? setup.orderLimit
+    const orderLimit = stateCustomerInfo?.orderLimit ?? setup.orderLimit
     if (customerOrdersTotals + totalPrice > orderLimit){
       setSubmitVisible(false)
     } else {
       setSubmitVisible(true)
     }
-  }, [state.customerInfo, customerOrdersTotals, totalPrice])
+  }, [stateCustomerInfo, customerOrdersTotals, totalPrice])
 
   const handleConfirm = () => {
     try{
-      if (state.customerInfo?.isBlocked) {
+      if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
       history.push('/confirm-order')
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
   const handleIncrease = (pack: BigBasketPack) => {
     try{
       dispatch({type: 'INCREASE_QUANTITY', payload: pack})
-      const orderLimit = state.customerInfo?.orderLimit ?? setup.orderLimit
+      const orderLimit = stateCustomerInfo?.orderLimit ?? setup.orderLimit
       if (customerOrdersTotals + totalPrice > orderLimit){
         throw new Error('limitOverFlow')
       }  
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

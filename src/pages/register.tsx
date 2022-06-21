@@ -1,5 +1,4 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { registerUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonLoading, useIonToast } from '@ionic/react'
@@ -7,13 +6,15 @@ import Header from './header'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { patterns } from '../data/config'
 import { checkmarkOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import { Err, Region, State } from '../data/types'
 
 type Params = {
   type: string
 }
 const Register = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateRegions = useSelector<State, Region[]>(state => state.regions)
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
@@ -22,7 +23,7 @@ const Register = () => {
   const [nameInvalid, setNameInvalid] = useState(true)
   const [passwordInvalid, setPasswordInvalid] = useState(true)
   const [mobileInvalid, setMobileInvalid] = useState(true)
-  const [regions] = useState(() => [...state.regions].sort((l1, l2) => l1.ordering - l2.ordering))
+  const [regions] = useState(() => [...stateRegions].sort((l1, l2) => l1.ordering - l2.ordering))
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
@@ -44,8 +45,9 @@ const Register = () => {
       dismiss()
       message(labels.registerSuccess, 3000)
       history.replace('/')
-    } catch (err){
+    } catch (error){
       dismiss()
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

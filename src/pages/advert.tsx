@@ -1,12 +1,13 @@
 import { useContext, useState } from 'react'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { IonCard, IonCol, IonContent, IonGrid, IonImg, IonPage, IonRow } from '@ionic/react'
 import Header from './header'
+import { useSelector } from 'react-redux'
+import { Advert as AdvertType, State } from '../data/types'
 
 const Advert = () => {
-  const { state } = useContext(StateContext)
-  const [advert] = useState(state.adverts[0])
+  const stateAdverts = useSelector<State, AdvertType[]>(state => state.adverts)
+  const [advert] = useState(stateAdverts[0])
   return (
     <IonPage>
       <Header title={labels.advert} />
