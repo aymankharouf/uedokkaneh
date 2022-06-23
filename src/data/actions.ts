@@ -1,7 +1,7 @@
 import firebase from './firebase'
 import labels from './labels'
 import { colors, setup } from './config'
-import { Err, OrderPack, BasketPack, Category, Order, UserInfo, Alarm, Pack, Notification } from './types'
+import { Err, OrderPack, BasketPack, Order, UserInfo, Alarm, Pack, Notification, Country } from './types'
 
 export const getMessage = (path: string, error: Err) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
@@ -35,18 +35,9 @@ export const addQuantity = (q1: number, q2: number, q3 = 0) => {
   return Math.trunc(q1 * 1000 + q2 * 1000 + q3 * 1000) / 1000
 }
 
-export const productOfText = (trademark: string, country: string) => {
-  return trademark ? `${labels.productFrom} ${trademark}-${country}` : `${labels.productOf} ${country}`
-}
-
-export const getChildren = (categoryId: string, categories: Category[]) => {
-  let childrenArray = [categoryId]
-  let children = categories.filter(c => c.parentId === categoryId)
-  children.forEach(c => {
-    const newChildren = getChildren(c.id, categories)
-    childrenArray = [...childrenArray, ...newChildren]
-  })
-  return childrenArray
+export const productOfText = (trademark: string, countryId: string, countries: Country[]) => {
+  const countryName = countries.find(c => c.id === countryId)?.name
+  return trademark ? `${labels.productFrom} ${trademark}-${countryName}` : `${labels.productOf} ${countryName}`
 }
 
 export const rateProduct = (productId: string, value: number) => {

@@ -3,7 +3,7 @@ import RatingStars from './rating-stars'
 import { addAlarm, getMessage, updateFavorites, productOfText, notifyFriends } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
-import { BasketPack, CustomerInfo, Err, Order, Pack, PackPrice, State, UserInfo } from '../data/types'
+import { BasketPack, Country, CustomerInfo, Err, Order, Pack, PackPrice, State, UserInfo } from '../data/types'
 import { IonActionSheet, IonButton, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonImg, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -22,6 +22,7 @@ const PackDetails = () => {
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
   const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
   const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
@@ -193,7 +194,7 @@ const PackDetails = () => {
             </IonRow>
             <IonRow>
               <IonCol>
-                <IonImg src={pack?.imageUrl} alt={labels.noImage} />
+                <img src={pack?.imageUrl} alt={labels.noImage} />
               </IonCol>
             </IonRow>
             <IonRow>
@@ -202,7 +203,7 @@ const PackDetails = () => {
               </IonCol>
             </IonRow>
             <IonRow>
-              <IonCol>{productOfText(pack?.trademark ?? '', pack?.country ?? '')}</IonCol>
+              <IonCol>{productOfText(pack?.trademark || '', pack?.countryId || '', stateCountries)}</IonCol>
               <IonCol className="ion-text-end"><RatingStars rating={pack?.rating ?? 0} count={pack?.ratingCount ?? 0} /></IonCol>
             </IonRow>
           </IonGrid>

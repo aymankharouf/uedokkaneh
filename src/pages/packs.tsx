@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { sortByList, colors } from '../data/config'
-import { getChildren, productOfText } from '../data/actions'
-import { Category, Pack, State, UserInfo } from '../data/types'
+import { productOfText } from '../data/actions'
+import { Category, Country, Pack, State, UserInfo } from '../data/types'
 import { IonActionSheet, IonBadge, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -17,6 +17,7 @@ const Packs = () => {
   const params = useParams<Params>()
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
   const [packs, setPacks] = useState<Pack[]>([])
   const [category] = useState(() => stateCategories.find(category => category.id === params.id))
@@ -24,8 +25,7 @@ const Packs = () => {
   const [actionOpened, setActionOpened] = useState(false)
   useEffect(() => {
     setPacks(() => {
-      const children = params.type === 'a' ? getChildren(params.id, stateCategories) : [params.id]
-      const packs = statePacks.filter(p => !params.id || (params.type === 'f' && stateUserInfo?.favorites?.includes(p.productId)) || children.includes(p.categoryId))
+      const packs = statePacks.filter(p => params.type === 'a' || (params.type === 'n' && p.categoryId === params.id) || (params.type === 'f' && stateUserInfo?.favorites?.includes(p.productId)))
       return packs.sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
     })
   }, [statePacks, stateUserInfo, params.id, params.type, stateCategories])
@@ -83,7 +83,7 @@ const Packs = () => {
                   <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
                   <IonText style={{color: colors[2].name}}>{p.name}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.productDescription}</IonText>
-                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.country)}</IonText>
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.countryId, stateCountries)}</IonText>
                   <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.categoryId)?.name}`}</IonText>
                   {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
                 </IonLabel>

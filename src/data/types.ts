@@ -6,9 +6,10 @@ export type Label = {
 export type Category = {
   id: string,
   name: string,
-  parentId: string,
-  ordering: number,
-  isLeaf: boolean
+}
+export type Country = {
+  id: string,
+  name: string,
 }
 export type Err = {
   code: string,
@@ -41,7 +42,7 @@ export type Pack = {
   isDivided: boolean,
   minStoreId?: string,
   trademark: string,
-  country: string,
+  countryId: string,
   closeExpired: boolean,
   ratingCount: number,
   byWeight: boolean
@@ -162,6 +163,7 @@ export type State = {
   userInfo?: UserInfo,
   customerInfo?: CustomerInfo,
   categories: Category[],
+  countries: Country[],
   basket: BasketPack[],
   orders: Order[],
   packs: Pack[],
@@ -179,7 +181,3 @@ export type Action = {
   payload?: any
 }
 
-export type Context = {
-  state: State;
-  dispatch: React.Dispatch<Action>
-}

@@ -4,7 +4,7 @@ import 'moment/locale/ar'
 import labels from '../data/labels'
 import { colors, storeSummary } from '../data/config'
 import { productOfText } from '../data/actions'
-import { CustomerInfo, Pack, PackPrice, State } from '../data/types'
+import { Country, CustomerInfo, Pack, PackPrice, State } from '../data/types'
 import { useParams } from 'react-router'
 import { IonBadge, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
@@ -21,6 +21,7 @@ const StorePacks = () => {
   const params = useParams<Params>()
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
   const [storePacks, setStorePacks] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {
@@ -60,7 +61,7 @@ const StorePacks = () => {
                   <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
                   <IonText style={{color: colors[2].name}}>{p.packInfo.productDescription}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.packInfo.name}</IonText>
-                  <IonText style={{color: colors[4].name}}>{productOfText(p.packInfo.trademark ?? '', p.packInfo.country ?? '')}</IonText>
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.packInfo.trademark || '', p.packInfo.countryId || '', stateCountries)}</IonText>
                   {p.price > (p.packInfo.price ?? 0) && <IonText style={{color: colors[5].name}}>{`${labels.myPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>}
                   <IonText style={{color: colors[6].name}}>{moment(p.time).fromNow()}</IonText>
                   {p.packInfo.isOffer && <IonBadge color="success">{labels.offer}</IonBadge>}

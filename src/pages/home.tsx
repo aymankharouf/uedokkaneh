@@ -13,19 +13,12 @@ const Home = () => {
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const [advert, setAdvert] = useState<Advert | undefined>(undefined)
   const [notifications, setNotifications] = useState(0)
-  const [categories, setCategories] = useState<Category[]>([])
   useEffect(() => {
     setAdvert(() => stateAdverts.find(a => a.isActive))
   }, [stateAdverts])
   useEffect(() => {
     setNotifications(() => stateNotifications.filter(n => n.status === 'n').length)
   }, [stateNotifications])
-  useEffect(() => {
-    setCategories(() => {
-      const categories = stateCategories.filter(c => c.parentId === '0')
-      return categories.sort((c1, c2) => c1.ordering - c2.ordering)  
-    })
-  }, [stateCategories])
   let i = 0
   return (
     <IonPage>
@@ -69,9 +62,9 @@ const Home = () => {
         >
           {labels.allProducts}
         </IonButton>
-        {categories.map(c => 
+        {stateCategories.map(c => 
           <IonButton
-            routerLink={c.isLeaf ? `/packs/n/${c.id}` : `/categories/${c.id}`} 
+            routerLink={`/packs/n/${c.id}`} 
             expand="block"
             shape="round"
             className={colors[i++ % 10].name}

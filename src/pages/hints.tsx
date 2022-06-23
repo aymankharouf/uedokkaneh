@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { productOfText } from '../data/actions'
-import { Category, Pack, State } from '../data/types'
+import { Category, Country, Pack, State } from '../data/types'
 import { IonBadge, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -15,6 +15,7 @@ type Props = {
 const Hints = (props: Props) => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const [pack] = useState(() => statePacks.find(p => p.id === props.id))
   const [packs, setPacks] = useState<Pack[]>([])
   useEffect(() => {
@@ -46,7 +47,7 @@ const Hints = (props: Props) => {
                   <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
                   <IonText style={{color: colors[2].name}}>{p.name}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.productDescription}</IonText>
-                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.country)}</IonText>
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.countryId, stateCountries)}</IonText>
                   <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.categoryId)?.name}`}</IonText>
                   {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
                 </IonLabel>

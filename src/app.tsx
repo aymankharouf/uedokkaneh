@@ -2,7 +2,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
-import { Category, Pack, PackPrice, Advert as AdvertType, PasswordRequest as PasswordRequestType, Order, UserInfo, Notification } from './data/types'
+import { Pack, PackPrice, Advert as AdvertType, PasswordRequest as PasswordRequestType, Order, UserInfo, Notification } from './data/types'
 import firebase from './data/firebase'
 
 /* Core CSS required for Ionic components to work properly */
@@ -26,7 +26,6 @@ import './css/variables.css'
 import './css/app.css'
 
 import Home from './pages/home'
-import Categories from './pages/categories'
 import Panel from './pages/panel'
 import Login from './pages/login'
 import Register from './pages/register'
@@ -59,20 +58,15 @@ const App = () => {
     window.location.href = window.location.hostname === 'localhost' ? href.substr(0, 21) : href.substr(0, 28)
   }
   useEffect(() => {
-    const unsubscribeCategories = firebase.firestore().collection('categories').where('isActive', '==', true).onSnapshot(docs => {
-      let categories: Category[] = []
-      docs.forEach(doc => {
-        categories.push({
-          id: doc.id,
-          name: doc.data().name,
-          parentId: doc.data().parentId,
-          ordering: doc.data().ordering,
-          isLeaf: doc.data().isLeaf
-        })
-      })
-      dispatch({type: 'SET_CATEGORIES', payload: categories})
+    const unsubscribeCategories = firebase.firestore().collection('lookups').doc('g').onSnapshot(doc => {
+      if (doc.exists) dispatch({type: 'SET_CATEGORIES', payload: doc.data()?.values})
     }, err => {
       unsubscribeCategories()
+    })  
+    const unsubscribeCountries = firebase.firestore().collection('lookups').doc('c').onSnapshot(doc => {
+      if (doc.exists) dispatch({type: 'SET_COUNTRIES', payload: doc.data()?.values})
+    }, err => {
+      unsubscribeCountries()
     })  
     const unsubscribePacks = firebase.firestore().collection('packs').where('price', '>', 0).onSnapshot(docs => {
       let packs: Pack[] = []
@@ -96,7 +90,7 @@ const App = () => {
           weightedPrice: doc.data().weightedPrice,
           isDivided: doc.data().isDivided,
           trademark: doc.data().trademark,
-          country: doc.data().country,
+          countryId: doc.data().countryId,
           closeExpired: doc.data().closeExpired,
           byWeight: doc.data().byWeight
         })
@@ -215,7 +209,7 @@ const App = () => {
         dispatch({type: 'SET_ORDERS', payload: []})
       }
     })
-  }, [])
+  }, [dispatch])
   return (
     <IonApp dir="rtl">
       <IonReactRouter>
@@ -228,7 +222,6 @@ const App = () => {
             <Route path="/change-password" exact={true} component={ChangePassword} />
             <Route path="/register/:type" exact={true} component={Register} />
             <Route path="/invite-friend" exact={true} component={InviteFriend} />
-            <Route path="/categories/:id" exact={true} component={Categories} />
             <Route path="/packs/:type/:id" exact={true} component={Packs} />
             <Route path="/pack-details/:id/:type" exact={true} component={PackDetails} />
             <Route path="/add-alarm/:packId/:alarmType" exact={true} component={AddAlarm} />

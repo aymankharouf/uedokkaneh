@@ -2,6 +2,7 @@ import { State, Action } from './types'
 
 const initState: State = {
   categories: [], 
+  countries: [], 
   basket: [], 
   orders: [],
   packs: [],
@@ -169,6 +170,8 @@ const reducer = (state: State = initState, action: Action) => {
       return {...state, packs: action.payload}
     case 'SET_CATEGORIES':
       return {...state, categories: action.payload}
+    case 'SET_COUNTRIES':
+      return {...state, countries: action.payload}
     case 'SET_PACK_PRICES':
       return {...state, packPrices: action.payload}
     case 'SET_ADVERTS':
