@@ -6,6 +6,7 @@ export type Label = {
 export type Category = {
   id: string,
   name: string,
+  ordering: number
 }
 export type Country = {
   id: string,

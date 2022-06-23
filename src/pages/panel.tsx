@@ -50,9 +50,6 @@ const Panel = () => {
                 <IonItem routerLink="/purchased-packs" style={{marginBottom: '0px', marginTop: '0px'}}>
                   <IonLabel>{labels.purchasedPacks}</IonLabel>
                 </IonItem>
-                <IonItem routerLink="/friends" style={{marginBottom: '0px', marginTop: '0px'}}>
-                  <IonLabel>{labels.friends}</IonLabel>
-                </IonItem>
               </>
             : <>
                 <IonItem routerLink='/login'>

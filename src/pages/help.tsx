@@ -29,7 +29,6 @@ const Help = () => {
   const feesNote = 'رسوم الخدمة هي 1% من قيمة المشتريات، مضافا إليها رسوم التوصيل والتي تتحدد بناء على منطقتك'
   const regionFeesNote = 'حيث أن رسوم التوصيل ل'
   const ratingsNote = 'كذلك لا تنس تقييم المنتجات التي تشتريها حتى يستفيد الاخرون من تجربتك للمنتج، وذلك من خلال صفحة مشترياتي والتي يمكن الوصول اليها من القائمة الجانبية في الصفحة الرئيسية'
-  const invitationsNote = ' وللحصول على المزيد من الخصومات لا تنس دعوة أصدقائك من خلال القائمة الجانبية في الصفحة الرئيسية حيث سوف تحصل على خصم لكل صديق يشترك معنا'
   return (
     <IonPage>
       <Header title={labels.helpPageTitle} />
@@ -39,7 +38,6 @@ const Help = () => {
           <>
             <p className="help1">{feesNote}</p>
             {userRegion && userRegion.fees > 0 && <p className="help1">{`${regionFeesNote}${userRegion.name}: ${(userRegion.fees / 100).toFixed(2)}`}</p>}
-            <p className="help2">{invitationsNote}</p>
             <p className="help2">{ratingsNote}</p>
           </>
         }

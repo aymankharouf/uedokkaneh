@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import labels from '../data/labels'
 import { Advert, Notification, State } from '../data/types'
 import { Category } from '../data/types'
@@ -11,6 +11,7 @@ const Home = () => {
   const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
   const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const categories = useMemo(() => stateCategories.sort((c1, c2) => c1.ordering - c2.ordering), [stateCategories])
   const [advert, setAdvert] = useState<Advert | undefined>(undefined)
   const [notifications, setNotifications] = useState(0)
   useEffect(() => {
@@ -62,7 +63,7 @@ const Home = () => {
         >
           {labels.allProducts}
         </IonButton>
-        {stateCategories.map(c => 
+        {categories.map(c => 
           <IonButton
             routerLink={`/packs/n/${c.id}`} 
             expand="block"

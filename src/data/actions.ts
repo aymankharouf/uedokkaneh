@@ -187,16 +187,6 @@ export const addAlarm = (alarm: Alarm) => {
   })
 }
 
-export const inviteFriend = (mobile: string, name: string) => {
-  firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
-    friends: firebase.firestore.FieldValue.arrayUnion({
-      mobile,
-      name,
-      status: 'n'
-    })
-  })
-}
-
 export const readNotification = (notification: Notification, notifications: Notification[]) => {
   const otherNotifications = notifications.filter(n => n.id === notification.id)
   otherNotifications.push({

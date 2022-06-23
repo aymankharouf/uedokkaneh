@@ -4,7 +4,7 @@ import { addAlarm, getMessage, updateFavorites, productOfText, notifyFriends } f
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
 import { BasketPack, Country, CustomerInfo, Err, Order, Pack, PackPrice, State, UserInfo } from '../data/types'
-import { IonActionSheet, IonButton, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonImg, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
+import { IonActionSheet, IonButton, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'

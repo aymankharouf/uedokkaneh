@@ -37,7 +37,6 @@ import OrdersList from './pages/orders-list'
 import OrderDetails from './pages/order-details'
 import AddAlarm from './pages/add-alarm'
 import PasswordRequest from './pages/password-request'
-import InviteFriend from './pages/invite-friend'
 import StoreSummary from './pages/store-summary'
 import StorePacks from './pages/store-packs'
 import ChangePassword from './pages/change-password'
@@ -47,7 +46,6 @@ import Notifications from './pages/notifications'
 import PurchasedPacks from './pages/purchased-packs'
 import Advert from './pages/advert'
 import EditOrder from './pages/edit-order'
-import Friends from './pages/friends'
 import { useEffect } from 'react';
 
 
@@ -196,7 +194,7 @@ const App = () => {
               discount: doc.data().discount,
               fraction: doc.data().fraction,
               requestType: doc.data().requestType,
-              time: doc.data().time.toDate()
+              time: doc.data().time?.toDate()
             })
           })
           dispatch({type: 'SET_ORDERS', payload: orders})
@@ -221,7 +219,6 @@ const App = () => {
             <Route path="/password-request" exact={true} component={PasswordRequest} />
             <Route path="/change-password" exact={true} component={ChangePassword} />
             <Route path="/register/:type" exact={true} component={Register} />
-            <Route path="/invite-friend" exact={true} component={InviteFriend} />
             <Route path="/packs/:type/:id" exact={true} component={Packs} />
             <Route path="/pack-details/:id/:type" exact={true} component={PackDetails} />
             <Route path="/add-alarm/:packId/:alarmType" exact={true} component={AddAlarm} />
@@ -237,7 +234,6 @@ const App = () => {
             <Route path="/purchased-packs" exact={true} component={PurchasedPacks} />
             <Route path="/advert" exact={true} component={Advert} />
             <Route path="/edit-order/:id" exact={true} component={EditOrder} />
-            <Route path="/friends" exact={true} component={Friends} />
           </IonRouterOutlet>
         </IonSplitPane>
       </IonReactRouter>

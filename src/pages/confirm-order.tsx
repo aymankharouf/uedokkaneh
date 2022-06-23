@@ -119,7 +119,7 @@ const ConfirmOrder = () => {
       message(getMessage(location.pathname, err), 3000)
     }
   }
-  if (!stateUser) return <IonPage><h3 className="center"><a href="/login">{labels.relogin}</a></h3></IonPage>
+  if (!stateUser) return <IonPage><h5 className="center"><a href="/login">{labels.relogin}</a></h5></IonPage>
   return (
     <IonPage>
       <Header title={labels.sendOrder} />

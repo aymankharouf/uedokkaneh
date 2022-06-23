@@ -40,7 +40,7 @@ const labels: Label = {
   newUser: 'مستخدم جديد',
   forgetPassword: 'نسيت كلمة السر',
   enterName: 'الرجاء ادخال اﻻسم',
-  namePlaceholder: 'من 4-50 حرف',
+  namePlaceholder: 'من 3 الى  50 حرف',
   invalidName: 'اﻻسم غير صحيح',
   total: 'المجموع',
   fixedFees: 'الرسوم',
