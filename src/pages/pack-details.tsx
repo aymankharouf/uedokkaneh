@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import RatingStars from './rating-stars'
-import { addAlarm, getMessage, updateFavorites, productOfText, notifyFriends } from '../data/actions'
+import { addAlarm, getMessage, updateFavorites, productOfText } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
 import { BasketPack, Country, CustomerInfo, Err, Order, Pack, PackPrice, State, UserInfo } from '../data/types'
@@ -27,43 +27,15 @@ const PackDetails = () => {
   const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
   const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const [pack] = useState(() => statePacks.find(p => p.id === params.id))
-  const [isAvailable, setIsAvailable] = useState(-1)
-  const [subPackInfo, setSubPackInfo] = useState('')
-  const [bonusPackInfo, setBonusPackInfo] = useState('')
-  const [otherProducts, setOtherProducts] = useState<Pack[]>([])
-  const [otherOffers, setOtherOffers] = useState<Pack[]>([])
-  const [otherPacks, setOtherPacks] = useState<Pack[]>([])
+  const pack = useMemo(() => statePacks.find(p => p.id === params.id), [statePacks, params.id])
+  const isAvailable = useMemo(() => statePackPrices.find(p => p.storeId === stateCustomerInfo?.storeId && p.packId === pack?.id) ? 1 : -1, [statePackPrices, stateCustomerInfo, pack])
+  const otherOffers = useMemo(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.id !== pack.id && (pa.isOffer || pa.offerEnd)), [statePacks, pack])
+  const otherPacks = useMemo(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.weightedPrice < pack.weightedPrice), [statePacks, pack])
   const [packActionOpened, setPackActionOpened] = useState(false)
-  const [offerActionOpened, setOfferActionOpened] = useState(false)
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
   const [alert] = useIonAlert()
-  useEffect(() => {
-    setIsAvailable(() => statePackPrices.find(p => p.storeId === stateCustomerInfo?.storeId && p.packId === pack?.id) ? 1 : -1)
-  }, [statePackPrices, stateCustomerInfo, pack])
-  useEffect(() => {
-    setSubPackInfo(() => {
-      if (pack?.subPackId) {
-        const price = Math.round(pack.price / (pack?.subQuantity ?? 0) * (pack?.subPercent ?? 0) * (1 + setup.profit))
-        return `${pack.productName} ${pack?.subPackName}(${(price / 100).toFixed(2)})`
-      } else {
-        return ''
-      }  
-    })
-    setBonusPackInfo(() => {
-      if (pack?.bonusPackId) {
-        const price = Math.round(pack.price / (pack.bonusQuantity ?? 0) * (pack.bonusPercent ?? 0) * (1 + setup.profit))
-        return `${pack?.bonusProductName} ${pack.bonusPackName}(${(price / 100).toFixed(2)})`
-      } else {
-        return ''
-      }  
-    })
-    setOtherProducts(() => statePacks.filter(pa => pa.categoryId === pack?.categoryId && (pa.sales > pack.sales || pa.rating > pack.rating)))
-    setOtherOffers(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.id !== pack.id && (pa.isOffer || pa.offerEnd)))
-    setOtherPacks(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.weightedPrice < pack.weightedPrice))
-  }, [pack, statePacks])
   const addToBasket = (packId?: string) => {
     try{
       if (stateCustomerInfo?.isBlocked) {
@@ -163,20 +135,6 @@ const PackDetails = () => {
       message(getMessage(location.pathname, err), 3000)
     }
   }
-  const handleNotifyFriends = () => {
-    try{
-      if (stateCustomerInfo?.isBlocked) {
-        throw new Error('blockedUser')
-      }
-      if (pack) {
-        notifyFriends(pack.id)
-        message(labels.sendSuccess, 3000)
-      }
-    } catch(error) {
-      const err = error as Err
-      message(getMessage(location.pathname, err), 3000)
-    }
-  }
   let i = 0
   return (
     <IonPage>
@@ -216,9 +174,9 @@ const PackDetails = () => {
             shape="round"
             color="secondary"
             style={{width: '10rem'}}
-            onClick={() => pack?.isOffer ? setOfferActionOpened(true) : addToBasket(pack?.id)}
+            onClick={() => addToBasket(pack?.id)}
           >
-            {`${labels.addToBasket}${pack?.isOffer ? '*' : ''}`}
+            {`${labels.addToBasket}`}
           </IonButton>
         </div>
       }
@@ -229,7 +187,6 @@ const PackDetails = () => {
           </IonFabButton>
         </IonFab>
       }
-      {params.type === 'c' && pack?.isOffer ? <p className="note">{labels.offerHint}</p> : ''}
       <IonActionSheet
         isOpen={packActionOpened}
         onDidDismiss={() => setPackActionOpened(false)}
@@ -238,16 +195,6 @@ const PackDetails = () => {
             text: pack?.productId && stateUserInfo?.favorites?.includes(pack.productId) ? labels.removeFromFavorites : labels.addToFavorites,
             cssClass: params.type === 'c' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleFavorite()
-          },
-          {
-            text: labels.notifyFriends,
-            cssClass: params.type === 'c' && pack?.isOffer && stateUserInfo?.friends?.find(f => f.status === 'r') ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => handleNotifyFriends()
-          },
-          {
-            text: labels.otherProducts,
-            cssClass: params.type === 'c' && otherProducts.length > 0 ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => history.push(`/hints/${pack?.id}/p`)
           },
           {
             text: labels.otherOffers,
@@ -288,27 +235,6 @@ const PackDetails = () => {
             text: labels.groupOffer,
             cssClass: params.type === 'o' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAddAlarm('go')
-          },
-        ]}
-      />
-      <IonActionSheet
-        isOpen={offerActionOpened}
-        onDidDismiss={() => setOfferActionOpened(false)}
-        buttons={[
-          {
-            text: labels.allOffer,
-            cssClass: 'good',
-            handler: () => addToBasket(pack?.id)
-          },
-          {
-            text: subPackInfo,
-            cssClass: 'medium',
-            handler: () => addToBasket(pack?.subPackId)
-          },
-          {
-            text: bonusPackInfo,
-            cssClass: pack?.bonusPackId ? 'bad' : 'ion-hide',
-            handler: () => addToBasket(pack?.bonusPackId)
           },
         ]}
       />

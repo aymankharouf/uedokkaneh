@@ -245,23 +245,6 @@ export const deleteNotification = (notificationId: string, notifications: Notifi
   })  
 }
 
-export const notifyFriends = (offerId: string) => {
-  firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
-    notifyFriends: firebase.firestore.FieldValue.arrayUnion(offerId)
-  })
-}
-
-export const deleteFriend = (user: UserInfo, mobile: string) => {
-  const friends = user.friends?.slice()
-  if (friends) {
-    const friendIndex = friends.findIndex(f => f.mobile === mobile)
-    friends.splice(friendIndex, 1)
-    firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
-      friends
-    })
-  }
-}
-
 export const getBasket = (stateBasket: BasketPack[], packs: Pack[]) => {
   const basket = stateBasket.map(p => {
     const packInfo = packs.find(pa => pa.id === p.packId)

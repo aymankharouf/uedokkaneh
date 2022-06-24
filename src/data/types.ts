@@ -61,11 +61,6 @@ export type Notification = {
   status: string,
   time: Date
 }
-export type Friend = {
-  mobile: string,
-  name: string,
-  status: string
-}
 export type Rating = {
   productId: string
 }
@@ -81,7 +76,6 @@ export type Alarm = {
 export type UserInfo = {
   mobile: string,
   regionId: string,
-  friends?: Friend[],
   ratings?: Rating[],
   favorites?: string[],
   alarms?: Alarm[]
@@ -90,9 +84,7 @@ export type CustomerInfo = {
   storeId: string,
   isBlocked: boolean,
   orderLimit: number,
-  deliveryFees: number,
-  discounts: number,
-  specialDiscount: number
+  deliveryFees: number
 }
 export type BasketPack = {
   packId: string,
@@ -129,9 +121,7 @@ export type Order = {
   basket: OrderPack[],
   status: string,
   total: number,
-  fixedFees: number,
   deliveryFees: number,
-  discount?: Discount,
   fraction: number,
   requestType?: string,
   time?: Date
@@ -154,10 +144,6 @@ export type Region = {
 export type PasswordRequest = {
   id: string,
   mobile: string
-}
-export type Discount = {
-  value: number,
-  type: string
 }
 export type State = {
   user?: firebase.User,

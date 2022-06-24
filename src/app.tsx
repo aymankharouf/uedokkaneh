@@ -189,9 +189,7 @@ const App = () => {
               basket: doc.data().basket,
               status: doc.data().status,
               total: doc.data().total,
-              fixedFees: doc.data().fixedFees,
               deliveryFees: doc.data().deliveryFees,
-              discount: doc.data().discount,
               fraction: doc.data().fraction,
               requestType: doc.data().requestType,
               time: doc.data().time?.toDate()

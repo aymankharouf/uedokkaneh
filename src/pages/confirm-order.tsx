@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { confirmOrder, getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
-import { BasketPack, Discount, BigBasketPack, State, Region, CustomerInfo, UserInfo, Pack, Advert, Order, Err } from '../data/types'
+import { BasketPack, State, Region, CustomerInfo, UserInfo, Pack, Advert, Order, Err } from '../data/types'
 import { useHistory, useLocation } from 'react-router'
 import { IonBadge, IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -20,52 +20,16 @@ const ConfirmOrder = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
-  const [basket, setBasket] = useState<BigBasketPack[]>([])
-  const [total, setTotal] = useState(0)
-  const [fixedFees, setFixedFees] = useState(0)
-  const [fraction, setFraction] = useState(0)
-  const [discount, setDiscount] = useState<Discount>()
-  const [weightedPacks, setWeightedPacks] = useState<BasketPack[]>([])
-  const [regionFees] = useState(() => stateRegions.find(r => r.id === stateUserInfo?.regionId)?.fees ?? 0)
-  const [deliveryFees] = useState(stateCustomerInfo?.deliveryFees ?? regionFees)
+  const basket = useMemo(() => getBasket(stateBasket, statePacks), [stateBasket, statePacks])
+  const total = useMemo(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [basket])
+  const fraction = useMemo(() => total - Math.floor(total / 5) * 5, [total])
+  const weightedPacks = useMemo(() => basket.filter(p => p.byWeight), [basket])
+  const regionFees = useMemo(() => stateRegions.find(r => r.id === stateUserInfo?.regionId)?.fees || 0, [stateRegions, stateUserInfo])
+  const deliveryFees = useMemo(() => stateCustomerInfo?.deliveryFees || regionFees, [stateCustomerInfo, regionFees])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
 
-  useEffect(() => {
-    setBasket(getBasket(stateBasket, statePacks))
-  }, [stateBasket, statePacks])
-
-  useEffect(() => {
-    setTotal(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0))
-    setWeightedPacks(() => basket.filter(p => p.byWeight))
-  }, [basket])
-  useEffect(() => {
-    setFixedFees(() => Math.round(setup.fixedFees * total))
-  }, [total])
-  useEffect(() => {
-    setFraction((total + fixedFees) - Math.floor((total + fixedFees) / 5) * 5)
-  }, [total, fixedFees])
-  useEffect(() => {
-    setDiscount(() => {
-      const orders = stateOrders.filter(o => o.status !== 'c')
-      let discount = {
-        value: 0,
-        type: 'n'
-      }
-      if (orders.length === 0) {
-        discount.value = setup.firstOrderDiscount
-        discount.type = 'f'
-      } else if ((stateCustomerInfo?.discounts || 0) > 0) {
-        discount.value = Math.min(stateCustomerInfo?.discounts || 0, setup.maxDiscount)
-        discount.type = 'o'
-      } else if ((stateCustomerInfo?.specialDiscount || 0) > 0) {
-        discount.value = stateCustomerInfo?.specialDiscount || 0
-        discount.type = 's'
-      }
-      return discount
-    }) 
-  }, [stateOrders, stateCustomerInfo])
 
   const handleConfirm = () => {
     try{
@@ -104,9 +68,7 @@ const ConfirmOrder = () => {
       const order = {
         status: 'n',
         basket: newPacks,
-        fixedFees,
         deliveryFees,
-        discount,
         total,
         fraction
       }
@@ -124,8 +86,6 @@ const ConfirmOrder = () => {
     <IonPage>
       <Header title={labels.sendOrder} />
       <IonContent fullscreen>
-        <p className="note">{labels.orderHelp} <Link to="/help/o">{labels.clickHere}</Link></p>
-        {regionFees === 0 ? <p className="note">{labels.noDelivery}</p> : ''}
         <IonList className="ion-padding">
           {basket.map(p => 
             <IonItem key={p.packId}>
@@ -148,21 +108,15 @@ const ConfirmOrder = () => {
           </IonItem>    
           <IonItem>
             <IonLabel>
-              <IonText style={{color: colors[1].name}}>{labels.fixedFees}</IonText>
+              <IonText style={{color: colors[1].name}}>{labels.deliveryFees}</IonText>
             </IonLabel>
-            <IonLabel slot="end" className="price">{((fixedFees + deliveryFees) / 100).toFixed(2)}</IonLabel>
-          </IonItem>    
-          <IonItem>
-            <IonLabel>
-              <IonText style={{color: colors[2].name}}>{labels.discount}</IonText>
-            </IonLabel>
-            <IonLabel slot="end" className="price">{(((discount?.value ?? 0) + fraction) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{(deliveryFees / 100).toFixed(2)}</IonLabel>
           </IonItem>    
           <IonItem>
             <IonLabel>
               <IonText style={{color: colors[3].name}}>{labels.net}</IonText>
             </IonLabel>
-            <IonLabel slot="end" className="price">{((total + fixedFees + deliveryFees - (discount?.value ?? 0) - fraction) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{((total + deliveryFees - fraction) / 100).toFixed(2)}</IonLabel>
           </IonItem>    
         </IonList>
         <p className="note">{weightedPacks.length > 0 ? labels.weightedPricesNote : ''}</p>

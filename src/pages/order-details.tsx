@@ -159,21 +159,15 @@ const OrderDetails = () => {
           </IonItem>    
           <IonItem>
             <IonLabel>
-              <IonText style={{color: colors[0].name}}>{labels.fixedFees}</IonText>
-            </IonLabel>
-            <IonLabel slot="end" className="price">{(((order?.fixedFees ?? 0) + (order?.deliveryFees ?? 0)) / 100).toFixed(2)}</IonLabel>
-          </IonItem>    
-          <IonItem>
-            <IonLabel>
               <IonText style={{color: colors[0].name}}>{labels.discount}</IonText>
             </IonLabel>
-            <IonLabel slot="end" className="price">{(((order?.discount?.value ?? 0) + (order?.fraction ?? 0)) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{((order?.fraction || 0) / 100).toFixed(2)}</IonLabel>
           </IonItem>    
           <IonItem>
             <IonLabel>
               <IonText style={{color: colors[0].name}}>{labels.net}</IonText>
             </IonLabel>
-            <IonLabel slot="end" className="price">{(((order?.total ?? 0) + (order?.fixedFees ?? 0) + (order?.deliveryFees ?? 0) - (order?.discount?.value ?? 0) - (order?.fraction ?? 0)) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{(((order?.total || 0) + (order?.deliveryFees || 0) - (order?.fraction || 0)) / 100).toFixed(2)}</IonLabel>
           </IonItem>    
         </IonList>
       </IonContent>
