@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
 import { colors, setup } from '../data/config'
@@ -16,24 +16,14 @@ const Basket = () => {
   const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
   const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
   const [submitVisible, setSubmitVisible] = useState(true)
-  const [basket, setBasket] = useState<BigBasketPack[]>([])
-  const [totalPrice, setTotalPrice] = useState(0)
-  const [weightedPacks, setWeightedPacks] = useState<BigBasketPack[]>([])
+  const basket = useMemo(() => getBasket(stateBasket, statePacks), [stateBasket, statePacks])
+  const totalPrice = useMemo(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [basket])
+  const weightedPacks = useMemo(() => basket.filter(p => p.byWeight), [basket])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
-  const [customerOrdersTotals] = useState(() => {
-    const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
-    return activeOrders.reduce((sum, o) => sum + o.total, 0)
-  })
-  useEffect(() => {
-    if (stateBasket.length === 0) history.push('/home')
-    else setBasket(getBasket(stateBasket, statePacks))
-  }, [stateBasket, statePacks, history])
-  useEffect(() => {
-    setTotalPrice(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0))
-    setWeightedPacks(() => basket.filter(p => p.byWeight))
-  }, [basket])
+  const customerOrdersTotals = useMemo(() => stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status)).reduce((sum, o) => sum + o.total, 0), [stateOrders])
+
   useEffect(() => {
     const orderLimit = stateCustomerInfo?.orderLimit ?? setup.orderLimit
     if (customerOrdersTotals + totalPrice > orderLimit){

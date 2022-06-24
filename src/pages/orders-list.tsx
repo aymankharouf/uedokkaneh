@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -11,13 +11,9 @@ import { useSelector } from 'react-redux'
 
 const OrdersList = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const [orders, setOrders] = useState<Order[]>([])
-  useEffect(() => {
-    setOrders(() => {
-      const orders = stateOrders.filter(o => ['n', 'a', 'e', 'u', 'f', 'p', 'd'].includes(o.status))
-      return orders.sort((o1, o2) => o2.time! > o1.time! ? -1 : 1)
-    })
-  }, [stateOrders])
+  const orders = useMemo(() => stateOrders.filter(o => ['n', 'a', 'e', 'u', 'f', 'p', 'd'].includes(o.status))
+                                          .sort((o1, o2) => o2.time! > o1.time! ? -1 : 1)
+                          , [stateOrders])
   return(
     <IonPage>
       <Header title={labels.myOrders} />

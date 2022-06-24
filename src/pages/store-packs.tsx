@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -14,32 +14,25 @@ import { useSelector } from 'react-redux'
 type Params = {
   type: string
 }
-type ExtendedPackPrice = PackPrice & {
-  packInfo: Pack
-}
 const StorePacks = () => {
   const params = useParams<Params>()
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
-  const [storePacks, setStorePacks] = useState<ExtendedPackPrice[]>([])
-  useEffect(() => {
-    setStorePacks(() => {
-      const storePacks = statePackPrices.filter(p => p.storeId === stateCustomerInfo?.storeId)
-      const extendedStorePacks = storePacks.map(p => {
-        const packInfo = statePacks.find(pa => pa.id === p.packId)!
-        return {
-          ...p,
-          packInfo
-        }
-      })
-      return extendedStorePacks.filter(p => (params.type === 'a')
-                            || (params.type === 'o' && p.price > (p.packInfo.price ?? 0)) 
-                            || (params.type === 'n' && p.price === (p.packInfo.price ?? 0) && p.storeId !== p.packInfo?.minStoreId)
-                            || (params.type === 'l' && p.price === (p.packInfo.price ?? 0) && p.storeId === p.packInfo?.minStoreId))
-    })
-  }, [statePackPrices, statePacks, stateCustomerInfo, params.type])
+  const storePacks = useMemo(() => statePackPrices.filter(p => p.storeId === stateCustomerInfo?.storeId)
+                                                  .map(p => {
+                                                    const packInfo = statePacks.find(pa => pa.id === p.packId)!
+                                                    return {
+                                                      ...p,
+                                                      packInfo
+                                                    }
+                                                  })
+                                                  .filter(p => (params.type === 'a')
+                                                                || (params.type === 'o' && p.price > (p.packInfo.price ?? 0)) 
+                                                                || (params.type === 'n' && p.price === (p.packInfo.price ?? 0) && p.storeId !== p.packInfo?.minStoreId)
+                                                                || (params.type === 'l' && p.price === (p.packInfo.price ?? 0) && p.storeId === p.packInfo?.minStoreId))
+  , [statePackPrices, statePacks, stateCustomerInfo, params.type])
 
   let i = 0
   return(

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
@@ -14,12 +14,9 @@ import { useSelector } from 'react-redux'
 
 const Notifications = () => {
   const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const notifications = useMemo(() => stateNotifications.sort((n1, n2) => n1.time > n2.time ? -1 : 1), [stateNotifications])
   const location = useLocation()
   const [message] = useIonToast()
-  useEffect(() => {
-      setNotifications(() => [...stateNotifications].sort((n1, n2) => n1.time > n2.time ? -1 : 1))
-  }, [stateNotifications])
   const handleDelete = (notification: Notification) => {
     try{
       deleteNotification(notification.id, stateNotifications)

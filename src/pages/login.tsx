@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { login, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonButtons, IonContent, IonFooter, IonInput, IonItem, IonLabel, IonList, IonPage, IonToolbar, useIonLoading, useIonToast } from '@ionic/react'
@@ -10,18 +10,13 @@ import { Err } from '../data/types'
 const Login = () => {
   const [password, setPassword] = useState('')
   const [mobile, setMobile] = useState('')
-  const [passwordInvalid, setPasswordInvalid] = useState(true)
-  const [mobileInvalid, setMobileInvalid] = useState(true)
+  const passwordInvalid = useMemo(() => !password || !patterns.password.test(password), [password])
+  const mobileInvalid = useMemo(() => !mobile || !patterns.mobile.test(mobile), [mobile])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
   const [loading, dismiss] = useIonLoading()
-  useEffect(() => {
-    setPasswordInvalid(!password || !patterns.password.test(password))
-  }, [password])
-  useEffect(() => {
-    setMobileInvalid(!mobile || !patterns.mobile.test(mobile))
-  }, [mobile])
+
   const handleLogin = async () => {
     try{
       loading()

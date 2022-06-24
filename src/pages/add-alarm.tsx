@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { addAlarm, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { alarmTypes } from '../data/config'
@@ -18,7 +18,7 @@ const AddAlarm = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
-  const [pack] = useState(() => statePacks.find(p => p.id === params.packId))
+  const pack = useMemo(() => statePacks.find(p => p.id === params.packId), [statePacks, params.packId])
   const [price, setPrice] = useState('')
   const [quantity, setQuantity] = useState('')
   const [priceInvalid, setPriceInvalid] = useState(false)
@@ -27,19 +27,10 @@ const AddAlarm = () => {
   const [offerDays, setOfferDays] = useState('')
   const [isOffer, setIsOffer] = useState(false)
   const [buttonVisible, setButtonVisisble] = useState(false)
-  const [currentPrice, setCurrentPrice] = useState<number|undefined>(undefined)
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
-  useEffect(() => {
-    setCurrentPrice(() => {
-      if (params.alarmType === 'cp') {
-        return statePackPrices.find(p => p.storeId === stateCustomerInfo?.storeId && p.packId === pack?.id)?.price
-      } else {
-        return pack?.price
-      }
-    })
-  }, [statePackPrices, params.alarmType, stateCustomerInfo, pack])
+  const currentPrice = useMemo(() => (params.alarmType === 'cp') ? statePackPrices.find(p => p.storeId === stateCustomerInfo?.storeId && p.packId === pack?.id)?.price : pack?.price, [statePackPrices, params.alarmType, stateCustomerInfo, pack])
   useEffect(() => {
     const validatePrice = (value: string) => {
       if (Number(value) > 0 && Number(value) * 100 !== Number(currentPrice)) {

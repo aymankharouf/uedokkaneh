@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { editOrder, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
@@ -20,18 +20,22 @@ const EditOrder = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateOrderBasket = useSelector<State, OrderPack[]>(state => state.orderBasket)
   const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
-  const [order] = useState(() => stateOrders.find(o => o.id === params.id))
-  const [orderBasket, setOrderBasket] = useState<OrderPack[]>([])
-  const [total, setTotal] = useState(0)
-  const [overLimit, setOverLimit] = useState(false)
-  const [hasChanged, setHasChanged] = useState(false)
+  const order = useMemo(() => stateOrders.find(o => o.id === params.id), [stateOrders, params.id])
+  const hasChanged = useMemo(() => () => stateOrderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false, [stateOrderBasket])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
-  const [customerOrdersTotals] = useState(() => {
-    const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
-    return activeOrders.reduce((sum, o) => sum + o.total, 0)
-  })
+  const customerOrdersTotals = useMemo(() => stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status)).reduce((sum, o) => sum + o.total, 0), [stateOrders])
+  const orderBasket = useMemo(() => stateOrderBasket?.filter(p => p.quantity > 0)
+  .map(p => {
+    const packInfo = statePacks.find(pa => pa.id === p.packId)
+    return {
+      ...p,
+      packInfo
+    }
+  }), [stateOrderBasket, statePacks])
+  const total = useMemo(() => orderBasket.reduce((sum, p) => sum + p.gross, 0), [orderBasket])
+  const overLimit = useMemo(() =>  customerOrdersTotals + total > (stateCustomerInfo?.orderLimit ?? setup.orderLimit) ? true : false, [stateCustomerInfo, customerOrdersTotals, total])
   useEffect(() => {
     if (order) {
       const basket = order.basket.map(p => {
@@ -43,33 +47,6 @@ const EditOrder = () => {
       dispatch({type: 'LOAD_ORDER_BASKET', payload: basket})
     }
   }, [dispatch, order])
-  useEffect(() => {
-    setOrderBasket(() => {
-      const basket = stateOrderBasket?.filter(p => p.quantity > 0) || []
-      return basket.map(p => {
-        const packInfo = statePacks.find(pa => pa.id === p.packId)
-        return {
-          ...p,
-          packInfo
-        }
-      })
-    })
-  }, [stateOrderBasket, statePacks])
-  useEffect(() => {
-    setHasChanged(() => stateOrderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false)
-  }, [stateOrderBasket])
-  useEffect(() => {
-    setTotal(() => orderBasket.reduce((sum, p) => sum + p.gross, 0))
-  }, [orderBasket])
-  useEffect(() => {
-    const orderLimit = stateCustomerInfo?.orderLimit ?? setup.orderLimit
-    if (customerOrdersTotals + total > orderLimit){
-      setOverLimit(true)
-    } else {
-      setOverLimit(false)
-    }
-  }, [stateCustomerInfo, customerOrdersTotals, total])
-
   const handleSubmit = () => {
     try{
       if (stateCustomerInfo?.isBlocked) {

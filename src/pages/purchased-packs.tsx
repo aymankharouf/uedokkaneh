@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { quantityText, addQuantity } from '../data/actions'
 import labels from '../data/labels'
 import moment from 'moment'
@@ -32,18 +32,11 @@ const PurchasedPacks = () => {
   const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
   const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
 	const [purchasedPacks, setPurchasedPacks] = useState<PurchasedPack[]>([])
-  const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([])
   const [currentPack, setCurrentPack] = useState<PurchasedPack | undefined>(undefined)
   const [ratingOpened, setRatingOpened] = useState(false)
   const location = useLocation()
   const [message] = useIonToast()
-
-  useEffect(() => {
-    setDeliveredOrders(() => {
-      const deliveredOrders = stateOrders.filter(o => o.status === 'd')
-      return deliveredOrders.sort((o1, o2) => o1.time! > o2.time! ? -1 : 1)
-    })
-  }, [stateOrders])
+  const deliveredOrders = useMemo(() => stateOrders.filter(o => o.status === 'd').sort((o1, o2) => o1.time! > o2.time! ? -1 : 1), [stateOrders])
 	useEffect(() => {
 		let packsArray: PurchasedPack[] = []
 		deliveredOrders.forEach(o => {

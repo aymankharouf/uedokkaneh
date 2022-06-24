@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { confirmOrder, getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
@@ -6,7 +6,6 @@ import { BasketPack, State, Region, CustomerInfo, UserInfo, Pack, Advert, Order,
 import { useHistory, useLocation } from 'react-router'
 import { IonBadge, IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
-import { Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import firebase from '../data/firebase'
 

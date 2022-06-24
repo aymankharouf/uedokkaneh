@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { getMessage, addPasswordRequest } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -11,13 +11,10 @@ import { Err, PasswordRequest as PasswordRequestType, State } from '../data/type
 const PasswordRequest = () => {
   const statePasswordRequests = useSelector<State, PasswordRequestType[]>(state => state.passwordRequests)
   const [mobile, setMobile] = useState('')
-  const [mobileInvalid, setMobileInvalid] = useState(false)
+  const mobileInvalid = useMemo(() => !mobile || !patterns.mobile.test(mobile), [mobile])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast();
-  useEffect(() => {
-    setMobileInvalid(!mobile || !patterns.mobile.test(mobile))
-  }, [mobile])
   const handlePasswordRequest = () => {
     try{
       if (statePasswordRequests.find(r => r.mobile === mobile)) {

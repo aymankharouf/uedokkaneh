@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { registerUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonLoading, useIonToast } from '@ionic/react'
@@ -20,23 +20,14 @@ const Register = () => {
   const [password, setPassword] = useState('')
   const [storeName, setStoreName] = useState('')
   const [regionId, setRegionId] = useState('')
-  const [nameInvalid, setNameInvalid] = useState(true)
-  const [passwordInvalid, setPasswordInvalid] = useState(true)
-  const [mobileInvalid, setMobileInvalid] = useState(true)
-  const [regions] = useState(() => [...stateRegions].sort((l1, l2) => l1.ordering - l2.ordering))
+  const nameInvalid = useMemo(() => !name || !patterns.name.test(name), [name])
+  const passwordInvalid = useMemo(() => !password || !patterns.password.test(password), [password])
+  const mobileInvalid = useMemo(() => !mobile || !patterns.mobile.test(mobile), [mobile])
+  const regions = useMemo(() => stateRegions.sort((l1, l2) => l1.ordering - l2.ordering), [stateRegions])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
   const [loading, dismiss] = useIonLoading()
-  useEffect(() => {
-    setPasswordInvalid(!password || !patterns.password.test(password))
-  }, [password])
-  useEffect(() => {
-    setNameInvalid(!name || !patterns.name.test(name))
-  }, [name])
-  useEffect(() => {
-    setMobileInvalid(!mobile || !patterns.mobile.test(mobile))
-  }, [mobile])
 
   const handleRegister = async () => {
     try{

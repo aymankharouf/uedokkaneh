@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { productOfText } from '../data/actions'
 import { Category, Country, Pack, State } from '../data/types'
@@ -16,18 +16,14 @@ const Hints = (props: Props) => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
-  const [pack] = useState(() => statePacks.find(p => p.id === props.id))
-  const [packs, setPacks] = useState<Pack[]>([])
-  useEffect(() => {
-    setPacks(() => {
-      let packs = statePacks.filter(p => 
-        (props.type === 'p' && p.categoryId === pack?.categoryId && (p.sales > pack.sales || p.rating > pack.rating)) ||
-        (props.type === 'o' && p.productId === pack?.productId && p.id !== pack.id && (p.isOffer || p.offerEnd)) ||
-        (props.type === 'w' && p.productId === pack?.productId && p.weightedPrice < pack.weightedPrice)
-      )
-      return packs.sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)  
-    })
-  }, [pack, statePacks, stateCategories, props.type]) 
+  const pack = useMemo(() => statePacks.find(p => p.id === props.id), [statePacks, props.id])
+  const packs = useMemo(() => statePacks.filter(p => 
+                                            (props.type === 'p' && p.categoryId === pack?.categoryId && (p.sales > pack.sales || p.rating > pack.rating)) ||
+                                            (props.type === 'o' && p.productId === pack?.productId && p.id !== pack.id && (p.isOffer || p.offerEnd)) ||
+                                            (props.type === 'w' && p.productId === pack?.productId && p.weightedPrice < pack.weightedPrice)
+                                          )
+                                          .sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
+  , [pack, statePacks, props.type]) 
   return(
     <IonPage>
       <Header title={props.type === 'p' ? labels.otherProducts : (props.type === 'o' ? labels.otherOffers : labels.otherPacks)} />

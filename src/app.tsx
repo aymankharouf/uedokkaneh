@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
@@ -46,7 +47,7 @@ import Notifications from './pages/notifications'
 import PurchasedPacks from './pages/purchased-packs'
 import Advert from './pages/advert'
 import EditOrder from './pages/edit-order'
-import { useEffect } from 'react';
+import Categories from './pages/categories';
 
 
 const App = () => {
@@ -232,6 +233,7 @@ const App = () => {
             <Route path="/purchased-packs" exact={true} component={PurchasedPacks} />
             <Route path="/advert" exact={true} component={Advert} />
             <Route path="/edit-order/:id" exact={true} component={EditOrder} />
+            <Route path="/categories/:id" exact={true} component={Categories} />
           </IonRouterOutlet>
         </IonSplitPane>
       </IonReactRouter>

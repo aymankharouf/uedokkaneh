@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { changePassword, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, useIonLoading, useIonToast } from '@ionic/react'
@@ -9,19 +9,14 @@ import { Err } from '../data/types'
 
 const ChangePassword = () => {
   const [oldPassword, setOldPassword] = useState('')
-  const [oldPasswordInvalid, setOldPasswordInvalid] = useState(false)
+  const oldPasswordInvalid = useMemo(() => !patterns.password.test(oldPassword), [oldPassword])
   const [newPassword, setNewPassword] = useState('')
-  const [newPasswordInvalid, setNewPasswordInvalid] = useState(false)
+  const newPasswordInvalid = useMemo(() => !patterns.password.test(newPassword), [newPassword])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast();
   const [loading, dismiss] = useIonLoading();
-  useEffect(() => {
-    setOldPasswordInvalid(!patterns.password.test(oldPassword))
-  }, [oldPassword])
-  useEffect(() => {
-    setNewPasswordInvalid(!patterns.password.test(newPassword))
-  }, [newPassword])
+
   const handleSubmit = async () => {
     try{
       loading()

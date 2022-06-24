@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import labels from '../data/labels'
 import { sortByList, colors } from '../data/config'
 import { productOfText } from '../data/actions'
@@ -19,44 +19,31 @@ const Packs = () => {
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
-  const [packs, setPacks] = useState<Pack[]>([])
-  const [category] = useState(() => stateCategories.find(category => category.id === params.id))
+  const category = useMemo(() => stateCategories.find(category => category.id === params.id), [stateCategories, params.id])
   const [sortBy, setSortBy] = useState('v')
   const [actionOpened, setActionOpened] = useState(false)
-  useEffect(() => {
-    setPacks(() => {
-      const packs = statePacks.filter(p => params.type === 'a' || (params.type === 'n' && p.categoryId === params.id) || (params.type === 'f' && stateUserInfo?.favorites?.includes(p.productId)))
-      return packs.sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
-    })
-  }, [statePacks, stateUserInfo, params.id, params.type, stateCategories])
-  const handleSorting = (sortByValue: string) => {
-    setSortBy(sortByValue)
-    switch(sortByValue){
+  const packs = useMemo(() => {
+    const packs = statePacks.filter(p => params.type === 'a' || (params.type === 'n' && p.categoryId === params.id) || (params.type === 'f' && stateUserInfo?.favorites?.includes(p.productId)))
+    switch(sortBy) {
       case 'p':
-        setPacks([...packs].sort((p1, p2) => p1.price - p2.price))
-        break
+        return packs.sort((p1, p2) => p1.price - p2.price)
       case 's':
-        setPacks([...packs].sort((p1, p2) => p2.sales - p1.sales))
-        break
+        return packs.sort((p1, p2) => p2.sales - p1.sales)
       case 'r':
-        setPacks([...packs].sort((p1, p2) => p2.rating - p1.rating))
-        break
+        return packs.sort((p1, p2) => p2.rating - p1.rating)
       case 'o':
-        setPacks([...packs].sort((p1, p2) => (p2.isOffer || p2.offerEnd ? 1 : 0) - (p1.isOffer || p1.offerEnd ? 1 : 0)))
-        break
+        return packs.sort((p1, p2) => (p2.isOffer || p2.offerEnd ? 1 : 0) - (p1.isOffer || p1.offerEnd ? 1 : 0))
       case 'v':
-        setPacks([...packs].sort((p1, p2) => p1.weightedPrice - p2.weightedPrice))
-        break
-      default:
+        return packs.sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
     }
-  }
+  }, [statePacks, stateUserInfo, params.id, params.type, sortBy])
   let i = 0
   return(
     <IonPage>
       <Header title={category?.name || (params.type === 'f' ? labels.favorites : labels.allProducts)} />
       <IonContent fullscreen>
         <IonList className="ion-padding">
-          {packs.length > 1 &&
+          {packs?.length &&
             <IonItem>
               <IonLabel position="floating" color="primary">{labels.sortBy}</IonLabel>
               <IonSelect 
@@ -69,11 +56,11 @@ const Packs = () => {
               </IonSelect>
             </IonItem>
           }
-          {packs.length === 0 ?
+          {packs?.length === 0 ?
             <IonItem> 
               <IonLabel>{labels.noData}</IonLabel>
             </IonItem>
-          : packs.map(p => 
+          : packs?.map(p => 
               <IonItem key={p.id} routerLink={`/pack-details/${p.id}/c`}>
                 <IonThumbnail slot="start">
                   <IonImg src={p.imageUrl} alt={labels.noImage} />
@@ -103,7 +90,7 @@ const Packs = () => {
             : {
               text: o.name,
               cssClass: colors[i++ % 10].name,
-              handler: () => handleSorting(o.id)
+              handler: () => setSortBy(o.id)
             }
           )
         }

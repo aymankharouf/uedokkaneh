@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { Advert, Notification, State } from '../data/types'
 import { Category } from '../data/types'
@@ -11,15 +11,9 @@ const Home = () => {
   const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
   const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
-  const categories = useMemo(() => stateCategories.sort((c1, c2) => c1.ordering - c2.ordering), [stateCategories])
-  const [advert, setAdvert] = useState<Advert | undefined>(undefined)
-  const [notifications, setNotifications] = useState(0)
-  useEffect(() => {
-    setAdvert(() => stateAdverts.find(a => a.isActive))
-  }, [stateAdverts])
-  useEffect(() => {
-    setNotifications(() => stateNotifications.filter(n => n.status === 'n').length)
-  }, [stateNotifications])
+  const categories = useMemo(() => stateCategories.filter(c => !c.parentId).sort((c1, c2) => c1.ordering - c2.ordering), [stateCategories])
+  const advert = useMemo(() => stateAdverts.find(a => a.isActive), [stateAdverts])
+  const notifications = useMemo(() => stateNotifications.filter(n => n.status === 'n').length, [stateNotifications])
   let i = 0
   return (
     <IonPage>
@@ -65,7 +59,7 @@ const Home = () => {
         </IonButton>
         {categories.map(c => 
           <IonButton
-            routerLink={`/packs/n/${c.id}`} 
+            routerLink={`/categories/${c.id}`} 
             expand="block"
             shape="round"
             className={colors[i++ % 10].name}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import RatingStars from './rating-stars'
 import { addAlarm, getMessage, updateFavorites, productOfText } from '../data/actions'
 import labels from '../data/labels'

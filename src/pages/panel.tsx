@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { logout } from '../data/actions'
 import labels from '../data/labels'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonMenu, IonMenuToggle } from '@ionic/react'
@@ -11,12 +11,9 @@ const Panel = () => {
   const dispatch = useDispatch()
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
-  const [notifications, setNotifications] = useState(0)
   const menuEl = useRef<HTMLIonMenuElement | null>(null)
   const history = useHistory()
-  useEffect(() => {
-    setNotifications(() => stateNotifications.filter(n => n.status === 'n').length)
-  }, [stateNotifications])
+  const notifications = useMemo(() => stateNotifications.filter(n => n.status === 'n').length, [stateNotifications])
   const handleLogout = () => {
     logout()
     dispatch({type: 'LOGOUT'})
