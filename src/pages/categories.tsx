@@ -24,7 +24,7 @@ const Categories = () => {
       <Header title={currentCategory?.name} />
       <IonContent fullscreen>
         <IonButton 
-          routerLink={`/packs/a/${params.id}/0`} 
+          routerLink={`/packs/a/${params.id}`} 
           expand="block"
           shape="round"
           className={colors[i++ % 10].name}

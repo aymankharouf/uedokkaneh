@@ -95,7 +95,7 @@ const reducer = (state: State = initState, action: Action) => {
     case 'LOAD_ORDER_BASKET':
       return {
         ...state,
-        orderBasket: action.payload.basket
+        orderBasket: action.payload
       }
     case 'CLEAR_ORDER_BASKET':
       return {

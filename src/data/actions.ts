@@ -1,6 +1,6 @@
 import firebase from './firebase'
 import labels from './labels'
-import { colors, setup } from './config'
+import { colors } from './config'
 import { Err, OrderPack, BasketPack, Order, UserInfo, Alarm, Pack, Notification, Country } from './types'
 
 export const getMessage = (path: string, error: Err) => {
@@ -104,13 +104,11 @@ export const mergeOrders = (order1: Order, order2: Order) => {
     basket.splice(found === -1 ? basket.length : found, found === -1 ? 0 : 1, newItem)
   })
   const total = basket.reduce((sum, p) => sum + (p.gross || 0), 0)
-  const fixedFees = Math.round(setup.fixedFees * total)
-  const fraction = (total + fixedFees) - Math.floor((total + fixedFees) / 5) * 5
+  const fraction = total - Math.floor(total / 5) * 5
   let orderRef = firebase.firestore().collection('orders').doc(order1.id)
   batch.update(orderRef, {
     basket,
     total,
-    fixedFees,
     fraction
   })
   orderRef = firebase.firestore().collection('orders').doc(order2.id)
@@ -219,13 +217,11 @@ export const editOrder = (order: Order, newBasket: OrderPack[]) => {
   if (order.status === 'n') {
     basket = basket.filter(p => p.quantity > 0)
     const total = basket.reduce((sum, p) => sum + p.gross, 0)
-    const fixedFees = Math.round(setup.fixedFees * total)
-    const fraction = (total + fixedFees) - Math.floor((total + fixedFees) / 5) * 5
+    const fraction = total - Math.floor(total / 5) * 5
     const orderStatus = basket.length === 0 ? 'c' : order.status
     firebase.firestore().collection('orders').doc(order.id).update({
       basket,
       total,
-      fixedFees,
       fraction,
       status: orderStatus,
     })
@@ -254,9 +250,7 @@ export const getBasket = (stateBasket: BasketPack[], packs: Pack[]) => {
       if (!offerInfo) {
         lastPrice = 0
       } else if (offerInfo.subPackId === p.packId) {
-        lastPrice = Math.round(offerInfo.price / (offerInfo.subQuantity ?? 0) * (offerInfo.subPercent ?? 0) * (1 + setup.profit))
-      } else if (offerInfo.bonusPackId === p.packId) {
-        lastPrice = Math.round(offerInfo.price / (offerInfo.bonusQuantity ?? 0) * (offerInfo.bonusPercent ?? 0) * (1 + setup.profit))
+        lastPrice = Math.round(offerInfo.price / (offerInfo.subQuantity || 0))
       } else {
         lastPrice = offerInfo?.price ?? 0
       }

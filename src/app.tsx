@@ -91,7 +91,10 @@ const App = () => {
           trademark: doc.data().trademark,
           countryId: doc.data().countryId,
           closeExpired: doc.data().closeExpired,
-          byWeight: doc.data().byWeight
+          byWeight: doc.data().byWeight,
+          withGift: doc.data().withGift,
+          gift: doc.data().gift,
+          unitsCount: doc.data().unitsCount
         })
         if (doc.data().prices) {
           doc.data().prices.forEach((p: any) => {

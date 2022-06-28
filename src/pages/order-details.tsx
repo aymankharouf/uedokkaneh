@@ -8,23 +8,24 @@ import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, Io
 import Header from './header'
 import Footer from './footer'
 import { menuOutline } from 'ionicons/icons'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 type Params = {
   id: string
 }
 const OrderDetails = () => {
+  const dispatch = useDispatch()
   const params = useParams<Params>()
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
-  const order = useMemo(() => stateOrders.find(o => o.id === params.id), [stateOrders, params.id])
+  const order = useMemo(() => stateOrders.find(o => o.id === params.id)!, [stateOrders, params.id])
   const [actionOpened, setActionOpened] = useState(false)
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
   const [alert] = useIonAlert()
-  const orderBasket = useMemo(() => order?.basket.map(p => {
+  const orderBasket = useMemo(() => order.basket.map(p => {
     const priceNote = p.actual && p.actual !== p.price ? `${labels.orderPrice}: ${(p.price / 100).toFixed(2)}, ${labels.currentPrice}: ${(p.actual / 100).toFixed(2)}` : `${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`
     const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
     return {
@@ -34,7 +35,7 @@ const OrderDetails = () => {
     }
   }), [order])
   const lastOrder = useMemo(() => {
-    const orders = stateOrders.filter(o => o.id !== order?.id && !['c', 'm', 'r'].includes(o.status))
+    const orders = stateOrders.filter(o => o.id !== order.id && !['c', 'm', 'r'].includes(o.status))
     orders.sort((o1, o2) => o2.time! > o1.time! ? -1 : 1)
     return ['n', 'a', 'e'].includes(orders[0]?.status) ? orders[0] : undefined
   }, [order, stateOrders])
@@ -44,10 +45,17 @@ const OrderDetails = () => {
       if (stateCustomerInfo?.isBlocked) {
         throw new Error('blockedUser')
       }
-      if (order?.status !== 'n' && order?.requestType) {
+      if (order.status !== 'n' && order.requestType) {
         throw new Error('duplicateOrderRequest')
       }
-      history.push(`/edit-order/${order?.id}`)
+      const basket = order.basket.map(p => {
+        return {
+          ...p,
+          oldQuantity: p.quantity
+        }
+      })
+      dispatch({type: 'LOAD_ORDER_BASKET', payload: basket})
+      history.push(`/edit-order/${order.id}`)
     } catch(error) {
       const err = error as Err
       message(getMessage(location.pathname, err), 3000)
@@ -144,19 +152,29 @@ const OrderDetails = () => {
             <IonLabel>
               <IonText style={{color: colors[0].name}}>{labels.total}</IonText>
             </IonLabel>
-            <IonLabel slot="end" className="price">{((order?.total ?? 0) / 100).toFixed(2)}</IonLabel>
-          </IonItem>    
-          <IonItem>
-            <IonLabel>
-              <IonText style={{color: colors[0].name}}>{labels.discount}</IonText>
-            </IonLabel>
-            <IonLabel slot="end" className="price">{((order?.fraction || 0) / 100).toFixed(2)}</IonLabel>
-          </IonItem>    
+            <IonLabel slot="end" className="price">{(order.total / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          {order.deliveryFees &&
+            <IonItem>
+              <IonLabel>
+                <IonText style={{color: colors[1].name}}>{labels.deliveryFees}</IonText>
+              </IonLabel>
+              <IonLabel slot="end" className="price">{(order.deliveryFees / 100).toFixed(2)}</IonLabel>
+            </IonItem>    
+          }
+          {order.fraction > 0 &&
+            <IonItem>
+              <IonLabel>
+                <IonText style={{color: colors[0].name}}>{labels.discount}</IonText>
+              </IonLabel>
+              <IonLabel slot="end" className="price">{(order.fraction! / 100).toFixed(2)}</IonLabel>
+            </IonItem>    
+          }
           <IonItem>
             <IonLabel>
               <IonText style={{color: colors[0].name}}>{labels.net}</IonText>
             </IonLabel>
-            <IonLabel slot="end" className="price">{(((order?.total || 0) + (order?.deliveryFees || 0) - (order?.fraction || 0)) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{((order.total + order.deliveryFees - order.fraction) / 100).toFixed(2)}</IonLabel>
           </IonItem>    
         </IonList>
       </IonContent>
@@ -172,18 +190,18 @@ const OrderDetails = () => {
         onDidDismiss={() => setActionOpened(false)}
         buttons={[
           {
-            text: order?.status === 'n' ? labels.editBasket : labels.editBasketRequest,
+            text: order.status === 'n' ? labels.editBasket : labels.editBasketRequest,
             cssClass: colors[i++ % 10].name,
             handler: () => handleEdit()
           },
           {
-            text: order?.status === 'n' ? labels.cancel : labels.cancelRequest,
+            text: order.status === 'n' ? labels.cancel : labels.cancelRequest,
             cssClass: colors[i++ % 10].name,
             handler: () => handleDelete()
           },
           {
             text: lastOrder?.status === 'n' ? labels.merge : labels.mergeRequest,
-            cssClass: order?.status === 'n' && lastOrder ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: order.status === 'n' && lastOrder ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleMerge()
           }
         ]}

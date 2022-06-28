@@ -23,7 +23,7 @@ const Packs = () => {
   const [sortBy, setSortBy] = useState('v')
   const [actionOpened, setActionOpened] = useState(false)
   const packs = useMemo(() => {
-    const packs = statePacks.filter(p => params.type === 'a' || (params.type === 'n' && p.categoryId === params.id) || (params.type === 'f' && stateUserInfo?.favorites?.includes(p.productId)))
+    const packs = statePacks.filter(p => params.type === 'a' || (params.type === 'c' && p.categoryId === params.id) || (params.type === 'f' && stateUserInfo?.favorites?.includes(p.productId)))
     switch(sortBy) {
       case 'p':
         return packs.sort((p1, p2) => p1.price - p2.price)

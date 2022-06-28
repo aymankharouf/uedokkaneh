@@ -50,12 +50,8 @@ const PackDetails = () => {
       if (packId !== pack?.id) {
         foundPack = statePacks.find(p => p.id === packId)
         if (packId === pack?.subPackId) {
-          price = Math.round((pack?.price ?? 0) / (pack?.subQuantity ?? 0) * (pack?.subPercent ?? 0) * (1 + setup.profit))
+          price = Math.round((pack?.price ?? 0) / (pack?.subQuantity || 0))
           maxQuantity = (pack?.subQuantity ?? 0) - 1
-          if (pack?.bonusPackId) maxQuantity++
-        } else  {
-          price = Math.round((pack?.price ?? 0) / (pack?.bonusQuantity ?? 0) * (pack?.bonusPercent ?? 0) * (1 + setup.profit))
-          maxQuantity = pack?.bonusQuantity ?? 0
         }
       }
       const purchasedPack = {
