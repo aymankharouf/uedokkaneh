@@ -36,7 +36,6 @@ export type Pack = {
   offerEnd: Date,
   weightedPrice: number,
   isDivided: boolean,
-  minStoreId?: string,
   trademark: string,
   countryId: string,
   closeExpired: boolean,
@@ -71,18 +70,16 @@ export type Alarm = {
   offerDays?: number,
   status: string
 }
-export type UserInfo = {
+export type Customer = {
   mobile: string,
+  status: string,
+  storeId: string,
+  orderLimit: number,
+  deliveryFees: number
+  alarms?: Alarm[]
   regionId: string,
   ratings?: Rating[],
   favorites?: string[],
-  alarms?: Alarm[]
-}
-export type CustomerInfo = {
-  storeId: string,
-  isBlocked: boolean,
-  orderLimit: number,
-  deliveryFees: number
 }
 export type BasketPack = {
   packId: string,
@@ -145,8 +142,7 @@ export type PasswordRequest = {
 }
 export type State = {
   user?: firebase.User,
-  userInfo?: UserInfo,
-  customerInfo?: CustomerInfo,
+  customer?: Customer,
   categories: Category[],
   countries: Country[],
   basket: BasketPack[],

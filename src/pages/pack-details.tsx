@@ -3,7 +3,7 @@ import RatingStars from './rating-stars'
 import { addAlarm, getMessage, updateFavorites, productOfText } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
-import { BasketPack, Country, CustomerInfo, Err, Order, Pack, PackPrice, State, UserInfo } from '../data/types'
+import { BasketPack, Country, Customer, Err, Order, Pack, PackPrice, State } from '../data/types'
 import { IonActionSheet, IonButton, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -23,12 +23,11 @@ const PackDetails = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
-  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
-  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
   const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const pack = useMemo(() => statePacks.find(p => p.id === params.id), [statePacks, params.id])
-  const isAvailable = useMemo(() => statePackPrices.find(p => p.storeId === stateCustomerInfo?.storeId && p.packId === pack?.id) ? 1 : -1, [statePackPrices, stateCustomerInfo, pack])
+  const isAvailable = useMemo(() => statePackPrices.find(p => p.storeId === stateCustomer?.storeId && p.packId === pack?.id) ? 1 : -1, [statePackPrices, stateCustomer, pack])
   const otherOffers = useMemo(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.id !== pack.id && (pa.isOffer || pa.offerEnd)), [statePacks, pack])
   const otherPacks = useMemo(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.weightedPrice < pack.weightedPrice), [statePacks, pack])
   const [packActionOpened, setPackActionOpened] = useState(false)
@@ -38,7 +37,7 @@ const PackDetails = () => {
   const [alert] = useIonAlert()
   const addToBasket = (packId?: string) => {
     try{
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
       if (stateBasket.find(p => p.packId === packId)) {
@@ -60,7 +59,7 @@ const PackDetails = () => {
         maxQuantity,
         offerId: pack?.id
       }
-      const orderLimit = stateCustomerInfo?.orderLimit || setup.orderLimit
+      const orderLimit = stateCustomer?.orderLimit || setup.orderLimit
       const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
       const activeOrdersTotal = activeOrders.reduce((sum, o) => sum + o.total, 0)
       if (activeOrdersTotal + purchasedPack.price > orderLimit) {
@@ -76,10 +75,10 @@ const PackDetails = () => {
   }
   const confirmAddAlarm = (alarmTypeId: string) => {
     try{
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
-      if (stateUserInfo?.alarms?.find(a => a.packId === params.id && a.status === 'n')){
+      if (stateCustomer?.alarms?.find(a => a.packId === params.id && a.status === 'n')){
         throw new Error('duplicateAlarms')
       }
       const alarm = {
@@ -107,10 +106,10 @@ const PackDetails = () => {
           ],
         })
       } else {
-        if (stateCustomerInfo?.isBlocked) {
+        if (stateCustomer?.status === 'b') {
           throw new Error('blockedUser')
         }
-        if (stateUserInfo?.alarms?.find(a => a.packId === params.id && a.status === 'n')){
+        if (stateCustomer?.alarms?.find(a => a.packId === params.id && a.status === 'n')){
           throw new Error('duplicateAlarms')
         }
         history.push(`/add-alarm/${params.id}/${alarmTypeId}`)
@@ -122,9 +121,9 @@ const PackDetails = () => {
   }
   const handleFavorite = () => {
     try{
-      if (stateUserInfo && pack) {
-        updateFavorites(stateUserInfo, pack.productId)
-        message(stateUserInfo?.favorites?.includes(pack?.productId) ? labels.removeFavoriteSuccess : labels.addFavoriteSuccess, 3000)
+      if (stateCustomer && pack) {
+        updateFavorites(stateCustomer, pack.productId)
+        message(stateCustomer?.favorites?.includes(pack?.productId) ? labels.removeFavoriteSuccess : labels.addFavoriteSuccess, 3000)
       }
 		} catch (error){
       const err = error as Err
@@ -188,7 +187,7 @@ const PackDetails = () => {
         onDidDismiss={() => setPackActionOpened(false)}
         buttons={[
           {
-            text: pack?.productId && stateUserInfo?.favorites?.includes(pack.productId) ? labels.removeFromFavorites : labels.addToFavorites,
+            text: pack?.productId && stateCustomer?.favorites?.includes(pack.productId) ? labels.removeFromFavorites : labels.addToFavorites,
             cssClass: params.type === 'c' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleFavorite()
           },

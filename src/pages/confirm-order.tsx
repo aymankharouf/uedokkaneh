@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { confirmOrder, getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
-import { BasketPack, State, Region, CustomerInfo, UserInfo, Pack, Advert, Order, Err } from '../data/types'
+import { BasketPack, State, Region, Customer, Pack, Advert, Order, Err } from '../data/types'
 import { useHistory, useLocation } from 'react-router'
 import { IonBadge, IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -13,8 +13,7 @@ const ConfirmOrder = () => {
   const dispatch = useDispatch()
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
-  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
-  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
   const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
@@ -23,8 +22,8 @@ const ConfirmOrder = () => {
   const total = useMemo(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [basket])
   const fraction = useMemo(() => total - Math.floor(total / 5) * 5, [total])
   const weightedPacks = useMemo(() => basket.filter(p => p.byWeight), [basket])
-  const regionFees = useMemo(() => stateRegions.find(r => r.id === stateUserInfo?.regionId)?.fees || 0, [stateRegions, stateUserInfo])
-  const deliveryFees = useMemo(() => stateCustomerInfo?.deliveryFees || regionFees, [stateCustomerInfo, regionFees])
+  const regionFees = useMemo(() => stateRegions.find(r => r.id === stateCustomer?.regionId)?.fees || 0, [stateRegions, stateCustomer])
+  const deliveryFees = useMemo(() => stateCustomer?.deliveryFees || regionFees, [stateCustomer, regionFees])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
@@ -36,10 +35,10 @@ const ConfirmOrder = () => {
         message(stateAdverts[0].text, 2000)
         return
       }
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
-      const orderLimit = stateCustomerInfo?.orderLimit || setup.orderLimit
+      const orderLimit = stateCustomer?.orderLimit || setup.orderLimit
       const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
       const totalOrders = activeOrders.reduce((sum, o) => sum + o.total, 0)
       if (totalOrders + total > orderLimit) {

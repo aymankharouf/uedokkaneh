@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { editOrder, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
-import { CustomerInfo, Err, Order, OrderPack, Pack, State } from '../data/types'
+import { Customer, Err, Order, OrderPack, Pack, State } from '../data/types'
 import { IonBadge, IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -19,7 +19,7 @@ const EditOrder = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateOrderBasket = useSelector<State, OrderPack[]>(state => state.orderBasket)
-  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
   const order = useMemo(() => stateOrders.find(o => o.id === params.id)!, [stateOrders, params.id])
   const hasChanged = useMemo(() => () => stateOrderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false, [stateOrderBasket])
   const history = useHistory()
@@ -35,10 +35,10 @@ const EditOrder = () => {
     }
   }), [stateOrderBasket, statePacks])
   const total = useMemo(() => orderBasket.reduce((sum, p) => sum + p.gross, 0), [orderBasket])
-  const overLimit = useMemo(() =>  customerOrdersTotals + total > (stateCustomerInfo?.orderLimit || setup.orderLimit) ? true : false, [stateCustomerInfo, customerOrdersTotals, total])
+  const overLimit = useMemo(() =>  customerOrdersTotals + total > (stateCustomer?.orderLimit || setup.orderLimit) ? true : false, [stateCustomer, customerOrdersTotals, total])
   const handleSubmit = () => {
     try{
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
       editOrder(order, stateOrderBasket)

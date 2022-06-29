@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { cancelOrder, mergeOrders, addOrderRequest, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import { colors, orderPackStatus } from '../data/config'
-import { CustomerInfo, Err, Order, Pack, State } from '../data/types'
+import { Customer, Err, Order, Pack, State } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -17,7 +17,7 @@ const OrderDetails = () => {
   const dispatch = useDispatch()
   const params = useParams<Params>()
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const order = useMemo(() => stateOrders.find(o => o.id === params.id)!, [stateOrders, params.id])
   const [actionOpened, setActionOpened] = useState(false)
@@ -42,7 +42,7 @@ const OrderDetails = () => {
  
   const handleEdit = () => {
     try{
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
       if (order.status !== 'n' && order.requestType) {
@@ -63,7 +63,7 @@ const OrderDetails = () => {
   }
   const confirmDelete = () => {
     try{
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
       if (order) {
@@ -97,7 +97,7 @@ const OrderDetails = () => {
   }
   const handleMerge = () => {
     try{
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
       if (lastOrder?.status !== 'n' && lastOrder?.requestType) {

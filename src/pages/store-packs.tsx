@@ -2,42 +2,33 @@ import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
-import { colors, storeSummary } from '../data/config'
+import { colors } from '../data/config'
 import { productOfText } from '../data/actions'
-import { Country, CustomerInfo, Pack, PackPrice, State } from '../data/types'
-import { useParams } from 'react-router'
+import { Country, Customer, Pack, PackPrice, State } from '../data/types'
 import { IonBadge, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useSelector } from 'react-redux'
 
-type Params = {
-  type: string
-}
 const StorePacks = () => {
-  const params = useParams<Params>()
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
-  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
-  const storePacks = useMemo(() => statePackPrices.filter(p => p.storeId === stateCustomerInfo?.storeId)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
+  const storePacks = useMemo(() => statePackPrices.filter(p => p.storeId === stateCustomer?.storeId)
                                                   .map(p => {
-                                                    const packInfo = statePacks.find(pa => pa.id === p.packId)!
+                                                    const pack = statePacks.find(pa => pa.id === p.packId)!
                                                     return {
                                                       ...p,
-                                                      packInfo
+                                                      pack
                                                     }
                                                   })
-                                                  .filter(p => (params.type === 'a')
-                                                                || (params.type === 'o' && p.price > (p.packInfo.price ?? 0)) 
-                                                                || (params.type === 'n' && p.price === (p.packInfo.price ?? 0) && p.storeId !== p.packInfo?.minStoreId)
-                                                                || (params.type === 'l' && p.price === (p.packInfo.price ?? 0) && p.storeId === p.packInfo?.minStoreId))
-  , [statePackPrices, statePacks, stateCustomerInfo, params.type])
+  , [statePackPrices, statePacks, stateCustomer])
 
   let i = 0
   return(
     <IonPage>
-      <Header title={storeSummary.find(s => s.id === params.type)?.name} />
+      <Header title={labels.myPacks} />
       <IonContent fullscreen>
         <IonList className="ion-padding">
           {storePacks.length === 0 ? 
@@ -47,19 +38,19 @@ const StorePacks = () => {
           : storePacks.map(p => 
               <IonItem key={i++} routerLink={`/pack-details/${p.packId}/o`}>
                 <IonThumbnail slot="start">
-                  <IonImg src={p.packInfo.imageUrl} alt={labels.noImage} />
+                  <IonImg src={p.pack.imageUrl} alt={labels.noImage} />
                 </IonThumbnail>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
-                  <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
-                  <IonText style={{color: colors[2].name}}>{p.packInfo.productDescription}</IonText>
-                  <IonText style={{color: colors[3].name}}>{p.packInfo.name}</IonText>
-                  <IonText style={{color: colors[4].name}}>{productOfText(p.packInfo.trademark || '', p.packInfo.countryId || '', stateCountries)}</IonText>
-                  {p.price > (p.packInfo.price ?? 0) && <IonText style={{color: colors[5].name}}>{`${labels.myPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>}
+                  <IonText style={{color: colors[0].name}}>{p.pack.productName}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.pack.productAlias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.pack.productDescription}</IonText>
+                  <IonText style={{color: colors[3].name}}>{p.pack.name}</IonText>
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.pack.trademark || '', p.pack.countryId || '', stateCountries)}</IonText>
+                  {p.price > (p.pack.price ?? 0) && <IonText style={{color: colors[5].name}}>{`${labels.myPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>}
                   <IonText style={{color: colors[6].name}}>{moment(p.time).fromNow()}</IonText>
-                  {p.packInfo.isOffer && <IonBadge color="success">{labels.offer}</IonBadge>}
+                  {p.pack.isOffer && <IonBadge color="success">{labels.offer}</IonBadge>}
                 </IonLabel>
-                <IonLabel slot="end" className="price">{((p.packInfo.price ?? 0) / 100).toFixed(2)}</IonLabel>
+                <IonLabel slot="end" className="price">{((p.pack.price ?? 0) / 100).toFixed(2)}</IonLabel>
               </IonItem>
             )
           }

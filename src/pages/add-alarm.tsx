@@ -7,7 +7,7 @@ import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { useSelector } from 'react-redux'
-import { CustomerInfo, Err, Pack, PackPrice, State } from '../data/types'
+import { Customer, Err, Pack, PackPrice, State } from '../data/types'
 
 type Params = {
   alarmType: string,
@@ -17,7 +17,7 @@ const AddAlarm = () => {
   const params = useParams<Params>()
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
   const pack = useMemo(() => statePacks.find(p => p.id === params.packId), [statePacks, params.packId])
   const [price, setPrice] = useState('')
   const [quantity, setQuantity] = useState('')
@@ -30,7 +30,7 @@ const AddAlarm = () => {
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
-  const currentPrice = useMemo(() => (params.alarmType === 'cp') ? statePackPrices.find(p => p.storeId === stateCustomerInfo?.storeId && p.packId === pack?.id)?.price : pack?.price, [statePackPrices, params.alarmType, stateCustomerInfo, pack])
+  const currentPrice = useMemo(() => (params.alarmType === 'cp') ? statePackPrices.find(p => p.storeId === stateCustomer?.storeId && p.packId === pack?.id)?.price : pack?.price, [statePackPrices, params.alarmType, stateCustomer, pack])
   useEffect(() => {
     const validatePrice = (value: string) => {
       if (Number(value) > 0 && Number(value) * 100 !== Number(currentPrice)) {
@@ -63,10 +63,10 @@ const AddAlarm = () => {
     || priceInvalid
     || alternativeErrorMessage) setButtonVisisble(false)
     else setButtonVisisble(true)
-  }, [params.alarmType, price, isOffer, offerDays, alternative, quantity, stateCustomerInfo, priceInvalid, alternativeErrorMessage])
+  }, [params.alarmType, price, isOffer, offerDays, alternative, quantity, stateCustomer, priceInvalid, alternativeErrorMessage])
   const handleSubmit = () => {
     try{
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
       if (offerDays && Number(offerDays) <= 0) {

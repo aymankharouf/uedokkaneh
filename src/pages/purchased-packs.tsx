@@ -4,7 +4,7 @@ import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { getMessage, rateProduct } from '../data/actions'
-import { CustomerInfo, Err, Order, State, UserInfo } from '../data/types'
+import { Customer, Err, Order, State } from '../data/types'
 import { IonActionSheet, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -29,8 +29,7 @@ type PurchasedPack = {
 
 const PurchasedPacks = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
-  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
 	const [purchasedPacks, setPurchasedPacks] = useState<PurchasedPack[]>([])
   const [currentPack, setCurrentPack] = useState<PurchasedPack | undefined>(undefined)
   const [ratingOpened, setRatingOpened] = useState(false)
@@ -72,7 +71,7 @@ const PurchasedPacks = () => {
   }, [deliveredOrders])
   const handleRate = (value: number) => {
     try{
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
       if (currentPack) {
@@ -113,7 +112,7 @@ const PurchasedPacks = () => {
                   <IonText style={{color: colors[6].name}}>{`${labels.lastQuantity}: ${quantityText(p.lastQuantity)}`}</IonText>
                   <IonText style={{color: colors[7].name}}>{`${labels.lastTime}: ${moment(p.lastTime).fromNow()}`}</IonText>
                 </IonLabel>
-                {!stateUserInfo?.ratings?.find(r => r.productId === p.productId) &&
+                {!stateCustomer?.ratings?.find(r => r.productId === p.productId) &&
                   <IonButtons slot="end" onClick={() => handleActions(p)}>
                     <IonIcon 
                       ios={heartOutline} 

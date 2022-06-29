@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getMessage, quantityText, getBasket } from '../data/actions'
 import labels from '../data/labels'
 import { colors, setup } from '../data/config'
-import { BasketPack, BigBasketPack, CustomerInfo, Err, Order, Pack, State } from '../data/types'
+import { BasketPack, BigBasketPack, Customer, Err, Order, Pack, State } from '../data/types'
 import { IonBadge, IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
@@ -14,7 +14,7 @@ const Basket = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
-  const stateCustomerInfo = useSelector<State, CustomerInfo | undefined>(state => state.customerInfo)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
   const [submitVisible, setSubmitVisible] = useState(true)
   const basket = useMemo(() => getBasket(stateBasket, statePacks), [stateBasket, statePacks])
   const totalPrice = useMemo(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [basket])
@@ -25,17 +25,17 @@ const Basket = () => {
   const customerOrdersTotals = useMemo(() => stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status)).reduce((sum, o) => sum + o.total, 0), [stateOrders])
 
   useEffect(() => {
-    const orderLimit = stateCustomerInfo?.orderLimit ?? setup.orderLimit
+    const orderLimit = stateCustomer?.orderLimit ?? setup.orderLimit
     if (customerOrdersTotals + totalPrice > orderLimit){
       setSubmitVisible(false)
     } else {
       setSubmitVisible(true)
     }
-  }, [stateCustomerInfo, customerOrdersTotals, totalPrice])
+  }, [stateCustomer, customerOrdersTotals, totalPrice])
 
   const handleConfirm = () => {
     try{
-      if (stateCustomerInfo?.isBlocked) {
+      if (stateCustomer?.status === 'b') {
         throw new Error('blockedUser')
       }
       history.push('/confirm-order')
@@ -47,7 +47,7 @@ const Basket = () => {
   const handleIncrease = (pack: BigBasketPack) => {
     try{
       dispatch({type: 'INCREASE_QUANTITY', payload: pack})
-      const orderLimit = stateCustomerInfo?.orderLimit ?? setup.orderLimit
+      const orderLimit = stateCustomer?.orderLimit ?? setup.orderLimit
       if (customerOrdersTotals + totalPrice > orderLimit){
         throw new Error('limitOverFlow')
       }  

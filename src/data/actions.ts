@@ -1,7 +1,7 @@
 import firebase from './firebase'
 import labels from './labels'
 import { colors } from './config'
-import { Err, OrderPack, BasketPack, Order, UserInfo, Alarm, Pack, Notification, Country } from './types'
+import { Err, OrderPack, BasketPack, Order, Alarm, Pack, Notification, Country, Customer } from './types'
 
 export const getMessage = (path: string, error: Err) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
@@ -138,17 +138,17 @@ export const addOrderRequest = (order: Order, type: string, mergedOrder?: Order)
   batch.commit()
 }
 
-export const registerUser = async (mobile: string, name: string, storeName: string, regionId: string, password: string) => {
+export const register = async (mobile: string, name: string, regionId: string, password: string) => {
   await firebase.auth().createUserWithEmailAndPassword(mobile + '@gmail.com', mobile.substring(9, 2) + password)
   let userColors = []
   for (var i = 0; i < 4; i++){
     userColors.push(colors[Number(password.charAt(i))].name)
   }
-  firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).set({
+  firebase.firestore().collection('customers').doc(firebase.auth().currentUser?.uid).set({
     mobile,
     name,
-    storeName,
     regionId,
+    status: 'n',
     colors: userColors,
     time: firebase.firestore.FieldValue.serverTimestamp()
   })
@@ -196,15 +196,15 @@ export const readNotification = (notification: Notification, notifications: Noti
   })  
 }
 
-export const updateFavorites = (user: UserInfo, productId: string) => {
-  const favorites = user.favorites?.slice() || []
+export const updateFavorites = (customer: Customer, productId: string) => {
+  const favorites = customer.favorites?.slice() || []
   const found = favorites.indexOf(productId)
   if (found === -1) {
     favorites.push(productId) 
   } else {
     favorites.splice(found, 1)
   }
-  firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
+  firebase.firestore().collection('customers').doc(firebase.auth().currentUser?.uid).update({
     favorites
   })
 }

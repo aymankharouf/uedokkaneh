@@ -3,7 +3,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
-import { Pack, PackPrice, Advert as AdvertType, PasswordRequest as PasswordRequestType, Order, UserInfo, Notification } from './data/types'
+import { Pack, PackPrice, Advert as AdvertType, PasswordRequest as PasswordRequestType, Order, Notification, Customer } from './data/types'
 import firebase from './data/firebase'
 
 /* Core CSS required for Ionic components to work properly */
@@ -38,7 +38,6 @@ import OrdersList from './pages/orders-list'
 import OrderDetails from './pages/order-details'
 import AddAlarm from './pages/add-alarm'
 import PasswordRequest from './pages/password-request'
-import StoreSummary from './pages/store-summary'
 import StorePacks from './pages/store-packs'
 import ChangePassword from './pages/change-password'
 import Hints from './pages/hints'
@@ -151,11 +150,15 @@ const App = () => {
         const localData = localStorage.getItem('basket')
         const basket = localData ? JSON.parse(localData) : []
         if (basket) dispatch({type: 'SET_BASKET', payload: basket}) 
-        const unsubscribeUser = firebase.firestore().collection('users').doc(user.uid).onSnapshot(doc => {
+        const unsubscribeUser = firebase.firestore().collection('customers').doc(user.uid).onSnapshot(doc => {
           if (doc.exists){
-            const userInfo: UserInfo = {
+            const customer: Customer = {
               mobile: doc.data()!.mobile,
+              status: doc.data()!.status,
               regionId: doc.data()!.regionId,
+              storeId: doc.data()!.storeId,
+              orderLimit: doc.data()!.orderLimit,
+              deliveryFees: doc.data()!.deliveryFees,
               ratings: doc.data()!.ratings
             }
             const notifications: Notification[] = []
@@ -170,20 +173,13 @@ const App = () => {
                 })
               })
             }
-            dispatch({type: 'SET_USER_INFO', payload: userInfo})
+            dispatch({type: 'SET_CUSTOMER', payload: customer})
             dispatch({type: 'SET_NOTIFICATIONS', payload: notifications})
           } else {
             firebase.auth().signOut()
           }
         }, err => {
           unsubscribeUser()
-        })  
-        const unsubscribeCustomer = firebase.firestore().collection('customers').doc(user.uid).onSnapshot(doc => {
-          if (doc.exists){
-            dispatch({type: 'SET_CUSTOMER_INFO', payload: doc.data()})
-          }
-        }, err => {
-          unsubscribeCustomer()
         })  
         const unsubscribeOrders = firebase.firestore().collection('orders').where('userId', '==', user.uid).onSnapshot(docs => {
           let orders: Order[] = []
@@ -204,9 +200,9 @@ const App = () => {
           unsubscribeOrders()
         }) 
       } else {
-        dispatch({type: 'CLEAR_USER_INFO'})
-        dispatch({type: 'CLEAR_CUSTOMER_INFO'})
+        dispatch({type: 'CLEAR_CUSTOMER'})
         dispatch({type: 'SET_ORDERS', payload: []})
+        dispatch({type: 'SET_NOTIFICATIONS', payload: []})
       }
     })
   }, [dispatch])
@@ -220,7 +216,7 @@ const App = () => {
             <Route path="/login" exact={true} component={Login} />
             <Route path="/password-request" exact={true} component={PasswordRequest} />
             <Route path="/change-password" exact={true} component={ChangePassword} />
-            <Route path="/register/:type" exact={true} component={Register} />
+            <Route path="/register" exact={true} component={Register} />
             <Route path="/packs/:type/:id" exact={true} component={Packs} />
             <Route path="/pack-details/:id/:type" exact={true} component={PackDetails} />
             <Route path="/add-alarm/:packId/:alarmType" exact={true} component={AddAlarm} />
@@ -228,8 +224,7 @@ const App = () => {
             <Route path="/confirm-order" exact={true} component={ConfirmOrder} />
             <Route path="/orders-list" exact={true} component={OrdersList} />
             <Route path="/order-details/:id" exact={true} component={OrderDetails} />
-            <Route path="/store-summary" exact={true} component={StoreSummary} />
-            <Route path="/store-packs/:type" exact={true} component={StorePacks} />
+            <Route path="/store-packs" exact={true} component={StorePacks} />
             <Route path="/hints/:id/:type" exact={true} component={Hints} />
             <Route path="/help/:id" exact={true} component={Help} />
             <Route path="/notifications" exact={true} component={Notifications} />

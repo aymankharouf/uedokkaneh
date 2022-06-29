@@ -5,11 +5,12 @@ import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonMenu, IonMenuToggl
 import { useHistory } from 'react-router'
 import { useSelector, useDispatch } from 'react-redux'
 import firebase from '../data/firebase'
-import { Notification, State } from '../data/types'
+import { Customer, Notification, State } from '../data/types'
 
 const Panel = () => {
   const dispatch = useDispatch()
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
   const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
   const menuEl = useRef<HTMLIonMenuElement | null>(null)
   const history = useHistory()
@@ -52,13 +53,10 @@ const Panel = () => {
                 <IonItem routerLink='/login'>
                   <IonLabel>{labels.login}</IonLabel>
                 </IonItem>
-                <IonItem routerLink='/register/o'>
-                  <IonLabel>{labels.registerStoreOwner}</IonLabel>
-                </IonItem>
               </>
             }
-            {stateUser && stateUser.displayName && 
-              <IonItem routerLink='/store-summary'>
+            {stateCustomer && stateCustomer.storeId && 
+              <IonItem routerLink='/store-packs'>
                 <IonLabel>{labels.myPacks}</IonLabel>
               </IonItem>
             }

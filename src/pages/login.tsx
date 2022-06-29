@@ -77,7 +77,7 @@ const Login = () => {
       <IonFooter>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton fill="clear" onClick={() => history.replace('/register/n')}>
+            <IonButton fill="clear" onClick={() => history.replace('/register')}>
               {labels.newUser}
             </IonButton>
           </IonButtons>

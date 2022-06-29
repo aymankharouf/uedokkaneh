@@ -44,20 +44,6 @@ export const alarmTypes = [
   {id: 'go', name: 'الابلاغ عن عرض لمجموعة', name_e: 'groupOffer', isAvailable: 0},
 ]
 
-export const storeSummary = [
-  {id: 'a', name: 'كل المنتجات'},
-  {id: 'o', name: 'منتجات اعلى من السوق'},
-  {id: 'n', name: 'منتجات مساوية للسوق'},
-  {id: 'l', name: 'منتجات أقل سعر في السوق'}
-]
-
-export const friendStatus = [
-  {id: 'n', name: 'قيد الموافقة'},
-  {id: 's', name: 'ارسلت الدعوة'},
-  {id: 'o', name: 'مدعو سابقا'},
-  {id: 'r', name: 'مستخدم فعلي'}
-]
-
 export const colors = [
   {id: 0, name: 'darkblue'},
   {id: 1, name: 'deeppink'},

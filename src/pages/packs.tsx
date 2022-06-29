@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import labels from '../data/labels'
 import { sortByList, colors } from '../data/config'
 import { productOfText } from '../data/actions'
-import { Category, Country, Pack, State, UserInfo } from '../data/types'
+import { Category, Country, Customer, Pack, State } from '../data/types'
 import { IonActionSheet, IonBadge, IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -18,12 +18,12 @@ const Packs = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
-  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
   const category = useMemo(() => stateCategories.find(category => category.id === params.id), [stateCategories, params.id])
   const [sortBy, setSortBy] = useState('v')
   const [actionOpened, setActionOpened] = useState(false)
   const packs = useMemo(() => {
-    const packs = statePacks.filter(p => params.type === 'a' || (params.type === 'c' && p.categoryId === params.id) || (params.type === 'f' && stateUserInfo?.favorites?.includes(p.productId)))
+    const packs = statePacks.filter(p => params.type === 'a' || (params.type === 'c' && p.categoryId === params.id) || (params.type === 'f' && stateCustomer?.favorites?.includes(p.productId)))
     switch(sortBy) {
       case 'p':
         return packs.sort((p1, p2) => p1.price - p2.price)
@@ -36,7 +36,7 @@ const Packs = () => {
       case 'v':
         return packs.sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
     }
-  }, [statePacks, stateUserInfo, params.id, params.type, sortBy])
+  }, [statePacks, stateCustomer, params.id, params.type, sortBy])
   let i = 0
   return(
     <IonPage>

@@ -1,24 +1,19 @@
 import { useState, useMemo } from 'react'
-import { registerUser, getMessage } from '../data/actions'
+import { register, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonLoading, useIonToast } from '@ionic/react'
 import Header from './header'
-import { useHistory, useLocation, useParams } from 'react-router'
+import { useHistory, useLocation } from 'react-router'
 import { patterns } from '../data/config'
 import { checkmarkOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
 import { Err, Region, State } from '../data/types'
 
-type Params = {
-  type: string
-}
 const Register = () => {
-  const params = useParams<Params>()
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
-  const [storeName, setStoreName] = useState('')
   const [regionId, setRegionId] = useState('')
   const nameInvalid = useMemo(() => !name || !patterns.name.test(name), [name])
   const passwordInvalid = useMemo(() => !password || !patterns.password.test(password), [password])
@@ -32,7 +27,7 @@ const Register = () => {
   const handleRegister = async () => {
     try{
       loading()
-      await registerUser(mobile, name, storeName, regionId, password)
+      await register(mobile, name, regionId, password)
       dismiss()
       message(labels.registerSuccess, 3000)
       history.replace('/')
@@ -88,22 +83,10 @@ const Register = () => {
               color={passwordInvalid ? 'danger' : ''}
             />
           </IonItem>
-          {params.type === 'o' &&
-            <IonItem>
-              <IonLabel position="floating" color="primary">
-                {labels.storeName}
-              </IonLabel>
-              <IonInput 
-                value={storeName} 
-                type="text" 
-                clearInput
-                onIonChange={e => setStoreName(e.detail.value!)} 
-              />
-            </IonItem>
-          }
           <IonItem>
             <IonLabel position="floating" color="primary">{labels.region}</IonLabel>
             <IonSelect 
+              interface="action-sheet"
               ok-text={labels.ok} 
               cancel-text={labels.cancel} 
               value={regionId}
@@ -114,7 +97,7 @@ const Register = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      {regionId && (params.type === 'n' || storeName) && !nameInvalid && !mobileInvalid && !passwordInvalid &&
+      {regionId && !nameInvalid && !mobileInvalid && !passwordInvalid &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleRegister} color="success">
             <IonIcon ios={checkmarkOutline} /> 

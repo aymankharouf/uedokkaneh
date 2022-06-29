@@ -5,7 +5,7 @@ import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
 import { useSelector } from 'react-redux'
-import { Region, State, UserInfo } from '../data/types'
+import { Customer, Region, State } from '../data/types'
 
 type Params = {
   id: string
@@ -13,8 +13,8 @@ type Params = {
 const Help = () => {
   const params = useParams<Params>()
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
-  const stateUserInfo = useSelector<State, UserInfo | undefined>(state => state.userInfo)
-  const userRegion = useMemo(() => stateRegions.find(r => r.id === stateUserInfo?.regionId), [stateRegions, stateUserInfo])
+  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
+  const region = useMemo(() => stateRegions.find(r => r.id === stateCustomer?.regionId), [stateRegions, stateCustomer])
   const helpNote = useMemo(() => {
     switch (params.id) {
       case 'o':
@@ -36,7 +36,7 @@ const Help = () => {
         {params.id === 'o' &&
           <>
             <p className="help1">{feesNote}</p>
-            {userRegion && userRegion.fees > 0 && <p className="help1">{`${regionFeesNote}${userRegion.name}: ${(userRegion.fees / 100).toFixed(2)}`}</p>}
+            {region && region.fees > 0 && <p className="help1">{`${regionFeesNote}${region.name}: ${(region.fees / 100).toFixed(2)}`}</p>}
             <p className="help2">{ratingsNote}</p>
           </>
         }

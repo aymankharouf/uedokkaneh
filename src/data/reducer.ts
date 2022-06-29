@@ -160,11 +160,11 @@ const reducer = (state: State = initState, action: Action) => {
       return {...state, user: action.payload}
     case 'LOGOUT':
       return {...state, user: undefined}
-    case 'SET_USER_INFO':
-      return {...state, userInfo: action.payload}
-    case 'SET_CUSTOMER_INFO':
-      return {...state, customerInfo: action.payload}
-    case 'SET_ORDERS':
+    case 'SET_CUSTOMER':
+      return {...state, customer: action.payload}
+    case 'CLEAR_CUSTOMER':
+      return {...state, customer: undefined}
+      case 'SET_ORDERS':
       return {...state, orders: action.payload}
     case 'SET_PACKS':
       return {...state, packs: action.payload}
