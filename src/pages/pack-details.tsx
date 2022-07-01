@@ -8,7 +8,7 @@ import { IonActionSheet, IonButton, IonCard, IonCol, IonContent, IonFab, IonFabB
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { menuOutline } from 'ionicons/icons'
+import { ellipsisVerticalOutline } from 'ionicons/icons'
 import { useSelector, useDispatch } from 'react-redux'
 import firebase from '../data/firebase'
 
@@ -178,11 +178,12 @@ const PackDetails = () => {
       {stateUser &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setPackActionOpened(true)} color="success">
-            <IonIcon ios={menuOutline} />
+            <IonIcon ios={ellipsisVerticalOutline} />
           </IonFabButton>
         </IonFab>
       }
       <IonActionSheet
+        mode='ios'
         isOpen={packActionOpened}
         onDidDismiss={() => setPackActionOpened(false)}
         buttons={[
@@ -203,32 +204,32 @@ const PackDetails = () => {
           },
           {
             text: labels.changePrice,
-            cssClass: params.type === 'o' && isAvailable === 1 ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: params.type === 's' && isAvailable === 1 ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAddAlarm('cp')
           },
           {
             text: labels.packAvailable,
-            cssClass: params.type === 'o' && isAvailable === -1 ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: params.type === 's' && isAvailable === -1 ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAddAlarm('av')
           },
           {
             text: labels.packUnAvailable,
-            cssClass: params.type === 'o' && isAvailable === 1 ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: params.type === 's' && isAvailable === 1 ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAddAlarm('ua')
           },
           {
             text: labels.AlternativeAvailable,
-            cssClass: params.type === 'o' ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: params.type === 's' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAddAlarm('aa')
           },
           {
             text: labels.closedExpireOffer,
-            cssClass: params.type === 'o' ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: params.type === 's' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAddAlarm('eo')
           },
           {
             text: labels.groupOffer,
-            cssClass: params.type === 'o' ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: params.type === 's' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAddAlarm('go')
           },
         ]}

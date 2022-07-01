@@ -56,7 +56,7 @@ const Panel = () => {
               </>
             }
             {stateCustomer && stateCustomer.storeId && 
-              <IonItem routerLink='/store-packs'>
+              <IonItem routerLink='/packs/s/0'>
                 <IonLabel>{labels.myPacks}</IonLabel>
               </IonItem>
             }

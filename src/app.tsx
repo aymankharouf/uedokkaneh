@@ -38,7 +38,6 @@ import OrdersList from './pages/orders-list'
 import OrderDetails from './pages/order-details'
 import AddAlarm from './pages/add-alarm'
 import PasswordRequest from './pages/password-request'
-import StorePacks from './pages/store-packs'
 import ChangePassword from './pages/change-password'
 import Hints from './pages/hints'
 import Help from './pages/help'
@@ -212,7 +211,6 @@ const App = () => {
             <Route path="/confirm-order" exact={true} component={ConfirmOrder} />
             <Route path="/orders-list" exact={true} component={OrdersList} />
             <Route path="/order-details/:id" exact={true} component={OrderDetails} />
-            <Route path="/store-packs" exact={true} component={StorePacks} />
             <Route path="/hints/:id/:type" exact={true} component={Hints} />
             <Route path="/help/:id" exact={true} component={Help} />
             <Route path="/notifications" exact={true} component={Notifications} />
