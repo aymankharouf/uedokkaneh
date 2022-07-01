@@ -39,10 +39,10 @@ const Hints = (props: Props) => {
                   <IonImg src={p.imageUrl} alt={labels.noImage} />
                 </IonThumbnail>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
-                  <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
+                  <IonText style={{color: colors[0].name}}>{p.product.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.product.alias}</IonText>
                   <IonText style={{color: colors[2].name}}>{p.name}</IonText>
-                  <IonText style={{color: colors[3].name}}>{p.productDescription}</IonText>
+                  <IonText style={{color: colors[3].name}}>{p.product.description}</IonText>
                   <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.countryId, stateCountries)}</IonText>
                   <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.categoryId)?.name}`}</IonText>
                   {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}

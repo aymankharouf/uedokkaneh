@@ -103,7 +103,7 @@ const AddAlarm = () => {
               {labels.productName}
             </IonLabel>
             <IonInput 
-              value={pack?.productName} 
+              value={pack?.product.name} 
               type="text" 
               readonly
             />

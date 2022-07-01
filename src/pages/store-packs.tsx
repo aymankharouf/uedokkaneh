@@ -41,9 +41,9 @@ const StorePacks = () => {
                   <IonImg src={p.pack.imageUrl} alt={labels.noImage} />
                 </IonThumbnail>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{p.pack.productName}</IonText>
-                  <IonText style={{color: colors[1].name}}>{p.pack.productAlias}</IonText>
-                  <IonText style={{color: colors[2].name}}>{p.pack.productDescription}</IonText>
+                  <IonText style={{color: colors[0].name}}>{p.pack.product.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.pack.product.alias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.pack.product.description}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.pack.name}</IonText>
                   <IonText style={{color: colors[4].name}}>{productOfText(p.pack.trademark || '', p.pack.countryId || '', stateCountries)}</IonText>
                   {p.price > (p.pack.price ?? 0) && <IonText style={{color: colors[5].name}}>{`${labels.myPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>}

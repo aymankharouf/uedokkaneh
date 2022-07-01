@@ -17,13 +17,25 @@ export type Err = {
   code: string,
   message: string
 }
+export type Product = {
+  id?: string,
+  name: string,
+  alias: string,
+  description: string,
+  trademark: string,
+  countryId: string,
+  categoryId: string,
+  imageUrl: string,
+  sales: number,
+  rating: number,
+  ratingCount: number,
+  isArchived: boolean
+}
 export type Pack = {
   id: string,
   name: string,
+  product: Product,
   productId: string,
-  productName: string,
-  productAlias: string,
-  productDescription: string,
   imageUrl: string,
   price: number,
   categoryId: string,

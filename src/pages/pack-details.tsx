@@ -133,7 +133,7 @@ const PackDetails = () => {
   let i = 0
   return (
     <IonPage>
-      <Header title={`${pack?.productName}${pack?.productAlias ? '-' + pack?.productAlias : ''}`} />
+      <Header title={`${pack?.product.name}${pack?.product.alias ? '-' + pack?.product.alias : ''}`} />
       <IonContent fullscreen>
         <IonCard>
           <IonGrid>
@@ -152,7 +152,7 @@ const PackDetails = () => {
             </IonRow>
             <IonRow>
               <IonCol style={{textAlign: 'center'}}>
-                {pack?.productDescription}
+                {pack?.product.description}
               </IonCol>
             </IonRow>
             <IonRow>
