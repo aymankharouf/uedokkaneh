@@ -23,16 +23,14 @@ const Packs = () => {
   const [sortBy, setSortBy] = useState('v')
   const [actionOpened, setActionOpened] = useState(false)
   const packs = useMemo(() => {
-    const packs = statePacks.filter(p => params.type === 'a' || (params.type === 'c' && p.categoryId === params.id) || (params.type === 'f' && stateCustomer?.favorites?.includes(p.productId)))
+    const packs = statePacks.filter(p => params.type === 'a' || (params.type === 'c' && p.product.categoryId === params.id) || (params.type === 'f' && stateCustomer?.favorites?.includes(p.product.id!)))
     switch(sortBy) {
       case 'p':
         return packs.sort((p1, p2) => p1.price - p2.price)
       case 's':
-        return packs.sort((p1, p2) => p2.sales - p1.sales)
+        return packs.sort((p1, p2) => p2.product.sales - p1.product.sales)
       case 'r':
-        return packs.sort((p1, p2) => p2.rating - p1.rating)
-      case 'o':
-        return packs.sort((p1, p2) => (p2.isOffer || p2.offerEnd ? 1 : 0) - (p1.isOffer || p1.offerEnd ? 1 : 0))
+        return packs.sort((p1, p2) => p2.product.rating - p1.product.rating)
       case 'v':
         return packs.sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
     }
@@ -63,19 +61,18 @@ const Packs = () => {
           : packs?.map(p => 
               <IonItem key={p.id} routerLink={`/pack-details/${p.id}/c`}>
                 <IonThumbnail slot="start">
-                  <IonImg src={p.imageUrl} alt={labels.noImage} />
+                  <IonImg src={p.product.imageUrl} alt={labels.noImage} />
                 </IonThumbnail>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.product.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{p.product.alias}</IonText>
                   <IonText style={{color: colors[2].name}}>{p.name}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.product.description}</IonText>
-                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.countryId, stateCountries)}</IonText>
-                  <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.categoryId)?.name}`}</IonText>
-                  {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.product.trademark, p.product.countryId, stateCountries)}</IonText>
+                  <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.product.categoryId)?.name}`}</IonText>
                 </IonLabel>
-                <IonLabel slot="end" className="price">{p.isOffer || p.offerEnd ? '' : (p.price / 100).toFixed(2)}</IonLabel>
-                {(p.isOffer || p.offerEnd) && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
+                <IonLabel slot="end" className="price">{p.isOffer ? '' : (p.price / 100).toFixed(2)}</IonLabel>
+                {p.isOffer && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
               </IonItem>
             )
           }

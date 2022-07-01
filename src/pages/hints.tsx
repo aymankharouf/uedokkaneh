@@ -18,9 +18,9 @@ const Hints = (props: Props) => {
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const pack = useMemo(() => statePacks.find(p => p.id === props.id), [statePacks, props.id])
   const packs = useMemo(() => statePacks.filter(p => 
-                                            (props.type === 'p' && p.categoryId === pack?.categoryId && (p.sales > pack.sales || p.rating > pack.rating)) ||
-                                            (props.type === 'o' && p.productId === pack?.productId && p.id !== pack.id && (p.isOffer || p.offerEnd)) ||
-                                            (props.type === 'w' && p.productId === pack?.productId && p.weightedPrice < pack.weightedPrice)
+                                            (props.type === 'p' && p.product.categoryId === pack?.product.categoryId && (p.product.sales > pack.product.sales || p.product.rating > pack.product.rating)) ||
+                                            (props.type === 'o' && p.product.id === pack?.product.id && p.id !== pack?.id && p.isOffer) ||
+                                            (props.type === 'w' && p.product.id === pack?.product.id && p.weightedPrice < (pack?.weightedPrice || 0))
                                           )
                                           .sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
   , [pack, statePacks, props.type]) 
@@ -36,19 +36,18 @@ const Hints = (props: Props) => {
           : packs.map(p => 
               <IonItem key={p.id} routerLink={`/pack-details/${p.id}/c`}>
                 <IonThumbnail slot="start">
-                  <IonImg src={p.imageUrl} alt={labels.noImage} />
+                  <IonImg src={p.product.imageUrl} alt={labels.noImage} />
                 </IonThumbnail>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.product.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{p.product.alias}</IonText>
                   <IonText style={{color: colors[2].name}}>{p.name}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.product.description}</IonText>
-                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.countryId, stateCountries)}</IonText>
-                  <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.categoryId)?.name}`}</IonText>
-                  {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.product.trademark, p.product.countryId, stateCountries)}</IonText>
+                  <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.product.categoryId)?.name}`}</IonText>
                 </IonLabel>
-                <IonLabel slot="end" className="price">{p.isOffer || p.offerEnd ? '' : (p.price / 100).toFixed(2)}</IonLabel>
-                {(p.isOffer || p.offerEnd) && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
+                <IonLabel slot="end" className="price">{p.isOffer ? '' : (p.price / 100).toFixed(2)}</IonLabel>
+                {p.isOffer && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
               </IonItem>
             )
           }

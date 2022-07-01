@@ -28,8 +28,8 @@ const PackDetails = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const pack = useMemo(() => statePacks.find(p => p.id === params.id), [statePacks, params.id])
   const isAvailable = useMemo(() => statePackPrices.find(p => p.storeId === stateCustomer?.storeId && p.packId === pack?.id) ? 1 : -1, [statePackPrices, stateCustomer, pack])
-  const otherOffers = useMemo(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.id !== pack.id && (pa.isOffer || pa.offerEnd)), [statePacks, pack])
-  const otherPacks = useMemo(() => statePacks.filter(pa => pa.productId === pack?.productId && pa.weightedPrice < pack.weightedPrice), [statePacks, pack])
+  const otherOffers = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.id !== pack?.id && pa.isOffer), [statePacks, pack])
+  const otherPacks = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.weightedPrice < pack?.weightedPrice!), [statePacks, pack])
   const [packActionOpened, setPackActionOpened] = useState(false)
   const history = useHistory()
   const location = useLocation()
@@ -122,8 +122,8 @@ const PackDetails = () => {
   const handleFavorite = () => {
     try{
       if (stateCustomer && pack) {
-        updateFavorites(stateCustomer, pack.productId)
-        message(stateCustomer?.favorites?.includes(pack?.productId) ? labels.removeFavoriteSuccess : labels.addFavoriteSuccess, 3000)
+        updateFavorites(stateCustomer, pack.product.id!)
+        message(stateCustomer?.favorites?.includes(pack.product.id!) ? labels.removeFavoriteSuccess : labels.addFavoriteSuccess, 3000)
       }
 		} catch (error){
       const err = error as Err
@@ -142,12 +142,12 @@ const PackDetails = () => {
             </IonRow>
             <IonRow>
               <IonCol className="card-title">
-                {`${pack?.name} ${pack?.closeExpired ? '(' + labels.closeExpired + ')' : ''}`}
+                {pack?.name}
               </IonCol>
             </IonRow>
             <IonRow>
               <IonCol>
-                <img src={pack?.imageUrl} alt={labels.noImage} />
+                <img src={pack?.product.imageUrl} alt={labels.noImage} />
               </IonCol>
             </IonRow>
             <IonRow>
@@ -156,8 +156,8 @@ const PackDetails = () => {
               </IonCol>
             </IonRow>
             <IonRow>
-              <IonCol>{productOfText(pack?.trademark || '', pack?.countryId || '', stateCountries)}</IonCol>
-              <IonCol className="ion-text-end"><RatingStars rating={pack?.rating ?? 0} count={pack?.ratingCount ?? 0} /></IonCol>
+              <IonCol>{productOfText(pack?.product.trademark || '', pack?.product.countryId || '', stateCountries)}</IonCol>
+              <IonCol className="ion-text-end"><RatingStars rating={pack?.product.rating!} count={pack?.product.ratingCount!} /></IonCol>
             </IonRow>
           </IonGrid>
         </IonCard>
@@ -187,7 +187,7 @@ const PackDetails = () => {
         onDidDismiss={() => setPackActionOpened(false)}
         buttons={[
           {
-            text: pack?.productId && stateCustomer?.favorites?.includes(pack.productId) ? labels.removeFromFavorites : labels.addToFavorites,
+            text: pack?.product.id && stateCustomer?.favorites?.includes(pack.product.id) ? labels.removeFromFavorites : labels.addToFavorites,
             cssClass: params.type === 'c' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleFavorite()
           },
