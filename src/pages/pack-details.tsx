@@ -123,7 +123,8 @@ const PackDetails = () => {
         throw new Error('invalidPrice')
       }
       const newPrice = +value * 100
-      if (transType === 'c' && newPrice === statePackPrices.find(p => p.packId === pack?.id && p.storeId === stateCustomer?.storeId)?.price) {
+      const oldPrice = statePackPrices.find(p => p.packId === pack?.id && p.storeId === stateCustomer?.storeId)?.price
+      if (transType === 'c' && newPrice === oldPrice) {
         throw new Error('samePrice')
       }
       if (Math.abs(newPrice - pack?.price!) / pack?.price! > setup.priceDiff) {
@@ -137,7 +138,7 @@ const PackDetails = () => {
         time: new Date()
       }
       if (transType === 'n') addPackPrice(storePack, statePackPrices)
-      else changePrice(storePack, statePackPrices)
+      else changePrice(storePack, statePackPrices, oldPrice || 0)
       message(transType === 'n' ? labels.addSuccess : labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {

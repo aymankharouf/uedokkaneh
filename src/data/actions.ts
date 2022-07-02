@@ -261,16 +261,27 @@ export const getBasket = (stateBasket: BasketPack[], packs: Pack[]) => {
 }
 
 export const deleteStorePack = (storePack: PackPrice, packPrices: PackPrice[]) => {
+  const batch = firebase.firestore().batch()
   const otherPrices = packPrices.filter(p => p.packId === storePack.packId && p.storeId !== storePack.storeId)
   const prices = otherPrices.map(p => {
     const {packId, ...others} = p
     return others
   })
   const price = getMinPrice(storePack, packPrices, true)
-  firebase.firestore().collection('packs').doc(storePack.packId).update({
-    price,
-    prices
+  const packRef = firebase.firestore().collection('packs').doc(storePack.packId)
+  batch.update(packRef, {
+    prices,
+    price
   })
+  const storeTransRef = firebase.firestore().collection('store-trans').doc()
+  batch.set(storeTransRef, {
+    storeId: storePack.storeId,
+    packId: storePack.packId,
+    oldPrice: storePack.price,
+    newPrice: 0,
+    time: new Date()
+  })
+  batch.commit()
 }
 
 const getMinPrice = (packPrice: PackPrice, packPrices: PackPrice[], isDeletion: boolean) => {
@@ -283,15 +294,28 @@ const getMinPrice = (packPrice: PackPrice, packPrices: PackPrice[], isDeletion: 
 }
 
 export const addPackPrice = (storePack: PackPrice, packPrices: PackPrice[]) => {
+  const batch = firebase.firestore().batch()
   const { packId, ...others } = storePack
   const price = getMinPrice(storePack, packPrices, false)
-  firebase.firestore().collection('packs').doc(packId).update({
+  const packRef = firebase.firestore().collection('packs').doc(storePack.packId)
+  batch.update(packRef, {
     prices: firebase.firestore.FieldValue.arrayUnion(others),
     price
   })
+  const storeTransRef = firebase.firestore().collection('store-trans').doc()
+  batch.set(storeTransRef, {
+    storeId: storePack.storeId,
+    packId: storePack.packId,
+    oldPrice: 0,
+    newPrice: storePack.price,
+    time: new Date()
+  })
+  batch.commit()
+
 }
 
-export const changePrice = (storePack: PackPrice, packPrices: PackPrice[]) => {
+export const changePrice = (storePack: PackPrice, packPrices: PackPrice[], oldPrice: number) => {
+  const batch = firebase.firestore().batch()
   const otherPrices = packPrices.filter(p => p.packId === storePack.packId && p.storeId !== storePack.storeId)
   otherPrices.push(storePack)
   const prices = otherPrices.map(p => {
@@ -299,8 +323,18 @@ export const changePrice = (storePack: PackPrice, packPrices: PackPrice[]) => {
     return others
   })
   const price = getMinPrice(storePack, packPrices, false)
-  firebase.firestore().collection('packs').doc(storePack.packId).update({
+  const packRef = firebase.firestore().collection('packs').doc(storePack.packId)
+  batch.update(packRef, {
     prices,
     price
   })
+  const storeTransRef = firebase.firestore().collection('store-trans').doc()
+  batch.set(storeTransRef, {
+    storeId: storePack.storeId,
+    packId: storePack.packId,
+    oldPrice,
+    newPrice: storePack.price,
+    time: new Date()
+  })
+  batch.commit()
 }

@@ -179,6 +179,8 @@ const labels: Label = {
   unAvailable: 'لم يعد متوفرا',
   changePrice: 'تغيير السعر',
   available: 'هذا المنتج متوفر عندي',
+  samePrice: 'السعر كما هو في السابق',
+  invalidChangePrice: 'الرجاء التأكد من السعر المدخل لاختلافه عن سعر السوق بنسبة كبيرة',
 
 }
 
