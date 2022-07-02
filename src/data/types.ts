@@ -51,6 +51,7 @@ export type PackPrice = {
   storeId: string,
   packId: string,
   price: number,
+  isActive: boolean,
   time: Date
 }
 export type Notification = {
@@ -63,22 +64,12 @@ export type Notification = {
 export type Rating = {
   productId: string
 }
-export type Alarm = {
-  packId?: string,
-  type: string,
-  price?: number,
-  quantity?: number,
-  alternative?: string,
-  offerDays?: number,
-  status: string
-}
 export type Customer = {
   mobile: string,
   status: string,
   storeId: string,
   orderLimit: number,
   deliveryFees: number
-  alarms?: Alarm[]
   regionId: string,
   ratings?: Rating[],
   favorites?: string[],

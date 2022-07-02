@@ -173,13 +173,13 @@ const labels: Label = {
   notifyFriends: 'ابلاغ الاصدقاء عن هذا العرض',
   noPurchase: 'عدم الشراء',
   closeExpired: 'صلاحية قصيرة',
-  changePrice: 'الابلاغ عن تغيير السعر',
-  packAvailable: 'الابلاغ عن توفر هذا المنتج/العرض',
-  packUnAvailable: 'الابلاغ عن عدم توفر هذا المنتج/العرض',
-  AlternativeAvailable: 'الابلاغ عن توفر بديل',
-  closedExpireOffer: 'الابلاغ عن عرض لقرب انتهاء الصلاحية',
-  groupOffer: 'الابلاغ عن عرض لمجموعة',
-  ok: 'موافق'
+  ok: 'موافق',
+  yes: 'نعم',
+  no: 'لا',
+  unAvailable: 'لم يعد متوفرا',
+  changePrice: 'تغيير السعر',
+  available: 'هذا المنتج متوفر عندي',
+
 }
 
 export default labels

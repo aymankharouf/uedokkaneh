@@ -1,7 +1,7 @@
 import firebase from './firebase'
 import labels from './labels'
 import { colors } from './config'
-import { Err, OrderPack, BasketPack, Order, Alarm, Pack, Notification, Country, Customer } from './types'
+import { Err, OrderPack, BasketPack, Order, Pack, Notification, Country, Customer, PackPrice } from './types'
 
 export const getMessage = (path: string, error: Err) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
@@ -175,16 +175,6 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
   }
 }
 
-export const addAlarm = (alarm: Alarm) => {
-  firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
-    alarms: firebase.firestore.FieldValue.arrayUnion({
-      ...alarm,
-      id: Math.random().toString(),
-      time: new Date()  
-    })
-  })
-}
-
 export const readNotification = (notification: Notification, notifications: Notification[]) => {
   const otherNotifications = notifications.filter(n => n.id === notification.id)
   otherNotifications.push({
@@ -268,4 +258,49 @@ export const getBasket = (stateBasket: BasketPack[], packs: Pack[]) => {
     }
   })
   return basket
+}
+
+export const deleteStorePack = (storePack: PackPrice, packPrices: PackPrice[]) => {
+  const otherPrices = packPrices.filter(p => p.packId === storePack.packId && p.storeId !== storePack.storeId)
+  const prices = otherPrices.map(p => {
+    const {packId, ...others} = p
+    return others
+  })
+  const price = getMinPrice(storePack, packPrices, true)
+  firebase.firestore().collection('packs').doc(storePack.packId).update({
+    price,
+    prices
+  })
+}
+
+const getMinPrice = (packPrice: PackPrice, packPrices: PackPrice[], isDeletion: boolean) => {
+  const packStores = packPrices.filter(p => p.packId === packPrice.packId && p.storeId !== packPrice.storeId && p.price > 0 && p.isActive)
+  if (!isDeletion && packPrice.isActive){
+    packStores.push(packPrice)
+  }
+  const prices = packStores.map(s => s.price)
+  return packStores.length > 0 ? Math.min(...prices) : 0
+}
+
+export const addPackPrice = (storePack: PackPrice, packPrices: PackPrice[]) => {
+  const { packId, ...others } = storePack
+  const price = getMinPrice(storePack, packPrices, false)
+  firebase.firestore().collection('packs').doc(packId).update({
+    prices: firebase.firestore.FieldValue.arrayUnion(others),
+    price
+  })
+}
+
+export const changePrice = (storePack: PackPrice, packPrices: PackPrice[]) => {
+  const otherPrices = packPrices.filter(p => p.packId === storePack.packId && p.storeId !== storePack.storeId)
+  otherPrices.push(storePack)
+  const prices = otherPrices.map(p => {
+    const {packId, ...others} = p
+    return others
+  })
+  const price = getMinPrice(storePack, packPrices, false)
+  firebase.firestore().collection('packs').doc(storePack.packId).update({
+    prices,
+    price
+  })
 }

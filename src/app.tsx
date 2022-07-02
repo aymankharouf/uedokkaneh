@@ -36,7 +36,6 @@ import Basket from './pages/basket'
 import ConfirmOrder from './pages/confirm-order'
 import OrdersList from './pages/orders-list'
 import OrderDetails from './pages/order-details'
-import AddAlarm from './pages/add-alarm'
 import PasswordRequest from './pages/password-request'
 import ChangePassword from './pages/change-password'
 import Hints from './pages/hints'
@@ -88,6 +87,7 @@ const App = () => {
               packId: doc.id,
               storeId: p.storeId,
               price: p.price,
+              isActive: p.isActive,
               time: p.time.toDate()
             })
           })
@@ -206,7 +206,6 @@ const App = () => {
             <Route path="/register" exact={true} component={Register} />
             <Route path="/packs/:type/:id" exact={true} component={Packs} />
             <Route path="/pack-details/:id/:type" exact={true} component={PackDetails} />
-            <Route path="/add-alarm/:packId/:alarmType" exact={true} component={AddAlarm} />
             <Route path="/basket" exact={true} component={Basket} />
             <Route path="/confirm-order" exact={true} component={ConfirmOrder} />
             <Route path="/orders-list" exact={true} component={OrdersList} />

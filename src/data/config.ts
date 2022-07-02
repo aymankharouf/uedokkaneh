@@ -1,5 +1,6 @@
 export const setup = {
   orderLimit: 2000,
+  priceDiff: 0.25,
 }
 
 export const sortByList = [
