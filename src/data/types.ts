@@ -37,7 +37,7 @@ export type Pack = {
   product: Product,
   price: number,
   subPackId?: string,
-  subQuantity?: number,
+  subCount?: number,
   subPackName?: string,
   isOffer: boolean,
   weightedPrice: number,
@@ -67,52 +67,40 @@ export type Rating = {
 export type Customer = {
   mobile: string,
   status: string,
-  storeId: string,
-  orderLimit: number,
-  deliveryFees: number
   regionId: string,
+  storeId?: string,
+  orderLimit?: number,
+  deliveryFees?: number
   ratings?: Rating[],
-  favorites?: string[],
+  favorites?: string[]
 }
 export type BasketPack = {
-  packId: string,
-  productId: string,
-  productName: string,
-  productAlias: string,
-  packName: string,
-  imageUrl: string,
+  pack: Pack,
   price: number,
   quantity: number,
-  offerId: string
-  closeExpired: boolean,
-  byWeight: boolean,
+  isDone: boolean
+  gross: number,
+  status?: string,
   weight?: number,
   purchased?: number,
-  returned?: number
-}
-export type OrderPack = BasketPack & {
-  gross: number,
-  purchased: number,
-  status: string,
+  returned?: number,
   actual?: number,
   overPriced?: boolean,
-  packInfo?: Pack,
-  oldQuantity?: number
+  oldQuantity?: number,
 }
-export type BigBasketPack = BasketPack & {
-  packInfo?: Pack,
-  totalPriceText: string,
-  priceText: string,
+export type OrderTrans = {
+  type: string,
+  time: Date
 }
 export type Order = {
   id?: string,
-  basket: OrderPack[],
+  basket: BasketPack[],
   status: string,
   total: number,
   deliveryFees: number,
   fraction: number,
-  requestType?: string,
-  time?: Date
+  trans: OrderTrans[],
+  lastUpdate?: Date
 }
 export type Advert = {
   id: string,
@@ -145,9 +133,9 @@ export type State = {
   adverts: Advert[],
   regions: Region[],
   passwordRequests: PasswordRequest[],
-  orderBasket: OrderPack[],
   notifications: Notification[],
-  searchText: string
+  searchText: string,
+  openOrderId?: string
 }
 
 export type Action = {

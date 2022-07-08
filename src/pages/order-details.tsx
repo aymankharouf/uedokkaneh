@@ -1,15 +1,14 @@
 import { useState, useMemo } from 'react'
-import { cancelOrder, mergeOrders, addOrderRequest, getMessage, quantityDetails } from '../data/actions'
+import { cancelOrder, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import { colors, orderPackStatus } from '../data/config'
-import { Customer, Err, Order, Pack, State } from '../data/types'
+import { BasketPack, Err, Order, State } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
+import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
-import { menuOutline } from 'ionicons/icons'
+import { ellipsisVerticalOutline } from 'ionicons/icons'
 import { useSelector, useDispatch } from 'react-redux'
-
 type Params = {
   id: string
 }
@@ -17,8 +16,7 @@ const OrderDetails = () => {
   const dispatch = useDispatch()
   const params = useParams<Params>()
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
-  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
   const order = useMemo(() => stateOrders.find(o => o.id === params.id)!, [stateOrders, params.id])
   const [actionOpened, setActionOpened] = useState(false)
   const history = useHistory()
@@ -34,19 +32,12 @@ const OrderDetails = () => {
       statusNote
     }
   }), [order])
-  const lastOrder = useMemo(() => {
-    const orders = stateOrders.filter(o => o.id !== order.id && !['c', 'm', 'r'].includes(o.status))
-    orders.sort((o1, o2) => o2.time! > o1.time! ? -1 : 1)
-    return ['n', 'a', 'e'].includes(orders[0]?.status) ? orders[0] : undefined
-  }, [order, stateOrders])
+  const activeOrder = useMemo(() => stateOrders.find(o => ['n', 'a', 'e', 's'].includes(o.status)), [stateOrders])
  
   const handleEdit = () => {
     try{
-      if (stateCustomer?.status === 'b') {
-        throw new Error('blockedUser')
-      }
-      if (order.status !== 'n' && order.requestType) {
-        throw new Error('duplicateOrderRequest')
+      if (stateBasket.length > 0) {
+        throw new Error('clearBasketFirst')
       }
       const basket = order.basket.map(p => {
         return {
@@ -54,32 +45,9 @@ const OrderDetails = () => {
           oldQuantity: p.quantity
         }
       })
-      dispatch({type: 'LOAD_ORDER_BASKET', payload: basket})
-      history.push(`/edit-order/${order.id}`)
-    } catch(error) {
-      const err = error as Err
-      message(getMessage(location.pathname, err), 3000)
-    }
-  }
-  const confirmDelete = () => {
-    try{
-      if (stateCustomer?.status === 'b') {
-        throw new Error('blockedUser')
-      }
-      if (order) {
-        if (order.status === 'n') {
-          cancelOrder(order)
-          message(labels.deleteSuccess, 3000)
-          history.goBack()
-        } else {
-          if (order.requestType) {
-            throw new Error('duplicateOrderRequest')
-          }
-          addOrderRequest(order, 'c')
-          message(labels.sendSuccess, 3000)
-          history.goBack()
-        }  
-      }
+      dispatch({type: 'SET_BASKET', payload: basket})
+      dispatch({type: 'SET_OPEN_ORDER', payload: order.id})
+      history.push('/basket')
     } catch(error) {
       const err = error as Err
       message(getMessage(location.pathname, err), 3000)
@@ -91,42 +59,20 @@ const OrderDetails = () => {
       message: labels.confirmationText,
       buttons: [
         {text: labels.cancel},
-        {text: labels.yes, handler: () => confirmDelete()},
+        {text: labels.yes, handler: () => {
+          try{
+            if (order) {
+              cancelOrder(order)
+              message(labels.deleteSuccess, 3000)
+              history.goBack()
+            }
+          } catch(error) {
+            const err = error as Err
+            message(getMessage(location.pathname, err), 3000)
+          }
+        }},
       ],
     })
-  }
-  const handleMerge = () => {
-    try{
-      if (stateCustomer?.status === 'b') {
-        throw new Error('blockedUser')
-      }
-      if (lastOrder?.status !== 'n' && lastOrder?.requestType) {
-        throw new Error('duplicateOrderRequest')
-      }
-      let found
-      if (order && lastOrder) {
-        for (let p of order.basket) {
-          found = lastOrder.basket.find(bp => bp.packId === p.packId)
-          if (found && found.price !== p.price) {
-            throw new Error('samePackWithDiffPrice')
-          }
-          if (found?.weight && found.weight > 0 && statePacks.find(pa => pa.id === p.packId)?.isDivided) {
-            throw new Error('samePackPurchasedByWeight')
-          }
-        }  
-        if (lastOrder.status === 'n') {
-          mergeOrders(lastOrder, order)
-          message(labels.mergeSuccess, 3000)
-        } else {
-          addOrderRequest(lastOrder, 'm', order)
-          message(labels.sendSuccess, 3000)  
-        }
-        history.goBack()
-      }
-    } catch(error) {
-      const err = error as Err
-      message(getMessage(location.pathname, err), 3000)
-    }
   }
   let i = 0
   return(
@@ -135,17 +81,16 @@ const OrderDetails = () => {
       <IonContent fullscreen>
         <IonList className="ion-padding">
           {orderBasket?.map(p => 
-            <IonItem key={p.packId}>
+            <IonItem key={p.pack.id}>
               <IonLabel>
-                <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
-                <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
-                <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                <IonText style={{color: colors[0].name}}>{p.pack.product.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.pack.product.alias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.pack.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{p.priceNote}</IonText>
                 <IonText style={{color: colors[4].name}}>{quantityDetails(p)}</IonText>
                 <IonText style={{color: colors[5].name}}>{`${labels.status}: ${p.statusNote}`}</IonText>
-                {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
               </IonLabel>
-              <IonLabel slot="end" className="price">{(p.gross / 100).toFixed(2)}</IonLabel>
+              <IonLabel slot="end" className="price">{((p.gross || 0) / 100).toFixed(2)}</IonLabel>
             </IonItem>
           )}
           <IonItem>
@@ -178,32 +123,28 @@ const OrderDetails = () => {
           </IonItem>    
         </IonList>
       </IonContent>
-      {order && ['n', 'a', 'e'].includes(order.status) && 
+      {order.id === activeOrder?.id && 
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setActionOpened(true)} color="success">
-            <IonIcon ios={menuOutline} /> 
+            <IonIcon ios={ellipsisVerticalOutline} /> 
           </IonFabButton>
         </IonFab>
       }
       <IonActionSheet
+        mode='ios'
         isOpen={actionOpened}
         onDidDismiss={() => setActionOpened(false)}
         buttons={[
           {
-            text: order.status === 'n' ? labels.editBasket : labels.editBasketRequest,
+            text: labels.edit,
             cssClass: colors[i++ % 10].name,
             handler: () => handleEdit()
           },
           {
-            text: order.status === 'n' ? labels.cancel : labels.cancelRequest,
-            cssClass: colors[i++ % 10].name,
+            text: labels.cancel,
+            cssClass: order.status === 'n' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleDelete()
           },
-          {
-            text: lastOrder?.status === 'n' ? labels.merge : labels.mergeRequest,
-            cssClass: order.status === 'n' && lastOrder ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => handleMerge()
-          }
         ]}
       />
       <Footer />

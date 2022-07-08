@@ -181,7 +181,9 @@ const labels: Label = {
   available: 'هذا المنتج متوفر عندي',
   samePrice: 'السعر كما هو في السابق',
   invalidChangePrice: 'الرجاء التأكد من السعر المدخل لاختلافه عن سعر السوق بنسبة كبيرة',
-
+  activeOrderFound: 'لا يمكن ارسال طلب جديد لوجود طلب سابق فعال، يمكنك تعديله من صفحة طلباتي',
+  clearBasketFirst: 'عليك افراغ سلة المشتريات اولا',
+  notLessPurchased: 'لا يمكن تقليل الكمية عما تم شراؤه فعلا'
 }
 
 export default labels

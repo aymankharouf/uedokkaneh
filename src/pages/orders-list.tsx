@@ -12,7 +12,7 @@ import { useSelector } from 'react-redux'
 const OrdersList = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const orders = useMemo(() => stateOrders.filter(o => ['n', 'a', 'e', 'u', 'f', 'p', 'd'].includes(o.status))
-                                          .sort((o1, o2) => o2.time! > o1.time! ? -1 : 1)
+                                          .sort((o1, o2) => o2.lastUpdate! > o1.lastUpdate! ? -1 : 1)
                           , [stateOrders])
   return(
     <IonPage>
@@ -27,7 +27,7 @@ const OrdersList = () => {
               <IonItem key={o.id} routerLink={`/order-details/${o.id}`}>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{orderStatus.find(s => s.id === o.status)?.name}</IonText>
-                  <IonText style={{color: colors[1].name}}>{moment(o.time).fromNow()}</IonText>
+                  <IonText style={{color: colors[1].name}}>{moment(o.lastUpdate).fromNow()}</IonText>
                   <IonText style={{color: colors[2].name}}>{(o.total / 100).toFixed(2)}</IonText>
                 </IonLabel>
               </IonItem>    

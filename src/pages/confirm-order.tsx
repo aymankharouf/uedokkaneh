@@ -1,13 +1,14 @@
 import { useMemo } from 'react'
-import { confirmOrder, getMessage, quantityText, getBasket } from '../data/actions'
+import { confirmOrder, getMessage, quantityText, getBasket, updateOrder } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
 import { BasketPack, State, Region, Customer, Pack, Advert, Order, Err } from '../data/types'
 import { useHistory, useLocation } from 'react-router'
-import { IonBadge, IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import { IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import { useSelector, useDispatch } from 'react-redux'
 import firebase from '../data/firebase'
+import Footer from './footer'
 
 const ConfirmOrder = () => {
   const dispatch = useDispatch()
@@ -18,62 +19,59 @@ const ConfirmOrder = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
+  const stateOpenOrder = useSelector<State, string | undefined>(state => state.openOrderId)
   const basket = useMemo(() => getBasket(stateBasket, statePacks), [stateBasket, statePacks])
   const total = useMemo(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [basket])
   const fraction = useMemo(() => total - Math.floor(total / 5) * 5, [total])
-  const weightedPacks = useMemo(() => basket.filter(p => p.byWeight), [basket])
+  const weightedPacks = useMemo(() => basket.filter(p => p.pack.byWeight), [basket])
   const regionFees = useMemo(() => stateRegions.find(r => r.id === stateCustomer?.regionId)?.fees || 0, [stateRegions, stateCustomer])
   const deliveryFees = useMemo(() => stateCustomer?.deliveryFees || regionFees, [stateCustomer, regionFees])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
 
-
   const handleConfirm = () => {
     try{
-      if (stateAdverts[0]?.type === 'n') {
-        message(stateAdverts[0].text, 2000)
-        return
-      }
-      if (stateCustomer?.status === 'b') {
-        throw new Error('blockedUser')
-      }
       const orderLimit = stateCustomer?.orderLimit || setup.orderLimit
-      const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
-      const totalOrders = activeOrders.reduce((sum, o) => sum + o.total, 0)
+      const totalOrders = stateOrders.filter(o => o.id !== stateOpenOrder && ['n', 'a', 'e', 'f', 'p'].includes(o.status)).reduce((sum, o) => sum + o.total, 0)
       if (totalOrders + total > orderLimit) {
         throw new Error('limitOverFlow')
       }
-      const packs = basket.filter(p => p.price > 0)
-      const newPacks = packs.map(p => {
-        return {
-          packId: p.packId,
-          productId: p.productId,
-          productName: p.productName,
-          productAlias: p.productAlias,
-          packName: p.packName,
-          imageUrl: p.imageUrl,
-          price: p.price,
-          quantity: p.quantity,
-          closeExpired: p.closeExpired,
-          byWeight: p.byWeight,
-          gross: Math.round(p.price * p.quantity),
-          offerId: p.offerId || '',
-          purchased: 0,
-          status: 'n'
-        }
+      let packs = basket.map(p => {
+        const { totalPriceText, priceText, ...others } = p
+        return others
       })
-      const order = {
-        status: 'n',
-        basket: newPacks,
-        deliveryFees,
-        total,
-        fraction
+      let order: Order
+      if (stateOpenOrder) {
+        order = stateOrders.find(o => o.id === stateOpenOrder)!
+        updateOrder(order)
+      } else {
+        if (stateAdverts[0]?.type === 'n') {
+          message(stateAdverts[0].text, 2000)
+          return
+        }
+        if (stateCustomer?.status === 'b') {
+          throw new Error('blockedUser')
+        }
+        const activeOrders = stateOrders.filter(o => ['n', 'e', 's', 'f'].includes(o.status)).length
+        if (activeOrders > 0) {
+          throw new Error('activeOrderFound')
+        }
+        packs = packs.filter(p => p.price > 0)
+        order = {
+          status: 'n',
+          basket: packs,
+          deliveryFees,
+          total,
+          fraction,
+          trans: [{type: 'n', time: new Date()}]
+        }
+        confirmOrder(order)
       }
-      confirmOrder(order)
+      dispatch({type: 'CLEAR_BASKET'})
+      dispatch({type: 'SET_OPEN_ORDER', payload: undefined})
       message(labels.sendSuccess, 3000)
       history.push('/')
-      dispatch({ type: 'CLEAR_BASKET'})
     } catch (error){
       const err = error as Err
       message(getMessage(location.pathname, err), 3000)
@@ -86,14 +84,13 @@ const ConfirmOrder = () => {
       <IonContent fullscreen>
         <IonList className="ion-padding">
           {basket.map(p => 
-            <IonItem key={p.packId}>
+            <IonItem key={p.pack.id}>
               <IonLabel>
-                <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
-                <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
-                <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                <IonText style={{color: colors[0].name}}>{p.pack.product.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.pack.product.alias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.pack.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{p.priceText}</IonText>
                 <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity)}`}</IonText>
-                {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
               </IonLabel>
               <IonLabel slot="end" className="price">{p.totalPriceText}</IonLabel>
             </IonItem>    
@@ -130,6 +127,7 @@ const ConfirmOrder = () => {
           {labels.send}
         </IonButton>
       </div>
+      <Footer inBasket />
     </IonPage>
   )
 }

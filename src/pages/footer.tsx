@@ -1,12 +1,45 @@
-import { IonBadge, IonButtons, IonFooter, IonIcon, IonToolbar } from '@ionic/react'
-import { cartOutline, homeOutline } from 'ionicons/icons'
-import { useHistory } from 'react-router'
+import { IonBadge, IonButtons, IonFooter, IonIcon, IonToolbar, useIonAlert, useIonToast } from '@ionic/react'
+import { cartOutline, homeOutline, trashOutline } from 'ionicons/icons'
+import { useHistory, useLocation } from 'react-router'
 import { useSelector } from 'react-redux'
-import { BasketPack, State } from '../data/types'
+import { BasketPack, Err, State } from '../data/types'
+import { useDispatch } from 'react-redux'
+import labels from '../data/labels'
+import { getMessage } from '../data/actions'
+import { useMemo } from 'react'
 
-const Footer = () => {
+type Props = {
+  inBasket?: boolean
+}
+const Footer = (props: Props) => {
+  const dispatch = useDispatch()
   const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
+  const basket = useMemo(() => stateBasket.filter(p => p.quantity > 0), [stateBasket])
   const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+  const [alert] = useIonAlert()
+  const handleDelete = () => {
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.yes, handler: () => {
+          try{
+            dispatch({type: 'CLEAR_BASKET'})
+            dispatch({type: 'SET_OPEN_ORDER', payload: undefined})
+            message(labels.deleteSuccess, 3000)
+            history.push('/')
+          } catch(error) {
+            const err = error as Err
+            message(getMessage(location.pathname, err), 3000)
+          }    
+        }},
+      ],
+    })
+
+  }
   return (
     <IonFooter>
       <IonToolbar>
@@ -17,14 +50,24 @@ const Footer = () => {
             style={{fontSize: '20px', marginRight: '10px'}} 
           />
         </IonButtons>
-        <IonButtons slot="end" onClick={() => {if (stateBasket.length > 0) history.push('/basket')}}>
-          {stateBasket.length > 0 && <IonBadge className="badge" style={{right: '10px'}}>{stateBasket.length}</IonBadge>}
-          <IonIcon 
-            ios={cartOutline} 
-            style={{fontSize: '25px', marginLeft: '10px'}} 
-            color="primary"
-          />
-        </IonButtons>
+        {props.inBasket ? 
+          <IonButtons slot="end" onClick={handleDelete}>
+            <IonIcon 
+              ios={trashOutline} 
+              style={{fontSize: '25px', marginLeft: '10px'}} 
+              color="primary"
+            />
+          </IonButtons>
+        :
+          <IonButtons slot="end" onClick={() => {if (basket.length > 0) history.push('/basket')}}>
+            {basket.length > 0 && <IonBadge className="badge" style={{right: '10px'}}>{basket.length}</IonBadge>}
+            <IonIcon 
+              ios={cartOutline} 
+              style={{fontSize: '25px', marginLeft: '10px'}} 
+              color="primary"
+            />
+          </IonButtons>
+        }
       </IonToolbar>
     </IonFooter>
   )

@@ -36,38 +36,15 @@ const PackDetails = () => {
   const [message] = useIonToast()
   const [alert] = useIonAlert()
   const [transType, setTransType] = useState('')
-
-  const addToBasket = (packId?: string) => {
+  const addToBasket = () => {
     try{
-      if (stateCustomer?.status === 'b') {
-        throw new Error('blockedUser')
-      }
-      if (stateBasket.find(p => p.packId === packId)) {
-        throw new Error('alreadyInBasket')
-      }
-      let foundPack = statePacks.find(p => p.id === params.id)
-      let price = pack?.price ?? 0
-      let maxQuantity
-      if (packId !== pack?.id) {
-        foundPack = statePacks.find(p => p.id === packId)
-        if (packId === pack?.subPackId) {
-          price = Math.round((pack?.price ?? 0) / (pack?.subQuantity || 0))
-          maxQuantity = (pack?.subQuantity ?? 0) - 1
-        }
-      }
-      const purchasedPack = {
-        ...foundPack,
-        price,
-        maxQuantity,
-        offerId: pack?.id
-      }
       const orderLimit = stateCustomer?.orderLimit || setup.orderLimit
       const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
       const activeOrdersTotal = activeOrders.reduce((sum, o) => sum + o.total, 0)
-      if (activeOrdersTotal + purchasedPack.price > orderLimit) {
+      if (activeOrdersTotal + pack?.price! > orderLimit) {
         throw new Error('limitOverFlow')
       }
-      dispatch({type: 'ADD_TO_BASKET', payload: purchasedPack})
+      dispatch({type: 'ADD_TO_BASKET', payload: pack})
       message(labels.addToBasketSuccess, 3000)
       history.goBack()
 		} catch (error){
@@ -181,14 +158,14 @@ const PackDetails = () => {
           </IonCard>
         </IonContent>
       }
-      {params.type === 'c' && 
+      {params.type === 'c' && !stateBasket.find(p => p.pack.id === pack?.id && p.quantity > 0) &&
         <div className="ion-text-center">
           <IonButton 
             fill="solid" 
             shape="round"
             color="secondary"
             style={{width: '10rem'}}
-            onClick={() => addToBasket(pack?.id)}
+            onClick={() => addToBasket()}
           >
             {`${labels.addToBasket}`}
           </IonButton>

@@ -54,6 +54,7 @@ const Packs = () => {
             <IonItem>
               <IonLabel position="floating" color="primary">{labels.sortBy}</IonLabel>
               <IonSelect 
+                interface='action-sheet'
                 ok-text={labels.ok} 
                 cancel-text={labels.cancel} 
                 value={sortBy}

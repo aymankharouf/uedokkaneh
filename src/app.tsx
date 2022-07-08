@@ -43,7 +43,6 @@ import Help from './pages/help'
 import Notifications from './pages/notifications'
 import PurchasedPacks from './pages/purchased-packs'
 import Advert from './pages/advert'
-import EditOrder from './pages/edit-order'
 import Categories from './pages/categories';
 
 
@@ -148,6 +147,7 @@ const App = () => {
               deliveryFees: doc.data()!.deliveryFees,
               ratings: doc.data()!.ratings
             }
+            console.log('customer === ', customer)
             const notifications: Notification[] = []
             if (doc.data()!.notifications) {
               doc.data()!.notifications.forEach((n: any) => {
@@ -178,8 +178,8 @@ const App = () => {
               total: doc.data().total,
               deliveryFees: doc.data().deliveryFees,
               fraction: doc.data().fraction,
-              requestType: doc.data().requestType,
-              time: doc.data().time?.toDate()
+              trans: doc.data().trans,
+              lastUpdate: doc.data().lastUpdate?.toDate()
             })
           })
           dispatch({type: 'SET_ORDERS', payload: orders})
@@ -187,7 +187,7 @@ const App = () => {
           unsubscribeOrders()
         }) 
       } else {
-        dispatch({type: 'CLEAR_CUSTOMER'})
+        dispatch({type: 'SET_CUSTOMER', payload: undefined})
         dispatch({type: 'SET_ORDERS', payload: []})
         dispatch({type: 'SET_NOTIFICATIONS', payload: []})
       }
@@ -215,7 +215,6 @@ const App = () => {
             <Route path="/notifications" exact={true} component={Notifications} />
             <Route path="/purchased-packs" exact={true} component={PurchasedPacks} />
             <Route path="/advert" exact={true} component={Advert} />
-            <Route path="/edit-order/:id" exact={true} component={EditOrder} />
             <Route path="/categories/:id" exact={true} component={Categories} />
           </IonRouterOutlet>
         </IonSplitPane>

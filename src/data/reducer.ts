@@ -1,4 +1,4 @@
-import { State, Action } from './types'
+import { State, Action, BasketPack } from './types'
 
 const initState: State = {
   categories: [], 
@@ -10,81 +10,79 @@ const initState: State = {
   adverts: [],
   regions: [],
   passwordRequests: [],
-  orderBasket: [],
   notifications: [],
   searchText: ''
 }
 
 const reducer = (state: State = initState, action: Action) => {
-  let pack, packIndex, packs, nextQuantity, i
+  let basketPack: BasketPack, packIndex, packs, nextQuantity, i
   const increment = [0.125, 0.25, 0.5, 0.75, 1]
   switch (action.type){
     case 'ADD_TO_BASKET':
-      if (state.basket.find(p => p.packId === action.payload.id)) return state
-      pack = {
-        packId: action.payload.id,
-        productId: action.payload.productId,
-        productName: action.payload.productName,
-        productAlias: action.payload.productAlias,
-        packName: action.payload.name,
-        imageUrl: action.payload.imageUrl,
-        price: action.payload.price,
-        quantity: 1,
-        isDivided: action.payload.isDivided,
-        byWeight: action.payload.byWeight,
-        maxQuantity: action.payload.maxQuantity,
-        offerId: action.payload.offerId,
-        closeExpired: action.payload.closeExpired
+      if (state.basket.find(p => p.pack.id === action.payload.id)) {
+        basketPack = state.basket.find(p => p.pack.id === action.payload.id)!
+        basketPack = {
+          ...basketPack,
+          quantity: 1,
+          gross: Math.round(basketPack.price)
+        }
+        packs = state.basket.slice()
+        packIndex = packs.findIndex(p => p.pack.id === action.payload.id)
+        packs.splice(packIndex, 1, basketPack)
+      } else {
+        basketPack = {
+          pack: action.payload,
+          price: action.payload.price,
+          isDone: false,
+          quantity: 1,
+          gross: action.payload.price
+        }
+        packs = [...state.basket, basketPack]
       }
-      packs = [...state.basket, pack]
       localStorage.setItem('basket', JSON.stringify(packs))
       return {...state, basket: packs}
     case 'INCREASE_QUANTITY':
-      if (action.payload.maxQuantity && action.payload.quantity >= action.payload.maxQuantity) {
-        nextQuantity = action.payload.quantity
-      } else {
-        if (action.payload.isDivided) {
-          if (action.payload.quantity >= 1) {
-            nextQuantity = action.payload.quantity + 0.5
-          } else {
-            i = increment.indexOf(action.payload.quantity)
-            nextQuantity = increment[++i]  
-          }
+      basketPack = state.basket.find(p => p.pack.id === action.payload)!
+      if (basketPack.pack.isDivided) {
+        if (basketPack.quantity >= 1) {
+          nextQuantity = basketPack.quantity + 0.5
         } else {
-          nextQuantity = action.payload.quantity + 1
-        }  
-      }
-      pack = {
-        ...action.payload,
-        quantity: nextQuantity
+          i = increment.indexOf(basketPack.quantity)
+          nextQuantity = increment[++i]  
+        }
+      } else {
+        nextQuantity = basketPack.quantity + 1
+      }  
+      basketPack = {
+        ...basketPack,
+        quantity: nextQuantity,
+        gross: Math.round(basketPack.price * nextQuantity)
       }
       packs = state.basket.slice()
-      packIndex = packs.findIndex(p => p.packId === action.payload.packId)
-      packs.splice(packIndex, 1, pack)
+      packIndex = packs.findIndex(p => p.pack.id === action.payload)
+      packs.splice(packIndex, 1, basketPack)
       localStorage.setItem('basket', JSON.stringify(packs))
       return {...state, basket: packs}
     case 'DECREASE_QUANTITY':
-      if (action.payload.isDivided) {
-        if (action.payload.quantity > 1) {
-          nextQuantity = action.payload.quantity - 0.5
+      basketPack = state.basket.find(p => p.pack.id === action.payload)!
+      if (basketPack.pack.isDivided) {
+        if (basketPack.quantity > 1) {
+          nextQuantity = basketPack.quantity - 0.5
         } else {
-          i = increment.indexOf(action.payload.quantity)
+          i = increment.indexOf(basketPack.quantity)
           nextQuantity = i === 0 ? increment[0] : increment[--i]  
         }
       } else {
-        nextQuantity = action.payload.quantity - 1
+        nextQuantity = basketPack.quantity - 1
       }
       packs = state.basket.slice()
-      packIndex = packs.findIndex(p => p.packId === action.payload.packId)
-      if (nextQuantity === 0) {
-        packs.splice(packIndex, 1)
-      } else {
-        pack = {
-          ...action.payload,
-          quantity: nextQuantity
-        }
-        packs.splice(packIndex, 1, pack)
+      packIndex = packs.findIndex(p => p.pack.id === action.payload)
+      basketPack = {
+        ...basketPack,
+        quantity: nextQuantity,
+        gross: Math.round(basketPack.price * nextQuantity)
       }
+      packs.splice(packIndex, 1, basketPack)
       localStorage.setItem('basket', JSON.stringify(packs))
       return {...state, basket: packs}
     case 'CLEAR_BASKET':
@@ -92,79 +90,13 @@ const reducer = (state: State = initState, action: Action) => {
       return {...state, basket: []}
     case 'SET_BASKET':
       return {...state, basket: action.payload}
-    case 'LOAD_ORDER_BASKET':
-      return {
-        ...state,
-        orderBasket: action.payload
-      }
-    case 'CLEAR_ORDER_BASKET':
-      return {
-        ...state,
-        orderBasket: []
-      }
-    case 'INCREASE_ORDER_QUANTITY':
-      if (action.payload.packInfo.isDivided) {
-        if (action.payload.quantity >= 1) {
-          nextQuantity = action.payload.quantity + 0.5
-        } else {
-          i = increment.indexOf(action.payload.quantity)
-          nextQuantity = increment[++i]  
-        }
-      } else {
-        nextQuantity = action.payload.quantity + 1
-      }
-      pack = {
-        ...action.payload,
-        quantity: nextQuantity,
-        gross: Math.round(action.payload.price * nextQuantity)
-      }
-      packs = state.orderBasket.slice()
-      packIndex = packs.findIndex(p => p.packId === action.payload.packId)
-      packs.splice(packIndex, 1, pack)
-      return {...state, orderBasket: packs}
-    case 'DECREASE_ORDER_QUANTITY':
-      if (action.payload.weight) {
-        if (action.payload.packInfo.isDivided) {
-          if (action.payload.quantity > action.payload.weight) {
-            nextQuantity = action.payload.weight
-          } else {
-            nextQuantity = 0
-          }  
-        } else {
-          if (action.payload.quantity > action.payload.purchased) {
-            nextQuantity = action.payload.purchased
-          } else {
-            nextQuantity = 0
-          }  
-        }
-      } else if (action.payload.packInfo.isDivided) {
-        if (action.payload.quantity > 1) {
-          nextQuantity = action.payload.quantity - 0.5
-        } else {
-          i = increment.indexOf(action.payload.quantity)
-          nextQuantity = i === 0 ? increment[0] : increment[--i]  
-        }
-      } else {
-        nextQuantity = action.payload.quantity - 1
-      }
-      pack = {
-        ...action.payload,
-        quantity: nextQuantity,
-        gross: Math.round(action.payload.price * nextQuantity)
-      }  
-      packs = state.orderBasket?.slice()
-      packIndex = packs.findIndex(p => p.packId === action.payload.packId)
-      packs.splice(packIndex, 1, pack)
-      return {...state, orderBasket: packs}
     case 'LOGIN':
       return {...state, user: action.payload}
     case 'LOGOUT':
       return {...state, user: undefined}
     case 'SET_CUSTOMER':
       return {...state, customer: action.payload}
-    case 'CLEAR_CUSTOMER':
-      return {...state, customer: undefined}
-      case 'SET_ORDERS':
+    case 'SET_ORDERS':
       return {...state, orders: action.payload}
     case 'SET_PACKS':
       return {...state, packs: action.payload}
@@ -182,6 +114,8 @@ const reducer = (state: State = initState, action: Action) => {
       return {...state, passwordRequests: action.payload}
     case 'SET_NOTIFICATIONS':
       return {...state, notifications: action.payload}
+    case 'SET_OPEN_ORDER':
+      return {...state, openOrderId: action.payload}
     default:
       return state
   }
