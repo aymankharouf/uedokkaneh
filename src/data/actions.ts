@@ -22,11 +22,8 @@ export const quantityText = (quantity: number, weight?: number): string => {
 
 export const quantityDetails = (basketPack: BasketPack) => {
   let text = `${labels.requested}: ${quantityText(basketPack.quantity)}`
-  if ((basketPack.purchased ?? 0) > 0) {
-    text += `, ${labels.purchased}: ${quantityText(basketPack.purchased ?? 0, basketPack.weight)}`
-  }
-  if ((basketPack.returned ?? 0) > 0) {
-    text += `, ${labels.returned}: ${quantityText(basketPack.returned ?? 0)}`
+  if ((basketPack.purchased || 0) > 0) {
+    text += `, ${labels.purchased}: ${quantityText(basketPack.purchased || 0, basketPack.weight)}`
   }
   return text
 }
@@ -71,8 +68,8 @@ export const confirmOrder = (order: Order) => {
     ...order,
     userId: firebase.auth().currentUser?.uid,
     isArchived: false,
+    profit: 0
   }
-  console.log('new order === ', newOrder)
   firebase.firestore().collection('orders').add(newOrder)
 }
 

@@ -73,14 +73,12 @@ export type BasketPack = {
   pack: Pack,
   price: number,
   quantity: number,
-  isDone: boolean
   gross: number,
-  status?: string,
-  weight?: number,
-  purchased?: number,
-  returned?: number,
-  actual?: number,
-  overPriced?: boolean,
+  status: string,
+  weight: number,
+  purchased: number,
+  actual: number,
+  overPriced: boolean,
   oldQuantity?: number,
 }
 export type OrderTrans = {
@@ -89,13 +87,14 @@ export type OrderTrans = {
 }
 export type Order = {
   id?: string,
-  basket: BasketPack[],
   status: string,
   total: number,
+  deliveryTime: string,
   deliveryFees: number,
   fraction: number,
+  lastUpdate: Date
+  basket: BasketPack[],
   trans: OrderTrans[],
-  lastUpdate?: Date
 }
 export type Advert = {
   id: string,

@@ -33,17 +33,19 @@ const ConfirmOrder = () => {
   const handleConfirm = () => {
     try{
       const orderLimit = stateCustomer?.orderLimit || setup.orderLimit
-      const totalOrders = stateOrders.filter(o => o.id !== stateOpenOrder && ['n', 'a', 'e', 'f', 'p'].includes(o.status)).reduce((sum, o) => sum + o.total, 0)
+      const totalOrders = stateOrders.filter(o => o.id !== stateOpenOrder && ['n', 'a', 'e', 'f', 's'].includes(o.status)).reduce((sum, o) => sum + o.total, 0)
       if (totalOrders + total > orderLimit) {
         throw new Error('limitOverFlow')
       }
       let packs = basket.map(p => {
         const { totalPriceText, priceText, ...others } = p
+        others.status = others.status === 'e' ? 'u' : others.status
         return others
       })
       let order: Order
       if (stateOpenOrder) {
         order = stateOrders.find(o => o.id === stateOpenOrder)!
+        order.basket = packs
         updateOrder(order)
       } else {
         if (stateAdverts[0]?.type === 'n') {
@@ -62,12 +64,12 @@ const ConfirmOrder = () => {
           status: 'n',
           basket: packs,
           deliveryFees,
+          deliveryTime: '',
           total,
           fraction,
           lastUpdate: new Date(),      
           trans: [{type: 'n', time: new Date().getTime()}]
         }
-        console.log('order == ', order)
         confirmOrder(order)
       }
       dispatch({type: 'CLEAR_BASKET'})

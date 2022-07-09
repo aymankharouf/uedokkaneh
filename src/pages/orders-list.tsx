@@ -12,7 +12,7 @@ import { useSelector } from 'react-redux'
 const OrdersList = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const orders = useMemo(() => stateOrders.filter(o => ['n', 'a', 'e', 'u', 'f', 'p', 'd'].includes(o.status))
-                                          .sort((o1, o2) => o2.lastUpdate! > o1.lastUpdate! ? -1 : 1)
+                                          .sort((o1, o2) => o2.lastUpdate > o1.lastUpdate ? 1 : -1)
                           , [stateOrders])
   return(
     <IonPage>

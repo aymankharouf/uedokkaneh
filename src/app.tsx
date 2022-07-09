@@ -175,6 +175,7 @@ const App = () => {
               status: doc.data().status,
               total: doc.data().total,
               deliveryFees: doc.data().deliveryFees,
+              deliveryTime: doc.data().deliveryTime,
               fraction: doc.data().fraction,
               trans: doc.data().trans,
               lastUpdate: doc.data().lastUpdate?.toDate()

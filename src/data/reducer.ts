@@ -33,8 +33,12 @@ const reducer = (state: State = initState, action: Action) => {
         basketPack = {
           pack: action.payload,
           price: action.payload.price,
-          isDone: false,
+          status: 'n',
           quantity: 1,
+          weight: 0,
+          purchased: 0,
+          actual: 0,
+          overPriced: false,
           gross: action.payload.price
         }
         packs = [...state.basket, basketPack]
