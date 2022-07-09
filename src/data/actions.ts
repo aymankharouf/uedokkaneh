@@ -62,7 +62,7 @@ export const addPasswordRequest = (mobile: string) => {
   firebase.firestore().collection('password-requests').add({
     mobile,
     status: 'n',
-    time: firebase.firestore.FieldValue.serverTimestamp()
+    time: new Date()
   })
 }
 
@@ -71,8 +71,8 @@ export const confirmOrder = (order: Order) => {
     ...order,
     userId: firebase.auth().currentUser?.uid,
     isArchived: false,
-    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
   }
+  console.log('new order === ', newOrder)
   firebase.firestore().collection('orders').add(newOrder)
 }
 
@@ -114,7 +114,7 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
 }
 
 export const readNotification = (notification: Notification, notifications: Notification[]) => {
-  const otherNotifications = notifications.filter(n => n.id === notification.id)
+  const otherNotifications = notifications.filter(n => n.id !== notification.id)
   otherNotifications.push({
     ...notification,
     status: 'r'
@@ -141,9 +141,9 @@ export const updateOrder = (order: Order) => {
   const { id, ...others } = order
   const newTrans = {
     type: 'u',
-    time: new Date()
+    time: new Date().getTime()
   }
-  others.trans?.push(newTrans)
+  others.trans.push(newTrans)
   others.lastUpdate = new Date()
   firebase.firestore().collection('orders').doc(order.id).update(others)
 }
@@ -152,9 +152,9 @@ export const cancelOrder = (order: Order) => {
   const { id, ...others } = order
   const newTrans = {
     type: 'c',
-    time: new Date()
+    time: new Date().getTime()
   }
-  others.trans?.push(newTrans)
+  others.trans.push(newTrans)
   others.status = 'c'
   others.lastUpdate = new Date()
   firebase.firestore().collection('orders').doc(order.id).update(others)

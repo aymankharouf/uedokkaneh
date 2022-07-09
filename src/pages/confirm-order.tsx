@@ -64,8 +64,10 @@ const ConfirmOrder = () => {
           deliveryFees,
           total,
           fraction,
-          trans: [{type: 'n', time: new Date()}]
+          lastUpdate: new Date(),      
+          trans: [{type: 'n', time: new Date().getTime()}]
         }
+        console.log('order == ', order)
         confirmOrder(order)
       }
       dispatch({type: 'CLEAR_BASKET'})

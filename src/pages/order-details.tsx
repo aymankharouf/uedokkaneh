@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { cancelOrder, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
-import { colors, orderPackStatus } from '../data/config'
+import { colors } from '../data/config'
 import { BasketPack, Err, Order, State } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
@@ -25,11 +25,9 @@ const OrderDetails = () => {
   const [alert] = useIonAlert()
   const orderBasket = useMemo(() => order.basket.map(p => {
     const priceNote = p.actual && p.actual !== p.price ? `${labels.orderPrice}: ${(p.price / 100).toFixed(2)}, ${labels.currentPrice}: ${(p.actual / 100).toFixed(2)}` : `${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`
-    const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
     return {
       ...p,
       priceNote,
-      statusNote
     }
   }), [order])
   const activeOrder = useMemo(() => stateOrders.find(o => ['n', 'a', 'e', 's'].includes(o.status)), [stateOrders])
@@ -88,7 +86,6 @@ const OrderDetails = () => {
                 <IonText style={{color: colors[2].name}}>{p.pack.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{p.priceNote}</IonText>
                 <IonText style={{color: colors[4].name}}>{quantityDetails(p)}</IonText>
-                <IonText style={{color: colors[5].name}}>{`${labels.status}: ${p.statusNote}`}</IonText>
               </IonLabel>
               <IonLabel slot="end" className="price">{((p.gross || 0) / 100).toFixed(2)}</IonLabel>
             </IonItem>

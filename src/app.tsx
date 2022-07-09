@@ -73,11 +73,9 @@ const App = () => {
           product: doc.data().product,
           price: doc.data().price,
           isOffer: doc.data().isOffer,
-          weightedPrice: doc.data().weightedPrice,
+          weightedPrice: doc.data().price / doc.data().unitsCount,
           isDivided: doc.data().isDivided,
           byWeight: doc.data().byWeight,
-          withGift: doc.data().withGift,
-          gift: doc.data().gift,
           unitsCount: doc.data().unitsCount
         })
         if (doc.data().prices) {

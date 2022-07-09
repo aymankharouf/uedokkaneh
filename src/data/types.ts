@@ -36,15 +36,10 @@ export type Pack = {
   name: string,
   product: Product,
   price: number,
-  subPackId?: string,
-  subCount?: number,
-  subPackName?: string,
   isOffer: boolean,
   weightedPrice: number,
   isDivided: boolean,
   byWeight: boolean,
-  withGift: boolean,
-  gift?: string,
   unitsCount: number
 }
 export type PackPrice = {
@@ -90,7 +85,7 @@ export type BasketPack = {
 }
 export type OrderTrans = {
   type: string,
-  time: Date
+  time: number
 }
 export type Order = {
   id?: string,
