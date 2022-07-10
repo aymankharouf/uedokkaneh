@@ -19,7 +19,7 @@ const Basket = () => {
   const stateOpenOrderId = useSelector<State, string | undefined>(state => state.openOrderId)
   const basket = useMemo(() => getBasket(stateBasket, statePacks), [stateBasket, statePacks])
   const totalPrice = useMemo(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [basket])
-  const weightedPacks = useMemo(() => basket.filter(p => p.pack.byWeight), [basket])
+  const weightedPacks = useMemo(() => basket.filter(p => p.pack.quantityType !== 'c'), [basket])
   const hasChanged = useMemo(() => stateBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false, [stateBasket])
   const history = useHistory()
   const location = useLocation()
@@ -77,7 +77,7 @@ const Basket = () => {
                 <IonText style={{color: colors[2].name}}>{p.pack.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{p.priceText}</IonText>
                 <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity)}`}</IonText>
-                {p.purchased && <IonText style={{color: colors[5].name}}>{`${labels.purchased}: ${quantityText(p.purchased)}`}</IonText>}
+                {p.purchased > 0 && <IonText style={{color: colors[5].name}}>{`${labels.purchased}: ${quantityText(p.purchased)}`}</IonText>}
                 <IonText style={{color: colors[6].name}}>{`${labels.totalPrice}:${p.totalPriceText}`}</IonText>
               </IonLabel>
               {p.price > 0 && <>

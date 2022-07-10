@@ -23,7 +23,7 @@ const ConfirmOrder = () => {
   const basket = useMemo(() => getBasket(stateBasket, statePacks), [stateBasket, statePacks])
   const total = useMemo(() => basket.reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [basket])
   const fraction = useMemo(() => total - Math.floor(total / 5) * 5, [total])
-  const weightedPacks = useMemo(() => basket.filter(p => p.pack.byWeight), [basket])
+  const weightedPacks = useMemo(() => basket.filter(p => p.pack.quantityType !== 'c'), [basket])
   const regionFees = useMemo(() => stateRegions.find(r => r.id === stateCustomer?.regionId)?.fees || 0, [stateRegions, stateCustomer])
   const deliveryFees = useMemo(() => stateCustomer?.deliveryFees || regionFees, [stateCustomer, regionFees])
   const history = useHistory()
@@ -46,6 +46,7 @@ const ConfirmOrder = () => {
       if (stateOpenOrder) {
         order = stateOrders.find(o => o.id === stateOpenOrder)!
         order.basket = packs
+        order.total = total
         updateOrder(order)
       } else {
         if (stateAdverts[0]?.type === 'n') {

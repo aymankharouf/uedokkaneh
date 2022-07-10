@@ -72,11 +72,10 @@ const App = () => {
           name: doc.data().name,
           product: doc.data().product,
           price: doc.data().price,
-          isOffer: doc.data().isOffer,
           weightedPrice: doc.data().price / doc.data().unitsCount,
-          isDivided: doc.data().isDivided,
-          byWeight: doc.data().byWeight,
-          unitsCount: doc.data().unitsCount
+          quantityType: doc.data().quantityType,
+          unitsCount: doc.data().unitsCount,
+          subPackId: doc.data().subPackId
         })
         if (doc.data().prices) {
           doc.data().prices.forEach((p: any) => {
@@ -85,7 +84,6 @@ const App = () => {
               storeId: p.storeId,
               price: p.price,
               isActive: p.isActive,
-              time: p.time.toDate()
             })
           })
         }

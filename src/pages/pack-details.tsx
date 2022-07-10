@@ -28,7 +28,7 @@ const PackDetails = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const pack = useMemo(() => statePacks.find(p => p.id === params.id), [statePacks, params.id])
   const isAvailable = useMemo(() => statePackPrices.find(p => p.storeId === stateCustomer?.storeId && p.packId === pack?.id) ? true : false, [statePackPrices, stateCustomer, pack])
-  const otherOffers = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.id !== pack?.id && pa.isOffer), [statePacks, pack])
+  const otherOffers = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.id !== pack?.id && pa.subPackId), [statePacks, pack])
   const otherPacks = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.weightedPrice < pack?.weightedPrice!), [statePacks, pack])
   const [packActionOpened, setPackActionOpened] = useState(false)
   const history = useHistory()
@@ -142,7 +142,7 @@ const PackDetails = () => {
               </IonRow>
               <IonRow>
                 <IonCol>
-                  <img src={pack.product.imageUrl} alt={labels.noImage} />
+                  <img src={pack.product.imageUrl || '/no-image.webp'} alt={labels.noImage} />
                 </IonCol>
               </IonRow>
               <IonRow>
@@ -173,7 +173,7 @@ const PackDetails = () => {
       }
       {stateUser &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
-          <IonFabButton onClick={() => setPackActionOpened(true)} color="success">
+          <IonFabButton onClick={() => setPackActionOpened(true)}>
             <IonIcon ios={ellipsisVerticalOutline} />
           </IonFabButton>
         </IonFab>

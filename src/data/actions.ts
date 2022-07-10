@@ -34,7 +34,7 @@ export const addQuantity = (q1: number, q2: number, q3 = 0) => {
 
 export const productOfText = (trademark: string, countryId: string, countries: Country[]) => {
   const countryName = countries.find(c => c.id === countryId)?.name
-  return trademark ? `${labels.productFrom} ${trademark}-${countryName}` : `${labels.productOf} ${countryName}`
+  return trademark ? `${labels.productFrom} ${trademark}${countryName ? '-' + countryName : ''}` : (countryName ? `${labels.productOf} ${countryName}` : '')
 }
 
 export const rateProduct = (productId: string, value: number) => {
@@ -167,7 +167,7 @@ export const deleteNotification = (notificationId: string, notifications: Notifi
 export const getBasket = (stateBasket: BasketPack[], packs: Pack[]) => {
   return stateBasket.filter(p => p.quantity > 0).map(p => {
     const lastPrice = packs.find(pa => pa.id === p.pack.id)?.price || 0
-    const totalPriceText = `${(Math.round(lastPrice * p.quantity) / 100).toFixed(2)}${p.pack.byWeight ? '*' : ''}`
+    const totalPriceText = `${(Math.round(lastPrice * p.quantity) / 100).toFixed(2)}${p.pack.quantityType !== 'c' ? '*' : ''}`
     const priceText = lastPrice === 0 ? labels.itemNotAvailable : (lastPrice === p.price ? `${labels.price}: ${(p.price / 100).toFixed(2)}` : `${labels.price}: ${(lastPrice / 100).toFixed(2)} (${(p.price / 100).toFixed(2)} ${labels.oldPrice})`)
     return {
       ...p,

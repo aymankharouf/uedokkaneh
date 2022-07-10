@@ -47,7 +47,7 @@ const reducer = (state: State = initState, action: Action) => {
       return {...state, basket: packs}
     case 'INCREASE_QUANTITY':
       basketPack = state.basket.find(p => p.pack.id === action.payload)!
-      if (basketPack.pack.isDivided) {
+      if (basketPack.pack.quantityType === 'wo') {
         if (basketPack.quantity >= 1) {
           nextQuantity = basketPack.quantity + 0.5
         } else {
@@ -69,7 +69,7 @@ const reducer = (state: State = initState, action: Action) => {
       return {...state, basket: packs}
     case 'DECREASE_QUANTITY':
       basketPack = state.basket.find(p => p.pack.id === action.payload)!
-      if (basketPack.pack.isDivided) {
+      if (basketPack.pack.quantityType === 'wo') {
         if (basketPack.quantity > 1) {
           nextQuantity = basketPack.quantity - 0.5
         } else {

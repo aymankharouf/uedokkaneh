@@ -36,18 +36,16 @@ export type Pack = {
   name: string,
   product: Product,
   price: number,
-  isOffer: boolean,
   weightedPrice: number,
-  isDivided: boolean,
-  byWeight: boolean,
-  unitsCount: number
+  unitsCount: number,
+  quantityType: string,
+  subPackId: string
 }
 export type PackPrice = {
   storeId: string,
   packId: string,
   price: number,
   isActive: boolean,
-  time: Date
 }
 export type Notification = {
   id: string,

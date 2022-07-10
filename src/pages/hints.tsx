@@ -19,7 +19,7 @@ const Hints = (props: Props) => {
   const pack = useMemo(() => statePacks.find(p => p.id === props.id), [statePacks, props.id])
   const packs = useMemo(() => statePacks.filter(p => 
                                             (props.type === 'p' && p.product.categoryId === pack?.product.categoryId && (p.product.sales > pack.product.sales || p.product.rating > pack.product.rating)) ||
-                                            (props.type === 'o' && p.product.id === pack?.product.id && p.id !== pack?.id && p.isOffer) ||
+                                            (props.type === 'o' && p.product.id === pack?.product.id && p.id !== pack?.id && p.subPackId) ||
                                             (props.type === 'w' && p.product.id === pack?.product.id && p.weightedPrice < (pack?.weightedPrice || 0))
                                           )
                                           .sort((p1, p2) => p1.weightedPrice - p2.weightedPrice)
@@ -46,8 +46,8 @@ const Hints = (props: Props) => {
                   <IonText style={{color: colors[4].name}}>{productOfText(p.product.trademark, p.product.countryId, stateCountries)}</IonText>
                   <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.product.categoryId)?.name}`}</IonText>
                 </IonLabel>
-                <IonLabel slot="end" className="price">{p.isOffer ? '' : (p.price / 100).toFixed(2)}</IonLabel>
-                {p.isOffer && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
+                <IonLabel slot="end" className="price">{p.subPackId ? '' : (p.price / 100).toFixed(2)}</IonLabel>
+                {!!p.subPackId && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
               </IonItem>
             )
           }

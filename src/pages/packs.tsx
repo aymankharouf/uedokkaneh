@@ -73,7 +73,7 @@ const Packs = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.product.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{p.product.alias}</IonText>
-                  <IonText style={{color: colors[2].name}}>{p.name} {p.isOffer && <IonBadge>{labels.offer}</IonBadge>}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.name} {p.subPackId && <IonBadge>{labels.offer}</IonBadge>}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.product.description}</IonText>
                   <IonText style={{color: colors[4].name}}>{productOfText(p.product.trademark, p.product.countryId, stateCountries)}</IonText>
                   <IonText style={{color: colors[5].name}}>{`${labels.category}: ${stateCategories.find(c => c.id === p.product.categoryId)?.name}`}</IonText>
