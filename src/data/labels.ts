@@ -183,7 +183,8 @@ const labels: Label = {
   invalidChangePrice: 'الرجاء التأكد من السعر المدخل لاختلافه عن سعر السوق بنسبة كبيرة',
   activeOrderFound: 'لا يمكن ارسال طلب جديد لوجود طلب سابق فعال، يمكنك تعديله من صفحة طلباتي',
   clearBasketFirst: 'عليك افراغ سلة المشتريات اولا',
-  notLessPurchased: 'لا يمكن تقليل الكمية عما تم شراؤه فعلا'
+  notLessPurchased: 'لا يمكن تقليل الكمية عما تم شراؤه فعلا',
+  previousTrans: 'هناك حركة سابقة لنفس المنتج...انتظر حتى يتم تفعيلها اوﻻ'
 }
 
 export default labels

@@ -3,7 +3,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
-import { Pack, PackPrice, Advert as AdvertType, PasswordRequest as PasswordRequestType, Order, Notification, Customer } from './data/types'
+import { Pack, Advert as AdvertType, PasswordRequest as PasswordRequestType, Order, Notification, Customer, PackPrice, StoreTrans } from './data/types'
 import firebase from './data/firebase'
 
 /* Core CSS required for Ionic components to work properly */
@@ -65,7 +65,6 @@ const App = () => {
     })  
     const unsubscribePacks = firebase.firestore().collection('packs').where('price', '>', 0).onSnapshot(docs => {
       let packs: Pack[] = []
-      let packPrices: PackPrice[] = []
       docs.forEach(doc => {
         packs.push({
           id: doc.id,
@@ -77,19 +76,8 @@ const App = () => {
           unitsCount: doc.data().unitsCount,
           subPackId: doc.data().subPackId
         })
-        if (doc.data().prices) {
-          doc.data().prices.forEach((p: any) => {
-            packPrices.push({
-              packId: doc.id,
-              storeId: p.storeId,
-              price: p.price,
-              isActive: p.isActive,
-            })
-          })
-        }
       })
       dispatch({type: 'SET_PACKS', payload: packs})
-      dispatch({type: 'SET_PACK_PRICES', payload: packPrices})
     }, err => {
       unsubscribePacks()
     })
@@ -132,7 +120,7 @@ const App = () => {
         const localData = localStorage.getItem('basket')
         const basket = localData ? JSON.parse(localData) : []
         if (basket) dispatch({type: 'SET_BASKET', payload: basket}) 
-        const unsubscribeUser = firebase.firestore().collection('customers').doc(user.uid).onSnapshot(doc => {
+        const unsubscribeCustomer = firebase.firestore().collection('customers').doc(user.uid).onSnapshot(doc => {
           if (doc.exists){
             const customer: Customer = {
               mobile: doc.data()!.mobile,
@@ -143,7 +131,6 @@ const App = () => {
               deliveryFees: doc.data()!.deliveryFees,
               ratings: doc.data()!.ratings
             }
-            console.log('customer === ', customer)
             const notifications: Notification[] = []
             if (doc.data()!.notifications) {
               doc.data()!.notifications.forEach((n: any) => {
@@ -162,7 +149,7 @@ const App = () => {
             firebase.auth().signOut()
           }
         }, err => {
-          unsubscribeUser()
+          unsubscribeCustomer()
         })  
         const unsubscribeOrders = firebase.firestore().collection('orders').where('userId', '==', user.uid).onSnapshot(docs => {
           let orders: Order[] = []
@@ -182,7 +169,41 @@ const App = () => {
           dispatch({type: 'SET_ORDERS', payload: orders})
         }, err => {
           unsubscribeOrders()
-        }) 
+        })
+        const unsubscribeStore = firebase.firestore().collection('stores').where('userId', '==', user.uid).onSnapshot(docs => {
+          const packPrices: PackPrice[] = []
+          const storeTrans: StoreTrans[] = []
+          docs.forEach(doc => {
+            if (doc.data().prices) {
+              doc.data().prices.forEach((p: any) => {
+                packPrices.push({
+                  storeId: doc.id,
+                  packId: p.packId,
+                  price: p.price,
+                  isActive: p.isActive,
+                  lastUpdate: p.lastUpdate.toDate()
+                })
+              })
+            }
+            if (doc.data().trans) {
+              doc.data().trans.forEach((t: any) => {
+                storeTrans.push({
+                  storeId: doc.id,
+                  packId: t.packId,
+                  oldPrice: t.oldPrice,
+                  newPrice: t.newPrice,
+                  status: t.status,
+                  time: t.time.toDate()
+                })
+              })
+            }
+
+          })
+          dispatch({type: 'SET_PACK_PRICES', payload: packPrices})
+          dispatch({type: 'SET_STORE_TRANS', payload: storeTrans})
+        }, err => {
+          unsubscribeStore()
+        })
       } else {
         dispatch({type: 'SET_CUSTOMER', payload: undefined})
         dispatch({type: 'SET_ORDERS', payload: []})

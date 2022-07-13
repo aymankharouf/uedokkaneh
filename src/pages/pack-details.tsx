@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import RatingStars from './rating-stars'
-import { getMessage, updateFavorites, productOfText, deleteStorePack, addPackPrice, changePrice } from '../data/actions'
+import { getMessage, updateFavorites, productOfText, addStoreTrans } from '../data/actions'
 import labels from '../data/labels'
 import { setup, colors } from '../data/config'
-import { BasketPack, Country, Customer, Err, Order, Pack, PackPrice, State } from '../data/types'
-import { IonActionSheet, IonButton, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
+import { BasketPack, Country, Customer, Err, Order, Pack, PackPrice, State, StoreTrans } from '../data/types'
+import { IonActionSheet, IonButton, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonImg, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -22,12 +22,14 @@ const PackDetails = () => {
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateStoreTrans = useSelector<State, StoreTrans[]>(state => state.storeTrans)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateCustomer = useSelector<State, Customer | undefined>(state => state.customer)
   const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const pack = useMemo(() => statePacks.find(p => p.id === params.id), [statePacks, params.id])
   const isAvailable = useMemo(() => statePackPrices.find(p => p.storeId === stateCustomer?.storeId && p.packId === pack?.id) ? true : false, [statePackPrices, stateCustomer, pack])
+  const countryName = useMemo(() => stateCountries.find(c => c.id === pack?.product.countryId)?.name, [stateCountries, pack])
   const otherOffers = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.id !== pack?.id && pa.subPackId), [statePacks, pack])
   const otherPacks = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.weightedPrice < pack?.weightedPrice!), [statePacks, pack])
   const [packActionOpened, setPackActionOpened] = useState(false)
@@ -71,8 +73,10 @@ const PackDetails = () => {
         {text: labels.cancel},
         {text: labels.yes, handler: () => {
           try{
-            const packPrice = statePackPrices.find(p => p.packId === pack?.id && p.storeId === stateCustomer?.storeId)
-            deleteStorePack(packPrice!, statePackPrices)
+            if (stateStoreTrans.find(t => t.storeId === stateCustomer?.storeId! && t.packId === pack?.id! && t.status === 'n')) {
+              throw new Error('previousTrans')
+            }
+            addStoreTrans(stateCustomer?.storeId!, pack?.id!, pack?.price || 0, 0)
             message(labels.deleteSuccess, 3000)
             history.goBack()
           } catch(error) {
@@ -96,16 +100,16 @@ const PackDetails = () => {
   }
   const handleAddPackStore = (value: string) => {
     try{
+      if (stateStoreTrans.find(t => t.storeId === stateCustomer?.storeId! && t.packId === pack?.id! && t.status === 'n')) {
+        throw new Error('previousTrans')
+      }
       if (+value !== Number((+value).toFixed(2)) || +value <= 0) {
         throw new Error('invalidPrice')
       }
-      const newPrice = +value * 100
+      const newPrice = Math.round(+value * 100)
       const oldPrice = statePackPrices.find(p => p.packId === pack?.id && p.storeId === stateCustomer?.storeId)?.price
       if (transType === 'c' && newPrice === oldPrice) {
         throw new Error('samePrice')
-      }
-      if (Math.abs(newPrice - pack?.price!) / pack?.price! > setup.priceDiff) {
-        throw new Error('invalidChangePrice')
       }
       const storePack = {
         packId: pack?.id!,
@@ -114,8 +118,8 @@ const PackDetails = () => {
         isActive: true,
         time: new Date()
       }
-      if (transType === 'n') addPackPrice(storePack, statePackPrices)
-      else changePrice(storePack, statePackPrices, oldPrice || 0)
+      if (transType === 'n') addStoreTrans(stateCustomer?.storeId!, pack?.id!, 0, newPrice)
+      else addStoreTrans(stateCustomer?.storeId!, pack?.id!, oldPrice || 0, newPrice)
       message(transType === 'n' ? labels.addSuccess : labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -142,7 +146,7 @@ const PackDetails = () => {
               </IonRow>
               <IonRow>
                 <IonCol>
-                  <img src={pack.product.imageUrl || '/no-image.webp'} alt={labels.noImage} />
+                  <IonImg src={pack.product.imageUrl || '/no-image.webp'} alt={labels.noImage} style={{margin: 'auto'}}/>
                 </IonCol>
               </IonRow>
               <IonRow>
@@ -151,7 +155,7 @@ const PackDetails = () => {
                 </IonCol>
               </IonRow>
               <IonRow>
-                <IonCol>{productOfText(pack.product.trademark || '', pack.product.countryId, stateCountries)}</IonCol>
+                <IonCol>{productOfText(pack.product.trademark || '', countryName || '')}</IonCol>
                 <IonCol className="ion-text-end"><RatingStars rating={pack.product.rating!} count={pack.product.ratingCount!} /></IonCol>
               </IonRow>
             </IonGrid>

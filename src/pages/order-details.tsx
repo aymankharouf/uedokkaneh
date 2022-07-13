@@ -18,7 +18,6 @@ const OrderDetails = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const stateBasket = useSelector<State, BasketPack[]>(state => state.basket)
   const order = useMemo(() => stateOrders.find(o => o.id === params.id)!, [stateOrders, params.id])
-  console.log('order == ', order)
   const [actionOpened, setActionOpened] = useState(false)
   const history = useHistory()
   const location = useLocation()

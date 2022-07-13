@@ -28,8 +28,8 @@ const OrdersList = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{orderStatus.find(s => s.id === o.status)?.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{moment(o.lastUpdate).fromNow()}</IonText>
-                  <IonText style={{color: colors[2].name}}>{(o.total / 100).toFixed(2)}</IonText>
                 </IonLabel>
+                <IonLabel slot="end" className="price">{((o.total + o.deliveryFees - o.fraction) / 100).toFixed(2)}</IonLabel>
               </IonItem>    
             )
           }

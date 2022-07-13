@@ -42,11 +42,13 @@ export type Pack = {
   subPackId: string
 }
 export type PackPrice = {
-  storeId: string,
   packId: string,
+  storeId: string,
   price: number,
   isActive: boolean,
+  lastUpdate: Date
 }
+
 export type Notification = {
   id: string,
   title: string,
@@ -113,6 +115,15 @@ export type PasswordRequest = {
   id: string,
   mobile: string
 }
+export type StoreTrans = {
+  storeId: string,
+  packId: string,
+  oldPrice: number,
+  newPrice: number,
+  status: string,
+  time: Date
+}
+
 export type State = {
   user?: firebase.User,
   customer?: Customer,
@@ -122,6 +133,7 @@ export type State = {
   orders: Order[],
   packs: Pack[],
   packPrices: PackPrice[],
+  storeTrans: StoreTrans[],
   adverts: Advert[],
   regions: Region[],
   passwordRequests: PasswordRequest[],

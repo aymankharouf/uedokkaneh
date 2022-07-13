@@ -7,6 +7,7 @@ const initState: State = {
   orders: [],
   packs: [],
   packPrices: [],
+  storeTrans: [],
   adverts: [],
   regions: [],
   passwordRequests: [],
@@ -108,8 +109,6 @@ const reducer = (state: State = initState, action: Action) => {
       return {...state, categories: action.payload}
     case 'SET_COUNTRIES':
       return {...state, countries: action.payload}
-    case 'SET_PACK_PRICES':
-      return {...state, packPrices: action.payload}
     case 'SET_ADVERTS':
       return {...state, adverts: action.payload}
     case 'SET_REGIONS':
@@ -120,6 +119,12 @@ const reducer = (state: State = initState, action: Action) => {
       return {...state, notifications: action.payload}
     case 'SET_OPEN_ORDER':
       return {...state, openOrderId: action.payload}
+    case 'SET_PACK_PRICES':
+    return {...state, packPrices: action.payload}
+    case 'SET_STORE_TRANS':
+      return {...state, storeTrans: action.payload}
+    case 'SET_SEARCH':
+      return {...state, searchText: action.payload}
     default:
       return state
   }
