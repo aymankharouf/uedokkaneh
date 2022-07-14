@@ -74,7 +74,7 @@ const App = () => {
           weightedPrice: doc.data().price / doc.data().unitsCount,
           quantityType: doc.data().quantityType,
           unitsCount: doc.data().unitsCount,
-          subPackId: doc.data().subPackId
+          isOffer: doc.data().isOffer
         })
       })
       dispatch({type: 'SET_PACKS', payload: packs})

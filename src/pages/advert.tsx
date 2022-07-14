@@ -11,7 +11,7 @@ const Advert = () => {
   return (
     <IonPage>
       <Header title={labels.advert} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonCard>
           <IonGrid>
             <IonRow>

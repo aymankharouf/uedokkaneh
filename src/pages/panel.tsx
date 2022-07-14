@@ -24,7 +24,7 @@ const Panel = () => {
   }
   return(
     <IonMenu contentId="main" type="overlay" ref={menuEl} className="dark">
-      <IonContent>
+      <IonContent className="ion-padding">
         <IonList>
           <IonMenuToggle autoHide={false}>
             {stateUser ?

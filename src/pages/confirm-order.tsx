@@ -71,6 +71,7 @@ const ConfirmOrder = () => {
           lastUpdate: new Date(),      
           trans: [{type: 'n', time: new Date().getTime()}]
         }
+        console.log('order == ', order)
         confirmOrder(order)
       }
       dispatch({type: 'CLEAR_BASKET'})
@@ -86,8 +87,8 @@ const ConfirmOrder = () => {
   return (
     <IonPage>
       <Header title={labels.sendOrder} />
-      <IonContent fullscreen>
-        <IonList className="ion-padding">
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {basket.map(p => 
             <IonItem key={p.pack.id}>
               <IonLabel>

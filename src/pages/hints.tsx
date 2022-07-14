@@ -21,7 +21,7 @@ const Hints = () => {
   const pack = useMemo(() => statePacks.find(p => p.id === params.id), [statePacks, params.id])
   const packs = useMemo(() => statePacks.filter(p => 
                                             (params.type === 'p' && p.product.categoryId === pack?.product.categoryId && (p.product.sales > pack.product.sales || p.product.rating > pack.product.rating)) ||
-                                            (params.type === 'o' && p.product.id === pack?.product.id && p.id !== pack?.id && p.subPackId) ||
+                                            (params.type === 'o' && p.product.id === pack?.product.id && p.id !== pack?.id && p.isOffer) ||
                                             (params.type === 'w' && p.product.id === pack?.product.id && p.weightedPrice < (pack?.weightedPrice || 0))
                                           )
                                           .map(p => {
@@ -38,8 +38,8 @@ const Hints = () => {
   return(
     <IonPage>
       <Header title={params.type === 'p' ? labels.otherProducts : (params.type === 'o' ? labels.otherOffers : labels.otherPacks)} />
-      <IonContent fullscreen>
-        <IonList className="ion-padding">
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {packs.length === 0 ? 
             <IonItem> 
               <IonLabel>{labels.noData}</IonLabel>
@@ -54,8 +54,7 @@ const Hints = () => {
                   <IonText style={{color: colors[4].name}}>{productOfText(p.product.trademark, p.countryName)}</IonText>
                   <IonText style={{color: colors[5].name}}>{`${labels.category}: ${p.categoryName}`}</IonText>
                 </IonLabel>
-                <IonLabel slot="end" className="price">{p.subPackId ? '' : (p.price / 100).toFixed(2)}</IonLabel>
-                {!!p.subPackId && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
+                <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>
               </IonItem>
             )
           }

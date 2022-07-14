@@ -25,7 +25,7 @@ const reducer = (state: State = initState, action: Action) => {
         basketPack = {
           ...basketPack,
           quantity: 1,
-          gross: Math.round(basketPack.price)
+          gross: basketPack.price
         }
         packs = state.basket.slice()
         packIndex = packs.findIndex(p => p.pack.id === action.payload.id)

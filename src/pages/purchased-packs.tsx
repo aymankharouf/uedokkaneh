@@ -81,8 +81,8 @@ const PurchasedPacks = () => {
   return(
     <IonPage>
       <Header title={labels.purchasedPacks} />
-      <IonContent fullscreen>
-				<IonList className="ion-padding">
+      <IonContent fullscreen className="ion-padding">
+				<IonList>
 					{purchasedPacks.length === 0 ? 
 						<IonItem> 
               <IonLabel>{labels.noData}</IonLabel>

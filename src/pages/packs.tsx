@@ -82,8 +82,8 @@ const Packs = () => {
   return(
     <IonPage>
       <Header title={title} withSearch />
-      <IonContent fullscreen>
-        <IonList className="ion-padding">
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {(data.length || 0) > 0 &&
             <IonItem>
               <IonLabel position="floating" color="primary">{labels.sortBy}</IonLabel>
@@ -107,7 +107,7 @@ const Packs = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.product.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{p.product.alias}</IonText>
-                  <IonText style={{color: colors[2].name}}>{p.name} {p.subPackId && <IonBadge>{labels.offer}</IonBadge>}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.name} {p.isOffer && <IonBadge>{labels.offer}</IonBadge>}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.product.description}</IonText>
                   <IonText style={{color: colors[4].name}}>{productOfText(p.product.trademark, p.countryName)}</IonText>
                   <IonText style={{color: colors[5].name}}>{`${labels.category}: ${p.categoryName}`}</IonText>

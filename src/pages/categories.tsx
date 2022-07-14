@@ -22,7 +22,7 @@ const Categories = () => {
   return(
     <IonPage>
       <Header title={currentCategory?.name} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonButton 
           routerLink={`/packs/a/${params.id}`} 
           expand="block"

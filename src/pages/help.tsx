@@ -31,7 +31,7 @@ const Help = () => {
   return (
     <IonPage>
       <Header title={labels.helpPageTitle} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <p className="note">{helpNote}</p>
         {params.id === 'o' &&
           <>

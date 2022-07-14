@@ -30,7 +30,7 @@ const PackDetails = () => {
   const pack = useMemo(() => statePacks.find(p => p.id === params.id), [statePacks, params.id])
   const isAvailable = useMemo(() => statePackPrices.find(p => p.storeId === stateCustomer?.storeId && p.packId === pack?.id) ? true : false, [statePackPrices, stateCustomer, pack])
   const countryName = useMemo(() => stateCountries.find(c => c.id === pack?.product.countryId)?.name, [stateCountries, pack])
-  const otherOffers = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.id !== pack?.id && pa.subPackId), [statePacks, pack])
+  const otherOffers = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.id !== pack?.id && pa.isOffer), [statePacks, pack])
   const otherPacks = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.weightedPrice < pack?.weightedPrice!), [statePacks, pack])
   const [packActionOpened, setPackActionOpened] = useState(false)
   const history = useHistory()
@@ -40,13 +40,15 @@ const PackDetails = () => {
   const [transType, setTransType] = useState('')
   const addToBasket = () => {
     try{
+      if (!pack) return
       const orderLimit = stateCustomer?.orderLimit || setup.orderLimit
       const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
       const activeOrdersTotal = activeOrders.reduce((sum, o) => sum + o.total, 0)
       if (activeOrdersTotal + pack?.price! > orderLimit) {
         throw new Error('limitOverFlow')
       }
-      dispatch({type: 'ADD_TO_BASKET', payload: pack})
+      const { weightedPrice, ...others } = pack
+      dispatch({type: 'ADD_TO_BASKET', payload: others})
       message(labels.addToBasketSuccess, 3000)
       history.goBack()
 		} catch (error){
@@ -111,13 +113,6 @@ const PackDetails = () => {
       if (transType === 'c' && newPrice === oldPrice) {
         throw new Error('samePrice')
       }
-      const storePack = {
-        packId: pack?.id!,
-        storeId: stateCustomer?.storeId!,
-        price: newPrice,
-        isActive: true,
-        time: new Date()
-      }
       if (transType === 'n') addStoreTrans(stateCustomer?.storeId!, pack?.id!, 0, newPrice)
       else addStoreTrans(stateCustomer?.storeId!, pack?.id!, oldPrice || 0, newPrice)
       message(transType === 'n' ? labels.addSuccess : labels.editSuccess, 3000)
@@ -133,7 +128,7 @@ const PackDetails = () => {
     <IonPage>
       <Header title={`${pack?.product.name}${pack?.product.alias ? '-' + pack?.product.alias : ''}`} />
       {pack &&
-        <IonContent fullscreen>
+        <IonContent fullscreen className="ion-padding">
           <IonCard>
             <IonGrid>
               <IonRow>

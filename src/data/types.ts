@@ -39,7 +39,7 @@ export type Pack = {
   weightedPrice: number,
   unitsCount: number,
   quantityType: string,
-  subPackId: string
+  isOffer: boolean
 }
 export type PackPrice = {
   packId: string,

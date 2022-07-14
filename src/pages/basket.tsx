@@ -63,8 +63,8 @@ const Basket = () => {
   return(
     <IonPage>
       <Header title={labels.basket} />
-      <IonContent fullscreen>
-        <IonList className="ion-padding">
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {basket.length === 0 ?
             <IonItem> 
               <IonLabel>{labels.noData}</IonLabel>

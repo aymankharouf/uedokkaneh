@@ -17,7 +17,7 @@ const OrdersList = () => {
   return(
     <IonPage>
       <Header title={labels.myOrders} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           {orders.length === 0 ? 
             <IonItem> 

@@ -76,8 +76,8 @@ const OrderDetails = () => {
   return(
     <IonPage>
       <Header title={labels.orderDetails} />
-      <IonContent fullscreen>
-        <IonList className="ion-padding">
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {orderBasket?.map(p => 
             <IonItem key={p.pack.id}>
               <IonLabel>
