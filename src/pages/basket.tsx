@@ -51,9 +51,6 @@ const Basket = () => {
   }
   const handleDecrease = (basketPack: BasketPack) => {
     try{
-      if (basketPack.quantity === basketPack.purchased) {
-        throw new Error('notLessPurchased')
-      }
       dispatch({type: 'DECREASE_QUANTITY', payload: basketPack.pack.id})
     } catch(error) {
       const err = error as Err

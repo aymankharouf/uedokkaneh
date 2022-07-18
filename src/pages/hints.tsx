@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import labels from '../data/labels'
 import { productOfText } from '../data/actions'
 import { Category, Country, Pack, State } from '../data/types'
-import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
@@ -20,9 +20,8 @@ const Hints = () => {
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const pack = useMemo(() => statePacks.find(p => p.id === params.id), [statePacks, params.id])
   const packs = useMemo(() => statePacks.filter(p => 
-                                            (params.type === 'p' && p.product.categoryId === pack?.product.categoryId && (p.product.sales > pack.product.sales || p.product.rating > pack.product.rating)) ||
-                                            (params.type === 'o' && p.product.id === pack?.product.id && p.id !== pack?.id && p.isOffer) ||
-                                            (params.type === 'w' && p.product.id === pack?.product.id && p.weightedPrice < (pack?.weightedPrice || 0))
+                                            (params.type === 'p' && p.product.categoryId === pack?.product.categoryId && p.product.id !== pack.product.id) ||
+                                            (params.type === 'o' && p.product.id === pack?.product.id && p.id !== pack?.id)
                                           )
                                           .map(p => {
                                             const category = stateCategories.find(c => c.id === p.product.categoryId)!
@@ -37,7 +36,7 @@ const Hints = () => {
   , [pack, statePacks, params.type, stateCategories, stateCountries]) 
   return(
     <IonPage>
-      <Header title={params.type === 'p' ? labels.otherProducts : (params.type === 'o' ? labels.otherOffers : labels.otherPacks)} />
+      <Header title={params.type === 'p' ? labels.otherProducts : labels.otherOffers} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
           {packs.length === 0 ? 

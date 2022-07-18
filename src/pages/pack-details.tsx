@@ -30,8 +30,8 @@ const PackDetails = () => {
   const pack = useMemo(() => statePacks.find(p => p.id === params.id), [statePacks, params.id])
   const isAvailable = useMemo(() => statePackPrices.find(p => p.storeId === stateCustomer?.storeId && p.packId === pack?.id) ? true : false, [statePackPrices, stateCustomer, pack])
   const countryName = useMemo(() => stateCountries.find(c => c.id === pack?.product.countryId)?.name, [stateCountries, pack])
-  const otherOffers = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.id !== pack?.id && pa.isOffer), [statePacks, pack])
-  const otherPacks = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.weightedPrice < pack?.weightedPrice!), [statePacks, pack])
+  const otherPacks = useMemo(() => statePacks.filter(pa => pa.product.id === pack?.product.id && pa.id !== pack?.id), [statePacks, pack])
+  const otherProducts = useMemo(() => statePacks.filter(pa => pa.product.categoryId === pack?.product.categoryId && pa.product.id !== pack.product.id), [statePacks, pack])
   const [packActionOpened, setPackActionOpened] = useState(false)
   const history = useHistory()
   const location = useLocation()
@@ -42,7 +42,7 @@ const PackDetails = () => {
     try{
       if (!pack) return
       const orderLimit = stateCustomer?.orderLimit || setup.orderLimit
-      const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f', 'p'].includes(o.status))
+      const activeOrders = stateOrders.filter(o => ['n', 'a', 'e', 'f'].includes(o.status))
       const activeOrdersTotal = activeOrders.reduce((sum, o) => sum + o.total, 0)
       if (activeOrdersTotal + pack?.price! > orderLimit) {
         throw new Error('limitOverFlow')
@@ -189,13 +189,13 @@ const PackDetails = () => {
           },
           {
             text: labels.otherOffers,
-            cssClass: params.type === 'c' && otherOffers.length > 0 ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: params.type === 'c' && otherPacks.length > 0 ? colors[i++ % 10].name : 'ion-hide',
             handler: () => history.push(`/hints/${pack?.id}/o`)
           },
           {
             text: labels.otherPacks,
-            cssClass: params.type === 'c' && otherPacks.length > 0 ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => history.push(`/hints/${pack?.id}/w`)
+            cssClass: params.type === 'c' && otherProducts.length > 0 ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => history.push(`/hints/${pack?.id}/p`)
           },
           {
             text: labels.changePrice,
