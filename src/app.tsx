@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
+import { IonApp, IonRouterOutlet, IonSplitPane, setupIonicReact } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
@@ -45,6 +45,7 @@ import PurchasedPacks from './pages/purchased-packs'
 import Advert from './pages/advert'
 import Categories from './pages/categories';
 
+setupIonicReact()
 
 const App = () => {
   const dispatch = useDispatch()
@@ -212,7 +213,7 @@ const App = () => {
     })
   }, [dispatch])
   return (
-    <IonApp dir="rtl">
+    <IonApp>
       <IonReactRouter>
         <IonSplitPane contentId="main">
           <Panel />

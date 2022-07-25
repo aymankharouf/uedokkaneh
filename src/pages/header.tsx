@@ -1,10 +1,10 @@
-import { IonButtons, IonHeader, IonIcon, IonSearchbar, IonTitle, IonToolbar } from '@ionic/react'
-import { chevronForwardOutline } from 'ionicons/icons'
+import { IonBackButton, IonButtons, IonHeader, IonIcon, IonSearchbar, IonTitle, IonToolbar } from '@ionic/react'
 import { useState } from 'react'
 import { useHistory } from 'react-router'
 import labels from '../data/labels'
 import { useSelector, useDispatch } from 'react-redux'
 import { State } from '../data/types'
+import { searchOutline } from 'ionicons/icons'
 
 type Props = {
   title?: string,
@@ -23,16 +23,12 @@ const Header = (props: Props) => {
     <IonHeader>
       <IonToolbar>
         <IonButtons slot="start" onClick={() => history.goBack()}>
-          <IonIcon
-            ios={chevronForwardOutline} 
-            color="primary" 
-            style={{fontSize: '20px', marginRight: '10px'}} 
-          />
+          <IonBackButton text={labels.back} />
         </IonButtons>
         {props.withSearch && 
           <IonButtons slot="end" onClick={handleVisible}>
             <IonIcon 
-              name="search-outline" 
+              icon={searchOutline}
               color="primary" 
               size="small" 
               style={{fontSize: '20px', marginLeft: '10px'}}

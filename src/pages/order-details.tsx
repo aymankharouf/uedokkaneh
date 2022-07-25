@@ -123,7 +123,7 @@ const OrderDetails = () => {
       {order.id === activeOrder?.id && 
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setActionOpened(true)} color="success">
-            <IonIcon ios={ellipsisVerticalOutline} /> 
+            <IonIcon icon={ellipsisVerticalOutline} /> 
           </IonFabButton>
         </IonFab>
       }

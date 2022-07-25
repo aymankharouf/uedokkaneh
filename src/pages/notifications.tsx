@@ -43,7 +43,8 @@ const Notifications = () => {
                   <IonText style={{color: colors[2].name}}>{moment(n.time).fromNow()}</IonText>
                 </IonLabel>
                 <IonIcon 
-                  ios={trashOutline} 
+                // ios="trash-outline"
+                  icon={trashOutline} 
                   slot="end" 
                   color="danger"
                   style={{fontSize: '20px', marginRight: '10px'}} 

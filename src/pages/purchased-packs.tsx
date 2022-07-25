@@ -5,7 +5,7 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { getMessage, rateProduct } from '../data/actions'
 import { Customer, Err, Order, BasketPack, State } from '../data/types'
-import { IonActionSheet, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
+import { IonActionSheet, IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation } from 'react-router'
@@ -104,11 +104,14 @@ const PurchasedPacks = () => {
                 </IonLabel>
                 {!stateCustomer?.ratings?.find(r => r.productId === p.orderPack.pack.product.id) &&
                   <IonButtons slot="end" onClick={() => handleActions(p)}>
-                    <IonIcon 
-                      ios={heartOutline} 
-                      color="primary" 
-                      style={{fontSize: '25px', marginRight: '5px'}} 
-                    />
+                    <IonButton>
+                      <IonIcon 
+                        slot="icon-only"
+                        icon={heartOutline} 
+                        // color="primary" 
+                        style={{fontSize: '25px', marginRight: '5px'}} 
+                      />
+                    </IonButton>
                   </IonButtons>
                 }
               </IonItem>

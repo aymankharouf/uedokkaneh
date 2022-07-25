@@ -173,7 +173,7 @@ const PackDetails = () => {
       {stateUser &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setPackActionOpened(true)}>
-            <IonIcon ios={ellipsisVerticalOutline} />
+            <IonIcon icon={ellipsisVerticalOutline} />
           </IonFabButton>
         </IonFab>
       }

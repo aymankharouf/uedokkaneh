@@ -79,18 +79,31 @@ const Basket = () => {
               </IonLabel>
               {p.price > 0 && <>
                 <IonButtons slot="end" onClick={() => handleDecrease(p)}>
-                  <IonIcon 
-                    ios={removeOutline} 
-                    color="primary" 
-                    style={{fontSize: '25px', marginRight: '5px'}} 
-                  />
+                  <IonButton>
+                    <IonIcon 
+                      slot="icon-only"
+                      icon={removeOutline} 
+                      // style={{fontSize: '25px', marginRight: '5px'}} 
+                    />
+
+                  </IonButton>
                 </IonButtons>
                 <IonButtons slot="end" onClick={() => handleIncrease(p.pack.id)}>
-                  <IonIcon 
-                    ios={addOutline} 
+                  <IonButton>
+                    <IonIcon 
+                      slot="icon-only"
+                      icon={addOutline} 
+                      // style={{fontSize: '25px', marginRight: '5px'}} 
+                    />
+
+                  </IonButton>
+
+                  {/* <IonIcon 
+                  ios="add-outline"
+                    // ios={addOutline} 
                     color="primary" 
                     style={{fontSize: '25px', marginRight: '5px'}} 
-                  />
+                  /> */}
                 </IonButtons>
               </>}
             </IonItem>    

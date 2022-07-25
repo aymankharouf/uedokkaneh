@@ -100,7 +100,7 @@ const Register = () => {
       {regionId && !nameInvalid && !mobileInvalid && !passwordInvalid &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleRegister} color="success">
-            <IonIcon ios={checkmarkOutline} /> 
+            <IonIcon icon={checkmarkOutline} /> 
           </IonFabButton>
         </IonFab>
       }
