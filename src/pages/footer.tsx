@@ -44,32 +44,20 @@ const Footer = (props: Props) => {
       <IonToolbar>
         <IonButtons slot="start" onClick={() => history.push('/')}>
           <IonButton>
-            <IonIcon 
-              slot="icon-only"
-              icon={homeOutline} 
-              // style={{fontSize: '20px', marginRight: '10px'}} 
-            />
+            <IonIcon slot="icon-only" icon={homeOutline} />
           </IonButton>
         </IonButtons>
         {props.inBasket ? 
           <IonButtons slot="end" onClick={handleDelete}>
             <IonButton>
-              <IonIcon 
-                slot="icon-only"
-                icon={trashOutline} 
-                // style={{fontSize: '20px', marginRight: '10px'}} 
-              />
+              <IonIcon slot="icon-only" icon={trashOutline} />
             </IonButton>
           </IonButtons>
         :
           <IonButtons slot="end" onClick={() => {if (basket.length > 0) history.push('/basket')}}>
             {basket.length > 0 && <IonBadge className="badge" style={{right: '10px'}}>{basket.length}</IonBadge>}
             <IonButton>
-              <IonIcon 
-                slot="icon-only"
-                icon={cartOutline} 
-                // style={{fontSize: '20px', marginRight: '10px'}} 
-              />
+              <IonIcon slot="icon-only" icon={cartOutline} />
             </IonButton>
           </IonButtons>
         }

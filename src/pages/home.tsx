@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import labels from '../data/labels'
-import { Advert, Notification, State } from '../data/types'
-import { Category } from '../data/types'
+import { Advert, Notification, Category, State } from '../data/types'
 import { IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonLoading, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react'
 import {colors} from '../data/config'
 import Footer from './footer'

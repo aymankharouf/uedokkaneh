@@ -157,7 +157,7 @@ const PackDetails = () => {
           </IonCard>
         </IonContent>
       }
-      {params.type === 'c' && !stateBasket.find(p => p.pack.id === pack?.id && p.quantity > 0) &&
+      {params.type !== 's' && !stateBasket.find(p => p.pack.id === pack?.id && p.quantity > 0) &&
         <div className="ion-text-center">
           <IonButton 
             fill="solid" 

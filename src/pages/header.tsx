@@ -1,4 +1,4 @@
-import { IonBackButton, IonButtons, IonHeader, IonIcon, IonSearchbar, IonTitle, IonToolbar } from '@ionic/react'
+import { IonBackButton, IonButton, IonButtons, IonHeader, IonIcon, IonSearchbar, IonTitle, IonToolbar } from '@ionic/react'
 import { useState } from 'react'
 import { useHistory } from 'react-router'
 import labels from '../data/labels'
@@ -16,7 +16,7 @@ const Header = (props: Props) => {
   const [visible, setVisible] = useState(false)
   const history = useHistory()
   const handleVisible = () => {
-    dispatch({type: 'CLEAR_SEARCH'})
+    dispatch({type: 'SET_SEARCH', payload: ''})
     setVisible(true)
   }
   return (
@@ -27,12 +27,13 @@ const Header = (props: Props) => {
         </IonButtons>
         {props.withSearch && 
           <IonButtons slot="end" onClick={handleVisible}>
-            <IonIcon 
-              icon={searchOutline}
-              color="primary" 
-              size="small" 
-              style={{fontSize: '20px', marginLeft: '10px'}}
-            />
+            <IonButton>
+              <IonIcon 
+                icon={searchOutline}
+                size="small" 
+                slot="icon-only"
+              />
+            </IonButton>
           </IonButtons>
         }
         <IonTitle>{props.title}</IonTitle>

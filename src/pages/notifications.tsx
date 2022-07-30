@@ -4,7 +4,7 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { getMessage, deleteNotification } from '../data/actions'
 import { Err, Notification, State } from '../data/types'
-import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import { IonButton, IonButtons, IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import { useLocation } from 'react-router'
 import { colors } from '../data/config'
@@ -42,14 +42,15 @@ const Notifications = () => {
                   <IonText style={{color: colors[1].name}}><p>{n.text}</p></IonText>
                   <IonText style={{color: colors[2].name}}>{moment(n.time).fromNow()}</IonText>
                 </IonLabel>
-                <IonIcon 
-                // ios="trash-outline"
-                  icon={trashOutline} 
-                  slot="end" 
-                  color="danger"
-                  style={{fontSize: '20px', marginRight: '10px'}} 
-                  onClick={()=> handleDelete(n)}
-                />
+                <IonButtons slot="end" onClick={() => handleDelete(n)}>
+                  <IonButton>
+                    <IonIcon 
+                      icon={trashOutline} 
+                      slot="icon-only" 
+                      color="danger"
+                    />
+                  </IonButton>
+                </IonButtons>
               </IonItem>    
             )
           }
